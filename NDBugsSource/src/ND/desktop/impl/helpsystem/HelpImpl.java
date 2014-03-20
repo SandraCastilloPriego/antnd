@@ -29,7 +29,7 @@ import java.util.jar.JarFile;
  */
 public class HelpImpl {
 
-    private MMHelpSet hs;
+    private NDHelpSet hs;
 
     public HelpImpl() {
         try {
@@ -50,7 +50,7 @@ public class HelpImpl {
                 return;
             }
 
-            MMHelpMap helpMap = new MMHelpMap(test);
+            NDHelpMap helpMap = new NDHelpMap(test);
 
             JarFile jarFile = new JarFile(file);
             Enumeration<JarEntry> e = jarFile.entries();
@@ -64,10 +64,10 @@ public class HelpImpl {
 
             helpMap.setTargetImage("topic.png");
 
-            hs = new MMHelpSet();
+            hs = new NDHelpSet();
             hs.setLocalMap(helpMap);
 
-            MMTOCView myTOC = new MMTOCView(hs, "TOC",
+            NDTOCView myTOC = new NDTOCView(hs, "TOC",
                     "Table Of Contents", helpMap, file);
 
             hs.setTitle("MM");
@@ -78,7 +78,7 @@ public class HelpImpl {
         }
     }
 
-    public MMHelpSet getHelpSet() {
+    public NDHelpSet getHelpSet() {
         return hs;
     }
 

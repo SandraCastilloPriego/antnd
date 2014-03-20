@@ -24,13 +24,13 @@ import javax.help.HelpSet;
  * http://mzmine.sourceforge.net/
  *
  */
-public class MMHelpSet extends HelpSet {
+public class NDHelpSet extends HelpSet {
 
-        public MMHelpSet() {
+        public NDHelpSet() {
                 super();
         }
 
-        public void addTOCView(MMTOCView TOCView) {
+        public void addTOCView(NDTOCView TOCView) {
                 this.addView(TOCView);
         }
 }

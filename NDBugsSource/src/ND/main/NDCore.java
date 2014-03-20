@@ -53,7 +53,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * This interface represents MM core modules - I/O, task controller and GUI.
+ * This interface represents ND core modules - I/O, task controller and GUI.
  */
 /**
  * @author Taken from MZmine2
@@ -89,9 +89,9 @@ public class NDCore implements Runnable {
         }
 
         /**
-         * Returns an array of all initialized MM modules
+         * Returns an array of all initialized ND modules
          *
-         * @return Array of all initialized MM modules
+         * @return Array of all initialized ND modules
          */
         public static NDModule[] getAllModules() {
                 return initializedModules;
@@ -110,7 +110,7 @@ public class NDCore implements Runnable {
          * Saves configuration and exits the application.
          *
          */
-        public static ExitCode exitMM() {
+        public static ExitCode exitND() {
 
                 // If we have GUI, ask if use really wants to quit
                 int selectedValue = JOptionPane.showInternalConfirmDialog(desktop.getMainFrame().getContentPane(),
@@ -123,7 +123,7 @@ public class NDCore implements Runnable {
 
                 desktop.getMainFrame().dispose();
 
-                logger.info("Exiting MM");
+                logger.info("Exiting ND");
 
                 System.exit(0);
 
@@ -146,7 +146,7 @@ public class NDCore implements Runnable {
          */
         @Override
         public void run() {
-                logger.log(Level.INFO, "Starting MM {0}", getMMVersion());
+                logger.log(Level.INFO, "Starting MM {0}", getNDVersion());
 
                 logger.fine("Loading core classes..");
 
@@ -337,8 +337,8 @@ public class NDCore implements Runnable {
                 logger.log(Level.INFO, "Loaded configuration from file {0}", file);
         }
         
-        public static String getMMVersion() {
-                return NDVersion.MM;
+        public static String getNDVersion() {
+                return NDVersion.ND;
         }
 
         public static GeneralconfigurationParameters getPreferences() {

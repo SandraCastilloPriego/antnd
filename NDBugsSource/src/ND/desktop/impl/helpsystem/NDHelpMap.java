@@ -28,13 +28,13 @@ import org.apache.commons.collections.iterators.IteratorEnumeration;
 /**
  * @author Taken from MZmine2 http://mzmine.sourceforge.net/
  */
-public class MMHelpMap implements Map {
+public class NDHelpMap implements Map {
 
         private HelpSet helpset; // the top HelpSet
         private HashMap<String, String> lookup = null;
         private boolean test;
 
-        public MMHelpMap(boolean test) {
+        public NDHelpMap(boolean test) {
                 lookup = new HashMap<>();
                 this.helpset = new HelpSet();
                 this.test = test;

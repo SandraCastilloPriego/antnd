@@ -20,10 +20,10 @@
 package ND.main;
 
 /**
- * This class only defines MM version
+ * This class only defines ND version
  */
 public class NDVersion {
 
-	public static final String MM = "1.0.1";
+	public static final String ND = "1.0.1";
 
 }

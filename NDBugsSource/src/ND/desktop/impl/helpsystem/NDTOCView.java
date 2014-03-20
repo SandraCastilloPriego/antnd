@@ -30,13 +30,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
  * http://mzmine.sourceforge.net/
  *
  */
-public class MMTOCView extends TOCView {
+public class NDTOCView extends TOCView {
 
-        private MMHelpMap hm;
+        private NDHelpMap hm;
         private HelpSet hs;
         private File file;
 
-        public MMTOCView(HelpSet hs, String name, String label, MMHelpMap hm, File file) {
+        public NDTOCView(HelpSet hs, String name, String label, NDHelpMap hm, File file) {
                 super(hs, name, label, null);
                 this.hm = hm;
                 this.hs = hs;

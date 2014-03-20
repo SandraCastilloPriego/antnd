@@ -17,7 +17,7 @@
  */
 package ND.util.components;
 
-import ND.desktop.impl.helpsystem.MMHelpSet;
+import ND.desktop.impl.helpsystem.NDHelpSet;
 import ND.desktop.impl.helpsystem.HelpImpl;
 import ND.main.NDCore;
 import javax.help.CSH;
@@ -50,7 +50,7 @@ public class HelpButton extends JButton {
                                 return;
                         }
 
-                        MMHelpSet hs = helpImp.getHelpSet();
+                        NDHelpSet hs = helpImp.getHelpSet();
 
                         if (hs == null) {
                                 setEnabled(false);

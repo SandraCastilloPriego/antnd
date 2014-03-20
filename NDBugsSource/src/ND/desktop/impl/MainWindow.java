@@ -19,7 +19,7 @@ package ND.desktop.impl;
 
 import ND.data.Dataset;
 import ND.desktop.Desktop;
-import ND.desktop.impl.helpsystem.MMHelpSet;
+import ND.desktop.impl.helpsystem.NDHelpSet;
 import ND.main.NDCore;
 import ND.modules.NDModule;
 import ND.modules.NDModuleCategory;
@@ -130,7 +130,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
         }
 
         public void windowClosing(WindowEvent e) {
-                NDCore.exitMM();
+                NDCore.exitND();
         }
 
         public void windowClosed(WindowEvent e) {
@@ -237,7 +237,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
         }
 
         void updateTitle() {
-                setTitle("MM " + NDCore.getMMVersion());
+                setTitle("MM " + NDCore.getNDVersion());
         }
 
         public JFrame getMainFrame() {
@@ -289,7 +289,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
         }
 
         public void showAboutDialog() {
-                MMHelpSet hs = NDCore.getHelpImpl().getHelpSet();
+                NDHelpSet hs = NDCore.getHelpImpl().getHelpSet();
                 if (hs == null) {
                         return;
                 }
