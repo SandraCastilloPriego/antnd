@@ -16,7 +16,7 @@ public class ReactionFA {
 
         private String id;
         private List<String> reactants, products;
-        private HashMap<String, Double> stoReactants, stoProducts;
+        private HashMap<String, Double> stoichiometry;
         private double ub = 1000;
         private double lb = -1000;
         private int pheromones = 0;
@@ -25,36 +25,27 @@ public class ReactionFA {
                 this.id = id;
                 this.reactants = new ArrayList<>();
                 this.products = new ArrayList<>();
-                this.stoReactants = new HashMap<>();
-                this.stoProducts = new HashMap<>();
+                this.stoichiometry = new HashMap<>();
         }
 
         public void addReactant(String r, Double sto) {
                 this.reactants.add(r);
                 if(sto < 1.0) sto = 1.0;
-                this.stoReactants.put(r, sto);
+                this.stoichiometry.put(r, sto);
         }
 
         public void addProduct(String p, Double sto) {
                 this.products.add(p);
                 if(sto < 1.0) sto = 1.0;
-                this.stoProducts.put(p, sto);
+                this.stoichiometry.put(p, sto);
         }
-
-        public Double getStoichiometryReactant(String reactant) {
-                return this.stoReactants.get(reactant);
-        }
-
-        public Double getStoichiometryProduct(String product) {
-                return this.stoProducts.get(product);
-        }
+       
 
         public Double getStoichiometry(String specie) {
-                if (this.stoReactants.containsKey(specie)) {
-                        return this.stoReactants.get(specie);
-                } else {
-                        return this.stoProducts.get(specie);
-                }
+                if (this.stoichiometry.containsKey(specie)) {
+                        return this.stoichiometry.get(specie);
+                } 
+                return Double.MAX_VALUE;
         }
 
         public List<String> getReactants() {
@@ -120,6 +111,25 @@ public class ReactionFA {
                         }
                 }
                 return sources;
+        }
+        
+        
+        boolean hasSourcesInProducts(List<String> nodes) {              
+                for (String node : nodes) {
+                        if (this.products.contains(node)) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+        
+        boolean hasSourcesInReactants(List<String> nodes) {              
+                for (String node : nodes) {
+                        if (this.reactants.contains(node)) {
+                                return true;
+                        }
+                }
+                return false;
         }
 
         boolean hasSpecies(String edge) {

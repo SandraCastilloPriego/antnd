@@ -14,9 +14,11 @@ import java.util.List;
 public class Ant {
 
         List<String> path;
-
-        public Ant() {
+        String location;
+       // boolean moved = false;
+        public Ant(String location) {
                 this.path = new ArrayList<>();
+                this.location = location;
         }
 
         public void addReactionInPath(String reaction) {
@@ -35,10 +37,28 @@ public class Ant {
 
         @Override
         public Ant clone() {
-                Ant ant = new Ant();
-                for (String p : path) {
+                Ant ant = new Ant(this.location);
+                for (String p : this.path) {
                         ant.addReactionInPath(p);
                 }
                 return ant;
         }
+        
+        public String getLocation(){
+                return location;
+        }
+        
+        public void setLocation(String location){
+                this.location = location;
+        }
+        
+       /* public boolean isMoved(){
+                return this.moved;
+        }
+        
+        public void setMoved(boolean moved){
+                this.moved = moved;
+        }
+        */
+       
 }

@@ -24,10 +24,10 @@ class SpeciesFA {
                 this.ants = new ArrayList<>();
         }
 
-        public Ant getAnt(Random rand) {
+        public Ant getAnt() {
                 if (this.ants.size() > 0) {
-                        Ant selected = this.ants.get(rand.nextInt(this.ants.size()));
-                        this.ants.remove(selected);
+                        Ant selected = this.ants.get(0);
+                        //this.ants.remove(selected);
                         return selected;
                 } else {
                         return null;
@@ -56,5 +56,13 @@ class SpeciesFA {
 
         public List<String> getReactions() {
                 return this.reactions;
+        }
+
+        public void removeAnts() {
+                this.ants.clear();
+        }
+
+        void removeAnt(Ant a) {
+                this.ants.remove(a);
         }
 }

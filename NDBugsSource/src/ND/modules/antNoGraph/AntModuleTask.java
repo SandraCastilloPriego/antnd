@@ -31,16 +31,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -65,7 +65,7 @@ public class AntModuleTask extends AbstractTask {
         private HashMap<String, String[]> bounds;
         private Map<String, Double> sources;
         private List<String> sourcesList;
-        private Set<String> nodesWithAnts;
+        private List<Ant> ants;
         private int n = 0;
         private JInternalFrame frame;
         private JScrollPane panel;
@@ -85,7 +85,7 @@ public class AntModuleTask extends AbstractTask {
                 this.reactions = new HashMap<>();
                 this.compounds = new HashMap<>();
                 this.bounds = new HashMap<>();
-                this.nodesWithAnts = new HashSet<>();
+                this.ants = new ArrayList<>();
                 this.sourcesList = new ArrayList<>();
 
                 this.frame = new JInternalFrame("Result", true, true, true, true);
@@ -129,16 +129,25 @@ public class AntModuleTask extends AbstractTask {
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
 
-                        for (int i = 0; i < 100; i++) {
+                        for (int i = 0; i < 1; i++) {
                                 this.cicle();
+                                finishedPercentage = (double) i / 100;
+                                if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
+                                        break;
+                                }
                         }
-
-                        for (String key : reactions.keySet()) {
-                                ReactionFA reaction = reactions.get(key);
-                                System.out.println(reaction.getId() + ", " + reaction.getPheromones());
+                        if (getStatus() == TaskStatus.PROCESSING) {
+                                for (String key : reactions.keySet()) {
+                                        ReactionFA reaction = reactions.get(key);
+                                        System.out.println(reaction.getId() + ", " + reaction.getPheromones());
+                                }
+                                PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID);
+                                try {
+                                        this.pn.add(print.printPathwayInFrame(this.reactions));
+                                } catch (NullPointerException ex) {
+                                        System.out.println(ex.toString());
+                                }
                         }
-                        PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID);
-                        this.pn.add(print.printPathwayInFrame(this.reactions));
 
                         setStatus(TaskStatus.FINISHED);
 
@@ -192,9 +201,10 @@ public class AntModuleTask extends AbstractTask {
                                         antAmount = 1;
                                 }
                                 for (int i = 0; i < antAmount; i++) {
-                                        specie.addAnt(new Ant());
+                                        Ant ant = new Ant(specie.getId());
+                                        this.ants.add(ant);
+                                        specie.addAnt(ant);
                                 }
-                                this.nodesWithAnts.add(s.getId());
                         }
                 }
 
@@ -209,7 +219,14 @@ public class AntModuleTask extends AbstractTask {
                         if (b != null) {
                                 reaction.setBounds(Double.valueOf(b[3]), Double.valueOf(b[4]));
                         } else {
-                                reaction.setBounds(-1000, 1000);
+                                try {
+                                        KineticLaw law = r.getKineticLaw();
+                                        LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                                        LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                                        reaction.setBounds(lbound.getValue(), ubound.getValue());
+                                } catch (Exception ex) {
+                                        reaction.setBounds(-1000, 1000);
+                                }
                         }
                         //System.out.println("List of reactants");
                         for (SpeciesReference s : r.getListOfReactants()) {
@@ -259,19 +276,32 @@ public class AntModuleTask extends AbstractTask {
 
         public void cicle() {
                 //
+                List<Ant> antsBiomass = new ArrayList<>();
+                List<Ant> toBeAddedAnts = new ArrayList<>();
+                List<Ant> toBeRemovedAtTheEnd = new ArrayList<>();
+                for (Ant ant : this.ants) {
 
-
-                Set<String> newNodesWithFwdAnts = new HashSet<>();
-                for (String node : this.nodesWithAnts) {
-
-                        //  System.out.println("Getting possible reactions");
-                        List<String> possibleReactions = getPossibleReactions(node, true);
+                        String node = ant.getLocation();
+                        List<String> possibleReactions = getPossibleReactions(node);
 
                         if (possibleReactions.size() > 0) {
                                 String reactionChoosen = chooseReactions(possibleReactions);
-                                //  System.out.println(node + " - " + reactionChoosen);
+                                /*System.out.println("Number of ants: " + this.compounds.get("C00031").getNumberOfAnts());
+                                 if (ant.getLocation().equals("C00031")) {
+                                 for (String r : possibleReactions) {
+                                 System.out.println(r);
+                                 }
+                                 }
+                                 /* System.out.println("Number of ants: " + this.compounds.get("C00031").getNumberOfAnts());
+                                 if (this.compounds.get("C00031").getNumberOfAnts() > 0) {
+                                 System.out.println("Paths: ");
+                                 for (String p : this.compounds.get("C00031").getAnt().getPath()) {
+                                 System.out.print("-" + p);
+                                 }
+                                 }*/
+                                System.out.println(".......");
+                                // System.out.println(ant.getLocation() + " - " + reactionChoosen);
                                 ReactionFA rc = this.reactions.get(reactionChoosen);
-
 
                                 List<String> toBeAdded, toBeRemoved;
                                 if (rc.hasReactant(node)) {
@@ -281,71 +311,91 @@ public class AntModuleTask extends AbstractTask {
                                         toBeAdded = rc.getReactants();
                                         toBeRemoved = rc.getProducts();
                                 }
-                                //  System.out.println("1");
-                                List<Ant> movingAnts = new ArrayList<>();
+
+                                // get the ants that must be removed from the reactants ..
+                                Ant superAnt = new Ant(null);
                                 for (String s : toBeRemoved) {
                                         SpeciesFA spfa = this.compounds.get(s);
                                         for (int i = 0; i < rc.getStoichiometry(s); i++) {
-                                                Ant ant = spfa.getAnt(rand);
-                                                if (ant != null) {
-                                                        ant.addReactionInPath(reactionChoosen);
-                                                        movingAnts.add(ant);
-                                                }
-                                        }
-                                }
-
-                                // System.out.println("2");
-                                if (!movingAnts.isEmpty()) {
-                                        for (String s : toBeAdded) {
-                                                SpeciesFA spfa = this.compounds.get(s);
-                                                for (int i = 0; i < rc.getStoichiometry(s); i++) {
-                                                        if (i < movingAnts.size()) {
-                                                                Ant ant = movingAnts.get(i);
-                                                                // ant.addReactionInPath(reactionChoosen);
-                                                                spfa.addAnt(ant);
-                                                        } else {
-                                                                //  System.out.println("failing here 1");
-                                                                int index = rand.nextInt(movingAnts.size());
-                                                                // System.out.println(movingAnts.size() + " - " + i + " - " + index);
-                                                                Ant ant = movingAnts.get(index);
-                                                                if (ant != null) {
-                                                                        ant = ant.clone();
-                                                                        // ant.addReactionInPath(reactionChoosen);
-                                                                        spfa.addAnt(ant);
-                                                                }
-                                                                //  System.out.println("failing here 2");
+                                                Ant a = spfa.getAnt();
+                                                if (a != null) {
+                                                        a.addReactionInPath(reactionChoosen);
+                                                        List<String> path = a.getPath();
+                                                        //  System.out.print("path " + a.getLocation());
+                                                        for (String p : path) {
+                                                                //  System.out.print("-" + p);
+                                                                superAnt.addReactionInPath(p);
                                                         }
+                                                        toBeRemovedAtTheEnd.add(a);
+                                                        //  System.out.print("\n");
                                                 }
+                                                spfa.removeAnt(a);
                                         }
                                 }
 
-                                //   System.out.println("3");
+                                // move the ants to the products...   
 
+                                for (String s : toBeAdded) {
+                                        SpeciesFA spfa = this.compounds.get(s);
+                                        for (int i = 0; i < rc.getStoichiometry(s); i++) {
+                                                Ant newAnt = superAnt.clone();
+                                                newAnt.setLocation(spfa.getId());
+                                                spfa.addAnt(newAnt);
+                                                toBeAddedAnts.add(newAnt);
+                                                /* if (i < movingAnts.size()) {
+                                                 Ant a = movingAnts.get(i);
+                                                 a.setLocation(spfa.getId());
+                                                 //  a.setMoved(true);
+                                                 spfa.addAnt(ant);
+                                                 } else {
+                                                 int index = rand.nextInt(movingAnts.size());
+                                                 Ant a = movingAnts.get(index);
+                                                 if (a != null) {
+                                                 a = a.clone();
+                                                 a.setLocation(spfa.getId());
+                                                 // a.setMoved(true);
+                                                 spfa.addAnt(a);
+                                                 }
+                                                 }*/
+                                        }
+                                }
+
+
+                                // When the ants arrive to the biomass
                                 if (toBeAdded.contains(this.biomassID)) {
                                         System.out.println("Biomass produced!: " + rc.getId());
                                         //  System.out.println("biomass 1");
                                         // Adds pheromones
                                         SpeciesFA spFA = this.compounds.get(this.biomassID);
-                                        List<Ant> ants = spFA.getAnts();
-                                        List<List<String>> goodPaths = new ArrayList<>();
-                                        for (Ant ant : ants) {
-                                                ant.addReactionInPath(rc.getId());
-                                                List<String> path = ant.getPath();
-                                                
-                                                System.out.println(path.size());
-                                                // if (path.contains(rc.getId())) {
-                                                goodPaths.add(path);
-                                                // }
-                                                this.backToSources(ant);
-                                        }
-                                        List<String> shortestPath = getShortestPath(goodPaths);
-                                        if (shortestPath != null) {
-                                                for (String r : shortestPath) {
-                                                        System.out.print(r + " - ");
+                                        antsBiomass.addAll(spFA.getAnts());
+                                        //  spFA.removeAnts();
+                                        //  List<List<String>> goodPaths = new ArrayList<>();
+                                        for (Ant a : antsBiomass) {
+                                                List<String> path = a.getPath();
+
+                                                //  System.out.println(path.size());
+                                                //  if (path.size() > 0) {
+                                                for (String r : path) {
+                                                        //    System.out.print(r + " - ");
                                                         this.reactions.get(r).addPheromones();
                                                 }
-                                                System.out.print("\n");
+                                                // System.out.print("\n");
+                                                // }
+                                                // if (path.contains(rc.getId())) {
+                                                // goodPaths.add(path);
+                                                // }
+                                                //this.backToSources(a);
                                         }
+
+                                        break;
+                                        /*  List<String> shortestPath = getShortestPath(goodPaths);
+                                         if (shortestPath != null) {
+                                         for (String r : shortestPath) {
+                                         System.out.print(r + " - ");
+                                         this.reactions.get(r).addPheromones();
+                                         }
+                                         System.out.print("\n");
+                                         }*/
                                         // System.out.println("hola2");
                                         //  System.out.println("biomass 2");
                                         // Puts the ants back to the sources
@@ -353,39 +403,43 @@ public class AntModuleTask extends AbstractTask {
 
 
                                         //choses the species that contains the biomass compound
-                                        List<String> species;
-                                        if (rc.hasReactant(this.biomassID)) {
-                                                species = rc.getReactants();
-                                        } else {
-                                                species = rc.getProducts();
-                                        }
+                                      /*  List<String> species;
+                                         if (rc.hasReactant(this.biomassID)) {
+                                         species = rc.getReactants();
+                                         } else {
+                                         species = rc.getProducts();
+                                         }
 
-                                        // all of them must go back to sources
-                                        for (String sp : species) {
-                                                if (!sp.contains(this.biomassID)) {
-                                                        for (int i = 0; i < rc.getStoichiometry(sp); i++) {
-                                                                backToSources(sp);
-                                                        }
-                                                }
-                                        }
+                                         // all of them must go back to sources
+                                         for (String sp : species) {
+                                         if (!sp.contains(this.biomassID)) {
+                                         for (int i = 0; i < rc.getStoichiometry(sp); i++) {
+                                         backToSources(sp);
+                                         }
+                                         }
+                                         }*/
                                         //    System.out.println("biomass 3");
-                                } else {
-                                        newNodesWithFwdAnts.addAll(toBeAdded);
                                 }
 
 
-                        } else {
-                                newNodesWithFwdAnts.add(node);
                         }
+
+
+
 
                 }
 
+                this.ants.removeAll(toBeRemovedAtTheEnd);
+                this.ants.addAll(toBeAddedAnts);
 
-                this.nodesWithAnts = newNodesWithFwdAnts;
+                /*  for (Ant a : antsBiomass) {
+                 this.ants.remove(a);
+                 }*/
 
+                this.restart();
                 this.n++;
 
-                if (this.n > 10) {
+                if (this.n > 5) {
                         this.n = 0;
                         for (String key : this.reactions.keySet()) {
                                 ReactionFA r = this.reactions.get(key);
@@ -394,54 +448,106 @@ public class AntModuleTask extends AbstractTask {
                         // this.AddNewAnts();
                 }
 
+                /* for (Ant ant : this.ants) {
+                 ant.setMoved(false);
+                 }*/
+
 
 
         }
 
-        private List<String> getPossibleReactions(String node, boolean fwd) {
+        private List<String> getPossibleReactions(String node) {
+                // System.out.println(node);
                 List<String> possibleReactions = new ArrayList<>();
                 SpeciesFA sp = this.compounds.get(node);
-                if (sp == null) {
-                        System.out.println("Node: " + node);
-                } else {
-                        List<String> connectedReactions = sp.getReactions();
-
-                        for (String reaction : connectedReactions) {
-                                ReactionFA r = this.reactions.get(reaction);
-                                if (r == null) {
-                                        System.out.println(reaction);
-
-                                } else {
-                                        boolean isPossible = true;
-                                        if (r.hasReactant(node)) {
-                                                if (fwd && r.getub() > 0 || (!fwd && r.getlb() < 0)) {
-                                                        List<String> reactants = r.getReactants();
-                                                        for (String reactant : reactants) {
-                                                                if (!allEnoughAnts(reactant, r.getStoichiometryReactant(reactant))) {
-                                                                        isPossible = false;
-                                                                        break;
-                                                                }
-                                                        }
-                                                }
-                                        } else if (!r.hasReactant(node)) {
-                                                if (r.getlb() < 0 || (!fwd && r.getub() > 0)) {
-                                                        List<String> products = r.getProducts();
-                                                        for (String product : products) {
-                                                                if (!allEnoughAnts(product, r.getStoichiometryProduct(product))) {
-                                                                        isPossible = false;
-                                                                        break;
-                                                                }
-                                                        }
-                                                }
-
-                                        }
-                                        if (isPossible) {
-                                                possibleReactions.add(reaction);
-                                        }
-                                }
+                List<String> connectedReactions = sp.getReactions();
+                
+                if (sp.getId().equals("C00031")) {                        
+                        for (String c : connectedReactions) {
+                                System.out.println(c);
                         }
+                        System.out.println("----------");
                 }
 
+                for (String reaction : connectedReactions) {
+                        ReactionFA r = this.reactions.get(reaction);
+
+                        boolean isPossible = true;
+                        if (r.hasReactant(node)) {
+                                if (r.getub() > 0) {
+                                        List<String> reactants = r.getReactants();
+                                        // System.out.print(reactants.size());
+                                        for (String reactant : reactants) {
+                                                // System.out.print(" - " + reactant + " - " + r.getStoichiometry(reactant));
+                                                if (!allEnoughAnts(reactant, r.getStoichiometry(reactant))) {
+                                                        isPossible = false;
+                                                        // System.out.println("Not possible");
+                                                        break;
+                                                }
+                                        }
+                                        //  System.out.print("\n");
+                                } else {
+                                        isPossible = false;
+                                }
+                                if (isPossible) {
+                                        if (r.getlb() < 0) {
+                                                List<String> reactants = r.getReactants();
+                                                int sumReactants = 0, sumProducts = 0;
+                                                for (String reactant : reactants) {
+                                                        sumReactants = sumReactants + this.compounds.get(reactant).getNumberOfAnts();
+                                                }
+                                                List<String> products = r.getProducts();
+                                                for (String product : products) {
+                                                        sumProducts = sumProducts + this.compounds.get(product).getNumberOfAnts();
+                                                }
+                                                if (sumProducts > sumReactants) {
+                                                        isPossible = false;
+                                                }
+                                        }
+                                }
+
+                        } else {
+                                if (r.getlb() < 0) {
+                                        List<String> products = r.getProducts();
+                                        // System.out.print(products.size());
+                                        for (String product : products) {
+                                                //System.out.print(" - " + product + " - " + r.getStoichiometry(product));
+                                                if (!allEnoughAnts(product, r.getStoichiometry(product))) {
+                                                        isPossible = false;
+                                                        //  System.out.println("Not possible");
+                                                        break;
+                                                }
+                                        }
+                                        // System.out.print("\n");
+                                } else {
+                                        isPossible = false;
+                                }
+                                if (isPossible) {
+                                        if (r.getub() > 0) {
+                                                List<String> reactants = r.getReactants();
+                                                int sumReactants = 0, sumProducts = 0;
+                                                for (String reactant : reactants) {
+                                                        sumReactants = sumReactants + this.compounds.get(reactant).getNumberOfAnts();
+                                                }
+                                                List<String> products = r.getProducts();
+                                                for (String product : products) {
+                                                        sumProducts = sumProducts + this.compounds.get(product).getNumberOfAnts();
+                                                }
+                                                if (sumProducts < sumReactants) {
+                                                        isPossible = false;
+                                                }
+                                        }
+                                }
+
+                        }
+                        if (isPossible) {
+                                possibleReactions.add(reaction);
+                                // System.out.println(" Bien!!- " + reaction);
+                        }
+
+                }
+
+                //System.out.print("\n");
                 return possibleReactions;
         }
 
@@ -475,24 +581,24 @@ public class AntModuleTask extends AbstractTask {
                 return false;
         }
 
-        private void AddNewAnts() {
-                for (String key : this.sources.keySet()) {
-                        //System.out.println(key);
-                        double amount = this.sources.get(key);
-                        double ant = (amount / this.totalSource) * this.numAnt;
-                        if (ant < 1) {
-                                ant = 1;
-                        }
-                        for (int i = 0; i < ant; i++) {
-                                if (this.compounds.containsKey(key)) {
-                                        this.compounds.get(key).addAnt(new Ant());
-                                }
-                        }
-                        if (this.compounds.containsKey(key)) {
-                                this.nodesWithAnts.add(key);
-                        }
-                }
-        }
+        /* private void AddNewAnts() {
+         for (String key : this.sources.keySet()) {
+         //System.out.println(key);
+         double amount = this.sources.get(key);
+         double ant = (amount / this.totalSource) * this.numAnt;
+         if (ant < 1) {
+         ant = 1;
+         }
+         for (int i = 0; i < ant; i++) {
+         if (this.compounds.containsKey(key)) {
+         this.compounds.get(key).addAnt(new Ant());
+         }
+         }
+         if (this.compounds.containsKey(key)) {
+         this.nodesWithAnts.add(key);
+         }
+         }
+         }*/
 
         /*private void turnAnts(ReactionFA reaction) {
          if (reaction.hasReactant(biomassID)) {
@@ -519,7 +625,7 @@ public class AntModuleTask extends AbstractTask {
         private void backToSources(String sp) {
                 //System.out.println("back to sources 1");
                 SpeciesFA specie = this.compounds.get(sp);
-                Ant ant = specie.getAnt(rand);
+                Ant ant = specie.getAnt();
                 if (ant != null) {
                         backToSources(ant);
                 }
@@ -531,13 +637,16 @@ public class AntModuleTask extends AbstractTask {
                 List<String> path = ant.getPath();
                 if (path != null && !path.isEmpty()) {
                         ReactionFA firstReaction = this.reactions.get(path.get(0));
-
+                        System.out.println("first reaction: " + firstReaction.getId());
                         List<String> sourcesInReaction = firstReaction.getSources(this.sourcesList);
-                        if (sourcesInReaction.size() > 0) {
-                                String sourceFromReaction = sourcesInReaction.get(this.rand.nextInt(sourcesInReaction.size()));
-                                SpeciesFA sourceSp = this.compounds.get(sourceFromReaction);
-                                ant.removePath();
-                                sourceSp.addAnt(ant);
+                        for (String sourceInReaction : sourcesInReaction) {
+                                SpeciesFA sourceSp = this.compounds.get(sourceInReaction);
+                                for (int i = 0; i < firstReaction.getStoichiometry(sourceInReaction); i++) {
+                                        ant.removePath();
+                                        ant.setLocation(sourceSp.getId());
+                                        Ant newAnt = ant.clone();
+                                        sourceSp.addAnt(newAnt);
+                                }
                         }
                 }
                 // System.out.println("back to sources b 2");
@@ -553,5 +662,59 @@ public class AntModuleTask extends AbstractTask {
                         }
                 }
                 return shortest;
+        }
+
+        private void restart() {
+                SBMLDocument doc = this.networkDS.getDocument();
+                Model m = doc.getModel();
+                this.compounds.clear();
+                this.ants.clear();
+                // System.out.println("Setting the compounds");
+                for (Species s : m.getListOfSpecies()) {
+                        SpeciesFA specie = new SpeciesFA(s.getId());
+                        this.compounds.put(s.getId(), specie);
+
+                        //add the number of initial ants using the sources.. and add them
+                        // in the list of nodes with ants
+                        if (this.sources.containsKey(s.getId())) {
+                                double amount = this.sources.get(s.getId());
+                                double antAmount = (amount / this.totalSource) * this.numAnt;
+                                if (antAmount < 1) {
+                                        antAmount = 1;
+                                }
+                                for (int i = 0; i < antAmount; i++) {
+                                        Ant ant = new Ant(specie.getId());
+                                        this.ants.add(ant);
+                                        specie.addAnt(ant);
+                                }
+                        }
+                }
+
+                for (Reaction r : m.getListOfReactions()) {
+
+                        //System.out.println("List of reactants");
+                        for (SpeciesReference s : r.getListOfReactants()) {
+                                Species sp = s.getSpeciesInstance();
+                                SpeciesFA spFA = this.compounds.get(sp.getId());
+                                if (spFA != null) {
+                                        spFA.addReaction(r.getId());
+                                } else {
+                                        System.out.println(sp.getId());
+                                }
+                        }
+
+                        //System.out.println("List of products");
+                        for (SpeciesReference s : r.getListOfProducts()) {
+                                Species sp = s.getSpeciesInstance();
+                                SpeciesFA spFA = this.compounds.get(sp.getId());
+                                if (spFA != null) {
+                                        spFA.addReaction(r.getId());
+                                } else {
+                                        System.out.println(sp.getId());
+                                }
+                        }
+
+                }
+
         }
 }

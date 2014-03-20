@@ -45,7 +45,6 @@ public class PrintPaths {
                 "C00014", "C00206", "C00017", "C00018", "C00019", "C00021", "C00022", "C00023", "C00024", "C00025", "C00026", "C00032", "C00114",
                 "C00145", "C00146", "C00201", "C06089", "C01417", "CHEBI16144", "CHEBI22984", "CHEBI26078", "C19970", "Cluster4564", "Cluster4563",
                 "C00040", "C00069", "CHEBI17909"};
-        
         private int number = 0;
 
         public PrintPaths(List<String> initialIds, String finalId) {
@@ -56,28 +55,46 @@ public class PrintPaths {
         public VisualizationViewer printPathwayInFrame(HashMap<String, ReactionFA> reactions) {
                 edu.uci.ics.jung.graph.Graph<String, String> g = new SparseMultigraph<>();
                 List<ReactionFA> nodes = new ArrayList<>();
+                int maximum = 0;
+                for (String key : reactions.keySet()) {
+                       ReactionFA reaction = reactions.get(key);
+                       if (reaction.getPheromones() > maximum) {
+                               maximum = reaction.getPheromones();
+                       }
+                }
+                if(maximum == 0) return null;
+                
                 for (String key : reactions.keySet()) {
                         ReactionFA reaction = reactions.get(key);
-                        if (reaction.getPheromones() > 1) {
+                        if (reaction.getPheromones() == maximum) {
                                 g.addVertex(key);
                                 nodes.add(reaction);
                         }
 
                 }
                 for (ReactionFA node : nodes) {
+                        List<String> additionalNodes = node.getSources(initialIds);
+                        for (String additionalNode : additionalNodes) {
+                                g.addVertex(additionalNode);
+                                g.addEdge(additionalNode + "-" + String.valueOf(number++), additionalNode, node.getId());
+                        }
+                        
                         List<String> reactants = node.getReactants();
                         reactants.addAll(node.getProducts());
+                        if (reactants.contains(this.finalId)) {
+                                g.addVertex(finalId);
+                                g.addEdge(finalId + "-" + String.valueOf(number++), finalId, node.getId());
+                        }
+                        
                         for (String edge : reactants) {
-                                if(!isCofactor(edge)){
-                                        String source = node.getId();
-                                        List<String> destinations = getDestinations(edge, node, nodes);
-                                        for(String destination : destinations){
-                                                g.addEdge(edge + "-" + String.valueOf(number++), source, destination, EdgeType.DIRECTED);
-                                        }
+                                String source = node.getId();
+                                List<String> destinations = getDestinations(edge, node, nodes);
+                                for (String destination : destinations) {
+                                        g.addEdge(edge + "-" + String.valueOf(number++), source, destination, EdgeType.DIRECTED);
                                 }
                         }
 
-                        
+
                 }
 
                 Layout<String, String> layout = new KKLayout(g);
@@ -87,8 +104,10 @@ public class PrintPaths {
                 Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
                         @Override
                         public Paint transform(String id) {
-                                if (initialIds.contains(id) || id.contains(finalId)) {
+                                if (initialIds.contains(id.split("-")[0])) {
                                         return Color.BLUE;
+                                } else if (id.split("-")[0].contains(finalId)) {
+                                        return Color.RED;
                                 } else {
                                         return Color.GREEN;
                                 }
@@ -137,8 +156,8 @@ public class PrintPaths {
         }
 
         private boolean isCofactor(String edge) {
-                for(String cofactor : this.cofactors){
-                        if(edge.equals(cofactor)){
+                for (String cofactor : this.cofactors) {
+                        if (edge.equals(cofactor)) {
                                 return true;
                         }
                 }
@@ -148,15 +167,13 @@ public class PrintPaths {
         private List<String> getDestinations(String edge, ReactionFA node, List<ReactionFA> reactions) {
                 List<String> targets = new ArrayList<>();
                 for (ReactionFA key : reactions) {
-                        if(!key.getId().equals(node.getId())){
-                               if(node.hasSpecies(edge)){
-                                       targets.add(key.getId());
-                               }
+                        if (!key.getId().equals(node.getId())) {
+                                if (key.hasSpecies(edge)) {
+                                        targets.add(key.getId());
+                                }
                         }
                 }
-                
+
                 return targets;
         }
-
-       
 }
