@@ -4,7 +4,11 @@
  */
 package ND.modules.antNoGraph;
 
+import ND.modules.antNoGraph.network.Edge;
+import ND.modules.antNoGraph.network.Graph;
+import ND.modules.antNoGraph.network.Node;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -13,18 +17,29 @@ import java.util.List;
  */
 public class Ant {
 
+        private Graph g;
         List<String> path;
         String location;
-       // boolean moved = false;
+        boolean lost = false;
+
         public Ant(String location) {
                 this.path = new ArrayList<>();
                 this.location = location;
+                this.g = new Graph(null, null);
         }
 
-        public void addReactionInPath(String reaction) {
-                if (!this.path.contains(reaction)) {
-                        this.path.add(reaction);
-                }
+        public void initAnt() {
+                Node initNode = new Node(location + "-" + uniqueId.nextId());
+                g.addNode(initNode);
+                this.path.add(location + "-" + uniqueId.nextId());
+        }
+
+        public Graph getGraph() {
+                return this.g;
+        }
+
+        public void setGraph(Graph g) {
+                this.g = g;
         }
 
         public void removePath() {
@@ -35,30 +50,66 @@ public class Ant {
                 return this.path;
         }
 
+        public void setPath(List<String> path) {
+                this.path = path;
+        }
+
         @Override
         public Ant clone() {
                 Ant ant = new Ant(this.location);
-                for (String p : this.path) {
-                        ant.addReactionInPath(p);
-                }
+                ant.setGraph(this.g);
+                ant.setPath(path);
                 return ant;
         }
-        
-        public String getLocation(){
+
+        public String getLocation() {
                 return location;
         }
-        
-        public void setLocation(String location){
+
+        public void setLocation(String location) {
                 this.location = location;
         }
-        
-       /* public boolean isMoved(){
-                return this.moved;
+
+        void print() {
+                System.out.print("location: " + this.location + "//");
+                for (String p : this.path) {
+                        System.out.print("-" + p);
+                }
+                System.out.print("\n");
         }
-        
-        public void setMoved(boolean moved){
-                this.moved = moved;
+
+        void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts) {
+                Node node = new Node(reactionChoosen + " - " + uniqueId.nextId());
+
+                for (Ant ant : combinedAnts.keySet()) {
+                        g.addNode(node);
+                        Graph antGraph = ant.getGraph();
+
+                        for (Node n : antGraph.getNodes()) {
+                                g.addNode(n);
+                        }
+                        for (Edge e : antGraph.getEdges()) {
+                                g.addEdge(e);
+                        }
+                        //System.out.println(ant.getPath().get(ant.getPath().size() - 1));
+
+                        Node lastNode = antGraph.getNode(ant.getPath().get(ant.getPath().size() - 1).split("-")[0]);
+                       // System.out.println(lastNode);
+                        Edge edge = new Edge(combinedAnts.get(ant) + "-" + uniqueId.nextId(), lastNode, node);
+                        g.addEdge(edge);
+
+                        for (String p : ant.getPath()) {
+                                this.path.add(p);
+                        }
+                }
+                this.path.add(node.getId());
+                if (path.size() > 200) {
+                        this.lost = true;
+                }
+
         }
-        */
-       
+
+        public boolean isLost() {
+                return this.lost;
+        }
 }

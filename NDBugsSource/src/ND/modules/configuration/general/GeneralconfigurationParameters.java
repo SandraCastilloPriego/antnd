@@ -20,9 +20,6 @@ package ND.modules.configuration.general;
 
 import ND.desktop.preferences.*;
 import ND.desktop.numberFormat.NumberFormatParameter;
-import ND.desktop.numberFormat.RTFormatParameter;
-import ND.desktop.numberFormat.RTFormatter;
-import ND.desktop.numberFormat.RTFormatterType;
 import ND.main.NDCore;
 import ND.parameters.Parameter;
 import ND.parameters.ParameterSet;
@@ -35,15 +32,7 @@ import java.text.DecimalFormat;
  *
  */
 public class GeneralconfigurationParameters extends SimpleParameterSet {
-
-        public static final NumberFormatParameter mzFormat = new NumberFormatParameter(
-                "m/z value format",
-                "Format of m/z values. Please check the help file for details.",
-                new DecimalFormat("0.000"));
-        public static final RTFormatParameter rtFormat = new RTFormatParameter(
-                "Retention time value format",
-                "Format of retention time values. Please check the help file for details.",
-                new RTFormatter(RTFormatterType.NumberInMin, "0.0"));
+       
         public static final NumberFormatParameter intensityFormat = new NumberFormatParameter(
                 "Intensity format",
                 "Format of intensity values. Please check the help file for details.",

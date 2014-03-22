@@ -6,7 +6,6 @@ package ND.modules.antNoGraph;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  *
@@ -17,7 +16,8 @@ class SpeciesFA {
         private String id;
         private List<String> reactions;
         private List<Ant> ants;
-
+        private int counter = 0;
+        
         public SpeciesFA(String id) {
                 this.id = id;
                 this.reactions = new ArrayList<>();
@@ -40,6 +40,22 @@ class SpeciesFA {
 
         public List<Ant> getAnts() {
                 return this.ants;
+        }
+        
+        public int getCount(){
+                return this.counter;
+        }
+        
+        public void addCount(){
+                this.counter++;
+                if(counter > 10){
+                        this.removeAnts();
+                        this.counter = 0;
+                }
+        }
+      
+        public void removeCount(){
+                this.counter = 0;
         }
 
         public int getNumberOfAnts() {

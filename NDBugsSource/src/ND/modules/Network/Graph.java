@@ -15,8 +15,8 @@ import java.util.Random;
 public class Graph {
 
         private final List<Node> nodes;
-        private final List<Edge> edges;
-
+        private final List<Edge> edges;       
+        
         public Graph(List<Node> nodes, List<Edge> edges) {
                 if (nodes == null) {
                         this.nodes = new ArrayList<>();
