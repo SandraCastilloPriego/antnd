@@ -61,8 +61,6 @@ public class AntModuleTask extends AbstractTask {
         private File exchangeReactions, boundsFile;
         private String biomassID;
         private Random rand;
-        private int numAnt = 1000;
-        private double totalSource = 0;
         private HashMap<String, ReactionFA> reactions;
         private HashMap<String, SpeciesFA> compounds;
         private HashMap<String, String[]> bounds;
@@ -132,9 +130,9 @@ public class AntModuleTask extends AbstractTask {
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
 
-                        for (int i = 0; i < 20; i++) {
+                        for (int i = 0; i < 1000; i++) {
                                 this.cicle();
-                                finishedPercentage = (double) i / 100;
+                                finishedPercentage = (double) i / 1000;
                                 if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
                                         break;
                                 }
@@ -167,7 +165,7 @@ public class AntModuleTask extends AbstractTask {
                                                 String[] exchangeRow = exchange.getValues();
                                                 exchangeMap.put(exchangeRow[0], Double.parseDouble(exchangeRow[1]));
                                                 this.sourcesList.add(exchangeRow[0]);
-                                                totalSource += Double.parseDouble(exchangeRow[1]);
+                                                //totalSource += Double.parseDouble(exchangeRow[1]);
                                         } catch (IOException | NumberFormatException e) {
                                                 e.printStackTrace();
                                         }
@@ -194,7 +192,7 @@ public class AntModuleTask extends AbstractTask {
                         // in the list of nodes with ants
                         if (this.sources.containsKey(s.getId())) {
                                 double amount = this.sources.get(s.getId());
-                                double antAmount = (amount / this.totalSource) * this.numAnt;
+                                double antAmount = amount;
                                 if (antAmount < 1) {
                                         antAmount = 1;
                                 }
@@ -314,8 +312,8 @@ public class AntModuleTask extends AbstractTask {
                                         }
                                 }
 
-                               
-                                superAnt.joinGraphs(reactionChoosen , combinedAnts);
+
+                                superAnt.joinGraphs(reactionChoosen, combinedAnts);
                                 if (!superAnt.isLost()) {
                                         // superAnt.print();
                                         // superAnt.print();

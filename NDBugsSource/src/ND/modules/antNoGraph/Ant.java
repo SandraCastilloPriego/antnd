@@ -103,7 +103,7 @@ public class Ant {
                         }
                 }
                 this.path.add(node.getId());
-                if (path.size() > 200) {
+                if (path.size() > 500) {
                         this.lost = true;
                 }
 
