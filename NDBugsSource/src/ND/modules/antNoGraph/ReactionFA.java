@@ -30,21 +30,24 @@ public class ReactionFA {
 
         public void addReactant(String r, Double sto) {
                 this.reactants.add(r);
-                if(sto < 1.0) sto = 1.0;
+                if (sto < 1.0) {
+                        sto = 1.0;
+                }
                 this.stoichiometry.put(r, sto);
         }
 
         public void addProduct(String p, Double sto) {
                 this.products.add(p);
-                if(sto < 1.0) sto = 1.0;
+                if (sto < 1.0) {
+                        sto = 1.0;
+                }
                 this.stoichiometry.put(p, sto);
         }
-       
 
         public Double getStoichiometry(String specie) {
                 if (this.stoichiometry.containsKey(specie)) {
                         return this.stoichiometry.get(specie);
-                } 
+                }
                 return Double.MAX_VALUE;
         }
 
@@ -56,13 +59,14 @@ public class ReactionFA {
                 return this.products;
         }
 
-        public void addPheromones() {
-                this.pheromones++;
+        public void addPheromones(int number) {
+                this.pheromones = this.pheromones + number;
         }
 
-        public void removePheromones() {
-                if (this.pheromones > 0) {
-                        this.pheromones--;
+        public void removePheromones(int number) {
+                this.pheromones = this.pheromones - number;
+                if (pheromones < 0) {
+                        this.pheromones = 0;
                 }
         }
 
@@ -112,9 +116,8 @@ public class ReactionFA {
                 }
                 return sources;
         }
-        
-        
-        boolean hasSourcesInProducts(List<String> nodes) {              
+
+        boolean hasSourcesInProducts(List<String> nodes) {
                 for (String node : nodes) {
                         if (this.products.contains(node)) {
                                 return true;
@@ -122,8 +125,8 @@ public class ReactionFA {
                 }
                 return false;
         }
-        
-        boolean hasSourcesInReactants(List<String> nodes) {              
+
+        boolean hasSourcesInReactants(List<String> nodes) {
                 for (String node : nodes) {
                         if (this.reactants.contains(node)) {
                                 return true;
@@ -137,5 +140,9 @@ public class ReactionFA {
                         return true;
                 }
                 return false;
+        }
+
+        void resetPheromones() {
+                this.pheromones = 0;
         }
 }

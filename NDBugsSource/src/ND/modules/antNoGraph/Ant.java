@@ -21,6 +21,7 @@ public class Ant {
         List<String> path;
         String location;
         boolean lost = false;
+        int pathsize = 0;
 
         public Ant(String location) {
                 this.path = new ArrayList<>();
@@ -29,9 +30,9 @@ public class Ant {
         }
 
         public void initAnt() {
-                Node initNode = new Node(location + "-" + uniqueId.nextId());
+                Node initNode = new Node(location + " - " + uniqueId.nextId());
                 g.addNode(initNode);
-                this.path.add(location + "-" + uniqueId.nextId());
+                this.path.add(location + " - " + uniqueId.nextId());
         }
 
         public Graph getGraph() {
@@ -59,6 +60,7 @@ public class Ant {
                 Ant ant = new Ant(this.location);
                 ant.setGraph(this.g);
                 ant.setPath(path);
+                ant.setPathSize(this.pathsize);
                 return ant;
         }
 
@@ -71,17 +73,18 @@ public class Ant {
         }
 
         void print() {
-                System.out.print("location: " + this.location + "//");
+                System.out.print("size: "+ this.getPathSize() +" - location: " + this.location + "//");
                 for (String p : this.path) {
-                        System.out.print("-" + p);
+                        System.out.print(" - " + p.split(" - ")[0]);
                 }
                 System.out.print("\n");
         }
 
         void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts) {
                 Node node = new Node(reactionChoosen + " - " + uniqueId.nextId());
-
+                
                 for (Ant ant : combinedAnts.keySet()) {
+                        this.pathsize = this.pathsize + ant.getPathSize();
                         g.addNode(node);
                         Graph antGraph = ant.getGraph();
 
@@ -93,17 +96,18 @@ public class Ant {
                         }
                         //System.out.println(ant.getPath().get(ant.getPath().size() - 1));
 
-                        Node lastNode = antGraph.getNode(ant.getPath().get(ant.getPath().size() - 1).split("-")[0]);
-                       // System.out.println(lastNode);
-                        Edge edge = new Edge(combinedAnts.get(ant) + "-" + uniqueId.nextId(), lastNode, node);
+                        Node lastNode = antGraph.getNode(ant.getPath().get(ant.getPath().size() - 1).split(" - ")[0]);
+                        // System.out.println(lastNode);
+                        Edge edge = new Edge(combinedAnts.get(ant) + " - " + uniqueId.nextId(), lastNode, node);
                         g.addEdge(edge);
 
                         for (String p : ant.getPath()) {
                                 this.path.add(p);
                         }
                 }
+                this.pathsize++;
                 this.path.add(node.getId());
-                if (path.size() > 500) {
+                if (this.getPathSize() > 200) {
                         this.lost = true;
                 }
 
@@ -111,5 +115,22 @@ public class Ant {
 
         public boolean isLost() {
                 return this.lost;
+        }
+
+        public boolean contains(String id) {
+                for (String p : this.path) {
+                        if (p.contains(id)) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+
+        public void setPathSize(int pathsize) {
+                this.pathsize = pathsize;
+        }
+        
+        public int getPathSize(){
+                return this.pathsize;
         }
 }

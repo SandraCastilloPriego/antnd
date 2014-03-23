@@ -146,7 +146,7 @@ public class NDCore implements Runnable {
          */
         @Override
         public void run() {
-                logger.log(Level.INFO, "Starting MM {0}", getNDVersion());
+                logger.log(Level.INFO, "Starting AntND {0}", getNDVersion());
 
                 logger.fine("Loading core classes..");
 
@@ -220,7 +220,7 @@ public class NDCore implements Runnable {
                 ((MainWindow) desktop).setVisible(true);
 
                 // show the welcome message
-                desktop.setStatusBarText("Welcome to MM!");
+                desktop.setStatusBarText("Welcome to AanND!");
                 preferences.setProxy();
 
         }

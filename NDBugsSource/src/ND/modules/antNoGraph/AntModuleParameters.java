@@ -20,6 +20,7 @@ package ND.modules.antNoGraph;
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.FileNameParameter;
+import ND.parameters.parametersType.IntegerParameter;
 import ND.parameters.parametersType.StringParameter;
 
 public class AntModuleParameters extends SimpleParameterSet {
@@ -29,10 +30,15 @@ public class AntModuleParameters extends SimpleParameterSet {
         public static final FileNameParameter bounds = new FileNameParameter(
                 "Reaction bounds", "Define the bounds of the reactions", null);
         public static final StringParameter objectiveReaction = new StringParameter(
-                "Reaction ID", "ID of the reaction you want to maximize");
-        
+                "Reaction ID", "ID of the reaction you want to maximize");        
+        public static final IntegerParameter numberOfIterations = new IntegerParameter(
+                "Number of Iterations", "Number of Iterations", 5000);
+        public static final IntegerParameter addPheromones = new IntegerParameter(
+                "Pheromones", "Pheromones added when a valid path is found", 100);        
+        public static final IntegerParameter removePheromones = new IntegerParameter(
+                "Pheromones evaporation", "Pheromones removed with time", 20);
 
         public AntModuleParameters() {
-                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction});
+                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, numberOfIterations, addPheromones, removePheromones});
         }
 }

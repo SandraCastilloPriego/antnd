@@ -26,9 +26,7 @@ class SpeciesFA {
 
         public Ant getAnt() {
                 if (this.ants.size() > 0) {
-                        Ant selected = this.ants.get(0);
-                        //this.ants.remove(selected);
-                        return selected;
+                        return getShortest();
                 } else {
                         return null;
                 }
@@ -80,5 +78,17 @@ class SpeciesFA {
 
         void removeAnt(Ant a) {
                 this.ants.remove(a);
+        }
+
+        private Ant getShortest() {
+                int shortest = Integer.MAX_VALUE;
+                Ant ant = null;
+                for(Ant a : this.ants){
+                        if(a.getPathSize() < shortest){
+                                shortest = a.getPathSize();
+                                ant = a;
+                        }
+                }
+                return ant;
         }
 }

@@ -64,7 +64,7 @@ public class PrintPaths {
                 Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
                         @Override
                         public Paint transform(String id) {
-                                if (initialIds.contains(id.split("-")[0])) {
+                                if (initialIds.contains(id.split(" - ")[0])) {
                                         return Color.BLUE;
                                 } else if (id.split("-")[0].contains(finalId)) {
                                         return Color.RED;

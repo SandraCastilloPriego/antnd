@@ -72,6 +72,7 @@ public class AntModuleTask extends AbstractTask {
         private JPanel pn;
         private int shortestPath = Integer.MAX_VALUE;
         private Graph graph;
+        private int iterations, pheromones, removePheromones;
 
         public AntModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
 
@@ -79,6 +80,9 @@ public class AntModuleTask extends AbstractTask {
                 this.exchangeReactions = parameters.getParameter(AntModuleParameters.exchangeReactions).getValue();
                 this.biomassID = parameters.getParameter(AntModuleParameters.objectiveReaction).getValue();
                 this.boundsFile = parameters.getParameter(AntModuleParameters.bounds).getValue();
+                this.iterations = parameters.getParameter(AntModuleParameters.numberOfIterations).getValue();
+                this.pheromones = parameters.getParameter(AntModuleParameters.addPheromones).getValue();
+                this.removePheromones = parameters.getParameter(AntModuleParameters.removePheromones).getValue();
 
                 this.rand = new Random();
                 Date date = new Date();
@@ -130,14 +134,17 @@ public class AntModuleTask extends AbstractTask {
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
 
-                        for (int i = 0; i < 1000; i++) {
+                        for (int i = 0; i < iterations; i++) {
                                 this.cicle();
-                                finishedPercentage = (double) i / 1000;
+                                finishedPercentage = (double) i / iterations;
                                 if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
                                         break;
                                 }
                         }
                         if (getStatus() == TaskStatus.PROCESSING) {
+                                /* for (String key : this.reactions.keySet()) {
+                                 System.out.println(key + "," + this.reactions.get(key).getPheromones());
+                                 }*/
                                 PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID);
                                 try {
                                         this.pn.add(print.printPathwayInFrame(this.graph));
@@ -266,7 +273,7 @@ public class AntModuleTask extends AbstractTask {
 
         public void cicle() {
 
-                List<Ant> antsBiomass = new ArrayList<>();
+
 
                 for (String compound : compounds.keySet()) {
                         List<String> possibleReactions = getPossibleReactions(compound);
@@ -289,30 +296,33 @@ public class AntModuleTask extends AbstractTask {
 
                                 // get the ants that must be removed from the reactants ..
                                 // creates a superAnt with all the paths until this reaction joined..
+
                                 Ant superAnt = new Ant(null);
                                 HashMap<Ant, String> combinedAnts = new HashMap<>();
                                 for (String s : toBeRemoved) {
                                         SpeciesFA spfa = this.compounds.get(s);
 
                                         Ant a = spfa.getAnt();
-                                        if (a != null) {
-                                                //a.addReactionInPath(reactionChoosen, s, count++);
-                                                //   a.print();
-                                                combinedAnts.put(a, s);
-                                                // spfa.removeAnt(a);
-
-                                        } else {
-                                                System.out.println("There is something wrong");
+                                        if (a.contains(rc.getId())) {
+                                                rc.resetPheromones();
+                                                // superAnt = null;
+                                                // break;
                                         }
+                                        //a.addReactionInPath(reactionChoosen, s, count++);
+                                        //   a.print();
+                                        combinedAnts.put(a, s);
+                                }
+
+                                for (String s : toBeRemoved) {
+                                        SpeciesFA spfa = this.compounds.get(s);
                                         for (int i = 0; i < rc.getStoichiometry(s); i++) {
-                                                a = spfa.getAnt();
+                                                Ant a = spfa.getAnt();
                                                 if (a != null) {
                                                         spfa.removeAnt(a);
                                                 }
                                         }
+
                                 }
-
-
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
                                 if (!superAnt.isLost()) {
                                         // superAnt.print();
@@ -331,22 +341,24 @@ public class AntModuleTask extends AbstractTask {
                                 }
                                 // When the ants arrive to the biomass
                                 if (toBeAdded.contains(this.biomassID)) {
-                                        System.out.println("Biomass produced!: " + rc.getId());
+                                        List<Ant> antsBiomass = new ArrayList<>();
+                                        //System.out.println("Biomass produced!: " + rc.getId());
 
                                         SpeciesFA spFA = this.compounds.get(this.biomassID);
                                         antsBiomass.addAll(spFA.getAnts());
-
                                         for (Ant a : antsBiomass) {
-
                                                 List<String> localPath = a.getPath();
+                                                //System.out.println(a.getPathSize());
                                                 for (String r : localPath) {
-                                                        if (this.reactions.containsKey(r)) {
-                                                                this.reactions.get(r).addPheromones();
+
+                                                        if (this.reactions.containsKey(r.split(" - ")[0])) {
+                                                                this.reactions.get(r.split(" - ")[0]).addPheromones(this.pheromones);
                                                         }
                                                 }
 
-                                                if (localPath.size() < shortestPath) {
-                                                        this.shortestPath = localPath.size();
+
+                                                if (a.getPathSize() < shortestPath) {
+                                                        this.shortestPath = a.getPathSize();
                                                         this.graph = a.getGraph();
 
                                                         Node biomass = new Node(this.biomassID);
@@ -357,7 +369,7 @@ public class AntModuleTask extends AbstractTask {
                                                         a.print();
                                                 }
                                                 spFA.removeAnt(a);
-                                                addAnts();
+                                              //  addAnts();
                                         }
                                 }
 
@@ -368,16 +380,33 @@ public class AntModuleTask extends AbstractTask {
 
                 }
 
-
+                for (String key : this.reactions.keySet()) {
+                        ReactionFA r = this.reactions.get(key);
+                        r.removePheromones(this.removePheromones);
+                }
                 this.n++;
 
-                if (this.n > 5) {
-                        this.n = 0;
-                        for (String key : this.reactions.keySet()) {
-                                ReactionFA r = this.reactions.get(key);
-                                r.removePheromones();
+                //  if (this.n > 5) {
+                this.n = 0;
+
+
+                for (String key : this.sources.keySet()) {
+                        if (this.compounds.containsKey(key)) {
+                                SpeciesFA specie = this.compounds.get(key);
+                                double amount = this.sources.get(key);
+                                double antAmount = amount - specie.getNumberOfAnts();
+                                if (antAmount < 1) {
+                                        antAmount = 0;
+                                }
+                                for (int i = 0; i < antAmount; i++) {
+                                        Ant ant = new Ant(specie.getId());
+                                        ant.initAnt();
+                                        specie.addAnt(ant);
+                                }
                         }
                 }
+
+                // }
 
 
         }

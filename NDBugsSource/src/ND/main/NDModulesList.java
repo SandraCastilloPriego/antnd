@@ -22,7 +22,6 @@ package ND.main;
 
 import ND.modules.antNoGraph.AntModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
-import ND.modules.simulation.control.StartSimulation;
 
 /**
  * List of modules included in MM
@@ -31,7 +30,6 @@ public class NDModulesList {
 
         public static final Class<?> MODULES[] = new Class<?>[]{
               OpenBasicFileModule.class,
-              StartSimulation.class,
               AntModule.class              
 
         };

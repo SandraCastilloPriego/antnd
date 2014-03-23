@@ -188,9 +188,9 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 SwingParameters.initSwingParameters();
 
                 try {
-                        BufferedImage MMIcon = ImageIO.read(new File(
+                        BufferedImage NDIcon = ImageIO.read(new File(
                                 "icons/MMIcon.png"));
-                        setIconImage(MMIcon);
+                        setIconImage(NDIcon);
                 } catch (IOException e) {
                        // e.printStackTrace();
                 }
@@ -233,11 +233,11 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
                 updateTitle();
 
-                setTitle("MM");
+                setTitle("AntND");
         }
 
         void updateTitle() {
-                setTitle("MM " + NDCore.getNDVersion());
+                setTitle("AntND " + NDCore.getNDVersion());
         }
 
         public JFrame getMainFrame() {
