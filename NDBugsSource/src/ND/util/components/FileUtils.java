@@ -18,25 +18,14 @@
 package ND.util.components;
 
 import ND.data.Dataset;
-import ND.data.DatasetType;
-import ND.data.Row;
 import ND.data.impl.datasets.SimpleBasicDataset;
-import ND.data.impl.peaklists.SimplePeakListRowOther;
-import ND.util.Tables.DataTableModel;
 
 /**
  *
  * @author scsandra
  */
 public class FileUtils {
-
-    public static Row getPeakListRow(DatasetType type) {
-        switch (type) {           
-            case MODELS:
-                return new SimplePeakListRowOther();           
-        }
-        return null;
-    }
+    
 
     public static Dataset getDataset(Dataset dataset, String Name) {
         Dataset newDataset = null;
