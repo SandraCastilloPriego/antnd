@@ -182,7 +182,7 @@ public class AntModuleTask extends AbstractTask {
                                         }
                                 }
                         } catch (IOException ex) {
-                                Logger.getLogger(ND.modules.ants.AntModuleTask.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(ND.modules.antNoGraph.AntModuleTask.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
                         return exchangeMap;
