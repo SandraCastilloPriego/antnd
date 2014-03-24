@@ -20,7 +20,8 @@ package ND.modules;
 public enum NDModuleCategory {
 
 	FILE("File"),
-        SIMULATION("Utils"),
+        SIMULATION("Simulation"),
+        REACTION("Reaction Utils"),
 	HELPSYSTEM("Help");
 
 	private final String name;

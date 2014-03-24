@@ -106,7 +106,7 @@ public class AntModuleTask extends AbstractTask {
 
         @Override
         public String getTaskDescription() {
-                return "Starting simulation... ";
+                return "Starting Ant Simulation... ";
         }
 
         @Override
@@ -123,6 +123,10 @@ public class AntModuleTask extends AbstractTask {
         public void run() {
                 try {
                         setStatus(TaskStatus.PROCESSING);
+                        if (this.networkDS == null) {
+                                setStatus(TaskStatus.ERROR);
+                                NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
+                        }
                         System.out.println("Reading sources");
                         this.sources = this.readExchangeReactions();
                         System.out.println("Reading bounds");
@@ -273,8 +277,6 @@ public class AntModuleTask extends AbstractTask {
 
         public void cicle() {
 
-
-
                 for (String compound : compounds.keySet()) {
                         List<String> possibleReactions = getPossibleReactions(compound);
 
@@ -305,11 +307,7 @@ public class AntModuleTask extends AbstractTask {
                                         Ant a = spfa.getAnt();
                                         if (a.contains(rc.getId())) {
                                                 rc.resetPheromones();
-                                                // superAnt = null;
-                                                // break;
                                         }
-                                        //a.addReactionInPath(reactionChoosen, s, count++);
-                                        //   a.print();
                                         combinedAnts.put(a, s);
                                 }
 
@@ -324,11 +322,9 @@ public class AntModuleTask extends AbstractTask {
 
                                 }
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
-                                if (!superAnt.isLost()) {
-                                        // superAnt.print();
-                                        // superAnt.print();
-                                        // move the ants to the products...   
 
+                                if (!superAnt.isLost()) {
+                                        // move the ants to the products...   
                                         for (String s : toBeAdded) {
                                                 SpeciesFA spfa = this.compounds.get(s);
                                                 for (int i = 0; i < rc.getStoichiometry(s); i++) {
@@ -348,15 +344,14 @@ public class AntModuleTask extends AbstractTask {
                                         antsBiomass.addAll(spFA.getAnts());
                                         for (Ant a : antsBiomass) {
                                                 List<String> localPath = a.getPath();
-                                                //System.out.println(a.getPathSize());
+                                                // Adding pheromones
                                                 for (String r : localPath) {
-
                                                         if (this.reactions.containsKey(r.split(" - ")[0])) {
                                                                 this.reactions.get(r.split(" - ")[0]).addPheromones(this.pheromones);
                                                         }
                                                 }
 
-
+                                                // saving the shortest path
                                                 if (a.getPathSize() < shortestPath) {
                                                         this.shortestPath = a.getPathSize();
                                                         this.graph = a.getGraph();
@@ -369,7 +364,6 @@ public class AntModuleTask extends AbstractTask {
                                                         a.print();
                                                 }
                                                 spFA.removeAnt(a);
-                                              //  addAnts();
                                         }
                                 }
 
@@ -380,16 +374,14 @@ public class AntModuleTask extends AbstractTask {
 
                 }
 
+                // Evaporating pheromones (this part could be more sophisticated: evaporating the last reactions in the path first)
                 for (String key : this.reactions.keySet()) {
                         ReactionFA r = this.reactions.get(key);
                         r.removePheromones(this.removePheromones);
                 }
-                this.n++;
-
-                //  if (this.n > 5) {
-                this.n = 0;
 
 
+                // Adding new ants to the sources..
                 for (String key : this.sources.keySet()) {
                         if (this.compounds.containsKey(key)) {
                                 SpeciesFA specie = this.compounds.get(key);
@@ -405,8 +397,6 @@ public class AntModuleTask extends AbstractTask {
                                 }
                         }
                 }
-
-                // }
 
 
         }

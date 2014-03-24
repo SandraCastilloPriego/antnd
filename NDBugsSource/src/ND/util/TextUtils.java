@@ -40,8 +40,8 @@ public class TextUtils {
                         return text;
                 }
 
-                StringBuffer result = new StringBuffer();
-                StringBuffer line = new StringBuffer();
+                StringBuilder result = new StringBuilder();
+                StringBuilder line = new StringBuilder();
                 StringBuffer word = new StringBuffer();
 
                 char[] chars = text.toCharArray();

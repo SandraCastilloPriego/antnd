@@ -38,7 +38,7 @@ import javax.swing.*;
  */
 public class MainMenu extends JMenuBar implements ActionListener {
 
-        private JMenu fileMenu, utilsMenu, /*identificationMenu,*/ helpMenu;
+        private JMenu fileMenu, utilsMenu, reactionMenu, helpMenu;
         private JWindowsMenu windowsMenu;
         private JMenuItem showAbout;
         private Map<JMenuItem, NDProcessingModule> moduleMenuItems = new HashMap<JMenuItem, NDProcessingModule>();
@@ -52,10 +52,10 @@ public class MainMenu extends JMenuBar implements ActionListener {
                 utilsMenu = new JMenu("Simulation");
                 utilsMenu.setMnemonic(KeyEvent.VK_S);
                 add(utilsMenu);
-                
-               /* identificationMenu = new JMenu("Identification");
-                identificationMenu.setMnemonic(KeyEvent.VK_I);
-                add(identificationMenu);*/
+
+                reactionMenu = new JMenu("Reaction OP");
+                reactionMenu.setMnemonic(KeyEvent.VK_R);
+                add(reactionMenu);
 
                 JDesktopPane mainDesktopPane = ((MainWindow) NDCore.getDesktop()).getDesktopPane();
                 windowsMenu = new JWindowsMenu(mainDesktopPane);
@@ -89,7 +89,10 @@ public class MainMenu extends JMenuBar implements ActionListener {
                                 break;
                         case SIMULATION:
                                 utilsMenu.add(newItem);
-                                break;                                
+                                break;
+                        case REACTION:
+                                reactionMenu.add(newItem);
+                                break;
                         case HELPSYSTEM:
                                 helpMenu.add(newItem);
                                 break;
@@ -103,7 +106,10 @@ public class MainMenu extends JMenuBar implements ActionListener {
                                 break;
                         case SIMULATION:
                                 utilsMenu.addSeparator();
-                                break;                                
+                                break;
+                        case REACTION:
+                                reactionMenu.addSeparator();
+                                break;
                         case HELPSYSTEM:
                                 helpMenu.addSeparator();
                                 break;
