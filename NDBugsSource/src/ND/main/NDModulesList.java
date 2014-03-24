@@ -21,6 +21,7 @@ package ND.main;
 import ND.modules.antNoGraph.AntModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
+import ND.modules.reactionOP.showReaction.ShowReactionModule;
 
 /**
  * List of modules included in MM
@@ -30,6 +31,7 @@ public class NDModulesList {
         public static final Class<?> MODULES[] = new Class<?>[]{
                 OpenBasicFileModule.class,
                 AntModule.class,
+                ShowReactionModule.class,
                 RemoveReactionModule.class
         };
 }

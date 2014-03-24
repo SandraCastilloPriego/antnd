@@ -260,12 +260,27 @@ public class AntModuleTask extends AbstractTask {
         private HashMap<String, String[]> readBounds() {
                 HashMap<String, String[]> b = new HashMap<>();
                 try {
+                        SBMLDocument doc = this.networkDS.getDocument();
+                        Model m = doc.getModel();
 
                         CsvReader reader = new CsvReader(new FileReader(this.boundsFile.getAbsolutePath()));
 
                         while (reader.readRecord()) {
                                 String[] data = reader.getValues();
-                                b.put(data[0].replace("-", ""), data);
+                                String reactionName = data[0].replace("-", "");
+                                b.put(reactionName, data);
+
+                                Reaction r = m.getReaction(reactionName);
+                                if (r != null) {
+                                        KineticLaw law = new KineticLaw();
+                                        LocalParameter lbound = new LocalParameter("LOWER_BOUND");
+                                        lbound.setValue(Double.valueOf(data[3]));
+                                        law.addLocalParameter(lbound);
+                                        LocalParameter ubound = new LocalParameter("UPPER_BOUND");
+                                        ubound.setValue(Double.valueOf(data[4]));
+                                        law.addLocalParameter(ubound);
+                                        r.setKineticLaw(law);
+                                } 
                         }
                 } catch (FileNotFoundException ex) {
                         java.util.logging.Logger.getLogger(AntModuleParameters.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
