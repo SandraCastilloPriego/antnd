@@ -22,6 +22,7 @@ import ND.modules.antNoGraph.AntModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
+import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 
 /**
@@ -33,7 +34,8 @@ public class NDModulesList {
                 OpenBasicFileModule.class,
                 AntModule.class,
                 AddReactionModule.class,
+                RemoveReactionModule.class,
                 ShowReactionModule.class,
-                RemoveReactionModule.class
+                ShowCompoundModule.class
         };
 }

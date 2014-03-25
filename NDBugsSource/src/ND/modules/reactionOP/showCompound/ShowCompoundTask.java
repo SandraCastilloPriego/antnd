@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.showReaction;
+package ND.modules.reactionOP.showCompound;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -40,41 +40,41 @@ import org.sbml.jsbml.SpeciesReference;
  *
  * @author scsandra
  */
-public class ShowReactionTask extends AbstractTask {
-        
+public class ShowCompoundTask extends AbstractTask {
+
         private SimpleBasicDataset networkDS;
-        private String reactionName;
+        private String compoundName;
         private double finishedPercentage = 0.0f;
         private JInternalFrame frame;
         private JScrollPane panel;
         private JTextArea tf;
         private StringBuffer info;
-        
-        public ShowReactionTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+
+        public ShowCompoundTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
-                this.reactionName = parameters.getParameter(ShowReactionParameters.reactionName).getValue();
+                this.compoundName = parameters.getParameter(ShowCompoundParameters.compoundName).getValue();
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.tf = new JTextArea();
                 this.panel = new JScrollPane(this.tf);
-                
+
                 this.info = new StringBuffer();
         }
-        
+
         @Override
         public String getTaskDescription() {
-                return "Showing reaction... ";
+                return "Showing compound... ";
         }
-        
+
         @Override
         public double getFinishedPercentage() {
                 return finishedPercentage;
         }
-        
+
         @Override
         public void cancel() {
                 setStatus(TaskStatus.CANCELED);
         }
-        
+
         @Override
         public void run() {
                 try {
@@ -83,56 +83,44 @@ public class ShowReactionTask extends AbstractTask {
                                 setStatus(TaskStatus.ERROR);
                                 NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
                         }
-                        
+
                         SBMLDocument doc = this.networkDS.getDocument();
                         Model m = doc.getModel();
-                        List<Reaction> possibleReactions = new ArrayList<>();
-                        for (Reaction r : m.getListOfReactions()) {
-                                if (r.getId().contains(this.reactionName)) {
-                                        possibleReactions.add(r);
+                        List<Species> possibleReactions = new ArrayList<>();
+                        for (Species sp : m.getListOfSpecies()) {
+                                if (sp.getId().contains(this.compoundName)|| sp.getName().contains(this.compoundName)) {
+                                        possibleReactions.add(sp);
                                 }
                         }
-                        
+
                         if (possibleReactions.isEmpty()) {
-                                //this.networkDS.setInfo("The reaction" + reactionName + " doesn't exist in this model.");
-                                NDCore.getDesktop().displayMessage("The reaction " + reactionName + " doesn't exist in this model.");
+                               // this.networkDS.setInfo("The compound" + compoundName + " doesn't exist in this model.");
+                                NDCore.getDesktop().displayMessage("The compound " + compoundName + " doesn't exist in this model.");
                         } else {
-                                this.showReactions(possibleReactions);
+                                this.showReactions(possibleReactions, m);
                                 frame.setSize(new Dimension(700, 500));
                                 frame.add(this.panel);
                                 NDCore.getDesktop().addInternalFrame(frame);
                         }
-                        
+
                         setStatus(TaskStatus.FINISHED);
                 } catch (Exception e) {
                         setStatus(TaskStatus.ERROR);
                         errorMessage = e.toString();
                 }
         }
-        
-        private void showReactions(List<Reaction> possibleReactions) {
-                
-                for (Reaction r : possibleReactions) {
-                        
-                        KineticLaw law = r.getKineticLaw();
-                        if (law != null) {
-                                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
-                                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                                info.append(r.getId()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
-                        } else {
-                                info.append(r.getId()).append(":\n");
+
+        private void showReactions(List<Species> possibleReactions, Model m) {
+
+                for (Species sp : possibleReactions) {
+                        info.append(sp.getId()).append(" - ").append(sp.getName());
+                        info.append("\nPresent in: ");
+                        for (Reaction r : m.getListOfReactions()) {
+                                if (r.hasReactant(sp) || r.hasProduct(sp)) {
+                                        info.append(r.getId()).append(", ");
+                                }
                         }
-                        info.append("Reactants: \n");
-                        for (SpeciesReference sr : r.getListOfReactants()) {
-                                Species sp = sr.getSpeciesInstance();
-                                info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append("\n");
-                        }
-                        info.append("Products: \n");
-                        for (SpeciesReference sr : r.getListOfProducts()) {
-                                Species sp = sr.getSpeciesInstance();
-                                info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append(" \n");
-                        }
-                        info.append("----------------------------------- \n");
+                        info.append("\n----------------------------------- \n");
                 }
                 //this.networkDS.setInfo(info.toString());
                 this.tf.setText(info.toString());

@@ -53,7 +53,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
                 utilsMenu.setMnemonic(KeyEvent.VK_S);
                 add(utilsMenu);
 
-                reactionMenu = new JMenu("Reaction OP");
+                reactionMenu = new JMenu("Model");
                 reactionMenu.setMnemonic(KeyEvent.VK_R);
                 add(reactionMenu);
 

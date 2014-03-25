@@ -15,20 +15,20 @@
  * NDBugs; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.showReaction;
+package ND.modules.reactionOP.showCompound;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.StringParameter;
 
-public class ShowReactionParameters extends SimpleParameterSet {     
+public class ShowCompoundParameters extends SimpleParameterSet {     
    
 
-        public static final StringParameter reactionName = new StringParameter(
-                "Reaction name", "Name of the reaction you want to search.", "");
+        public static final StringParameter compoundName = new StringParameter(
+                "Compound name", "Name of the compound", "");
        
 
-        public ShowReactionParameters() {
-                super(new Parameter[]{reactionName});
+        public ShowCompoundParameters() {
+                super(new Parameter[]{compoundName});
         }
 }
