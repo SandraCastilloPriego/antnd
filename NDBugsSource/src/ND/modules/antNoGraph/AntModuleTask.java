@@ -202,8 +202,8 @@ public class AntModuleTask extends AbstractTask {
                         //add the number of initial ants using the sources.. and add them
                         // in the list of nodes with ants
                         if (this.sources.containsKey(s.getId())) {
-                                double amount = this.sources.get(s.getId());
-                                double antAmount = amount;
+                               // double amount = this.sources.get(s.getId());
+                                double antAmount = 50;
                                 if (antAmount < 1) {
                                         antAmount = 1;
                                 }
@@ -230,7 +230,7 @@ public class AntModuleTask extends AbstractTask {
                                 } catch (Exception ex) {
                                         reaction.setBounds(-1000, 1000);
                                 }
-                        }
+                        }                        
                         for (SpeciesReference s : r.getListOfReactants()) {
                                 Species sp = s.getSpeciesInstance();
                                 reaction.addReactant(sp.getId(), s.getStoichiometry());
@@ -400,7 +400,7 @@ public class AntModuleTask extends AbstractTask {
                 for (String key : this.sources.keySet()) {
                         if (this.compounds.containsKey(key)) {
                                 SpeciesFA specie = this.compounds.get(key);
-                                double amount = this.sources.get(key);
+                                double amount = 50;
                                 double antAmount = amount - specie.getNumberOfAnts();
                                 if (antAmount < 1) {
                                         antAmount = 0;

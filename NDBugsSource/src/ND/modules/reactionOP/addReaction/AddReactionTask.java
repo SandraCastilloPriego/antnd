@@ -17,15 +17,18 @@
  */
 package ND.modules.reactionOP.addReaction;
 
-import ND.modules.reactionOP.removeReaction.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
+import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.SpeciesReference;
 
 /**
  *
@@ -34,17 +37,22 @@ import org.sbml.jsbml.SBMLDocument;
 public class AddReactionTask extends AbstractTask {
 
         private SimpleBasicDataset networkDS;
-        private String reactionName;
+        private String reactionName, compounds, stoichiometry;
         private double finishedPercentage = 0.0f;
+        private double lb, ub;
 
         public AddReactionTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
                 this.reactionName = parameters.getParameter(AddReactionParameters.reactionName).getValue();
+                this.compounds = parameters.getParameter(AddReactionParameters.compounds).getValue();
+                this.stoichiometry = parameters.getParameter(AddReactionParameters.stoichiometry).getValue();
+                this.lb = parameters.getParameter(AddReactionParameters.lb).getValue();
+                this.ub = parameters.getParameter(AddReactionParameters.ub).getValue();
         }
 
         @Override
         public String getTaskDescription() {
-                return "Removing reaction... ";
+                return "Adding reaction... ";
         }
 
         @Override
@@ -69,14 +77,51 @@ public class AddReactionTask extends AbstractTask {
                         SBMLDocument doc = this.networkDS.getDocument();
                         Model m = doc.getModel();
 
-                        Reaction r = m.getReaction(reactionName);
-                        if (r != null) {
-                                m.removeReaction(r);
-                                this.networkDS.setDocument(doc);
-                        }else{
-                              NDCore.getDesktop().displayMessage("The reaction " + reactionName + " doesn't exist in this model.");   
+                        this.compounds = this.compounds.replaceAll(" ", "");
+                        String[] sps = this.compounds.split(",");
+
+                        this.stoichiometry = this.stoichiometry.replaceAll(" ", "");
+                        String[] sto = this.stoichiometry.split(",");
+
+                        if (sps.length != sto.length) {
+                                setStatus(TaskStatus.ERROR);
+                                NDCore.getDesktop().displayErrorMessage("The stoichiometry defined doesn't correspond to number of compounds.");
                         }
-                        
+                        Reaction r = new Reaction(this.reactionName);
+
+                        for (int i = 0; i < sps.length; i++) {
+                                String sp = sps[i];
+                                String stoi = sto[i];
+
+                                SpeciesReference spref = new SpeciesReference();
+                                spref.setStoichiometry(Math.abs(Double.valueOf(stoi)));
+                                if (m.containsSpecies(sp)) {
+                                        spref.setSpecies(m.getSpecies(sp));
+                                } else {
+                                        Species specie = new Species(sp);
+                                        m.addSpecies(specie);
+                                        spref.setSpecies(sp);
+                                }
+                                if (Double.valueOf(stoi) < 0) {
+                                        r.addReactant(spref);
+                                } else {
+                                        r.addProduct(spref);
+                                }
+                        }
+
+                        KineticLaw law = new KineticLaw();
+                        LocalParameter lboundP = new LocalParameter("LOWER_BOUND");
+                        lboundP.setValue(Double.valueOf(this.lb));
+                        law.addLocalParameter(lboundP);
+                        LocalParameter uboundP = new LocalParameter("UPPER_BOUND");
+                        uboundP.setValue(Double.valueOf(this.ub));
+                        law.addLocalParameter(uboundP);
+                        r.setKineticLaw(law);
+
+                        m.addReaction(r);
+
+
+
                         setStatus(TaskStatus.FINISHED);
                 } catch (Exception e) {
                         setStatus(TaskStatus.ERROR);

@@ -27,10 +27,10 @@ import org.sbml.jsbml.SBMLDocument;
  * @author SCSANDRA
  */
 public class SimpleBasicDataset implements Dataset {
-        
+
         String datasetName;
         protected DatasetType type;
-        String infoDataset = "";
+        StringBuffer infoDataset;
         private int ID;
         private SBMLDocument document;
 
@@ -40,66 +40,67 @@ public class SimpleBasicDataset implements Dataset {
          */
         public SimpleBasicDataset(String datasetName) {
                 this.datasetName = datasetName;
+                this.infoDataset = new StringBuffer();
                 type = DatasetType.MODELS;
         }
-        
-        public SimpleBasicDataset() {                
+
+        public SimpleBasicDataset() {
                 type = DatasetType.MODELS;
         }
-        
+
         @Override
         public void setID(int ID) {
                 this.ID = ID;
         }
-        
+
         @Override
         public int getID() {
                 return ID;
         }
-        
+
         @Override
         public String getDatasetName() {
                 return this.datasetName;
         }
-        
+
         @Override
         public void setDatasetName(String datasetName) {
                 this.datasetName = datasetName;
         }
-        
+
         @Override
         public DatasetType getType() {
                 return type;
         }
-        
+
         @Override
         public void setType(DatasetType type) {
                 this.type = type;
-        }        
-        
+        }
+
         @Override
         public String getInfo() {
-                return infoDataset;
+                return infoDataset.toString();
         }
-        
+
         @Override
         public void setInfo(String info) {
-                this.infoDataset = info;
+                this.infoDataset.append(info).append("\n");
         }
-        
+
         @Override
         public SimpleBasicDataset clone() {
-                SimpleBasicDataset newDataset = new SimpleBasicDataset(this.datasetName);                
+                SimpleBasicDataset newDataset = new SimpleBasicDataset(this.datasetName);
                 newDataset.setType(this.type);
                 newDataset.setDocument(this.getDocument());
                 return newDataset;
-        }        
-        
+        }
+
         @Override
         public SBMLDocument getDocument() {
                 return this.document;
         }
-        
+
         @Override
         public void setDocument(SBMLDocument document) {
                 this.document = document;

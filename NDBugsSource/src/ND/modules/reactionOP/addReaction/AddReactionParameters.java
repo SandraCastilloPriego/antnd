@@ -20,16 +20,25 @@ package ND.modules.reactionOP.addReaction;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.DoubleParameter;
 import ND.parameters.parametersType.StringParameter;
 
 public class AddReactionParameters extends SimpleParameterSet {     
    
 
         public static final StringParameter reactionName = new StringParameter(
-                "Reaction name", "Name of the reaction that will be added", "");
-        
+                "Reaction name", "Name of the reaction that will be added.", "");
+        public static final StringParameter compounds = new StringParameter(
+                "Compound Id", "Id of all the compounds separated by comma.", "");
+        public static final StringParameter stoichiometry = new StringParameter(
+                "Stoichiometry", "Stoichiometry of all the compounds separated by comma", "");        
+        public static final DoubleParameter lb = new DoubleParameter(
+                "Lower bound", "Lower bound.", -1000.0);
+        public static final DoubleParameter ub = new DoubleParameter(
+                "Upper bound", "Upper bound.", 1000.0);
+
 
         public AddReactionParameters() {
-                super(new Parameter[]{reactionName});
+                super(new Parameter[]{reactionName, compounds, stoichiometry, lb, ub});
         }
 }
