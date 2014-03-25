@@ -72,11 +72,11 @@ public class RemoveReactionTask extends AbstractTask {
                         if (r != null) {
                                 m.removeReaction(r);
                                 this.networkDS.setDocument(doc);
-                                this.networkDS.setInfo("Removing reaction: " +this.reactionName);                                
-                        }else{
-                              NDCore.getDesktop().displayMessage("The reaction " + reactionName + " doesn't exist in this model.");   
+                                this.networkDS.setInfo("Removing reaction: " + this.reactionName + "\n--------------------------");
+                        } else {
+                                NDCore.getDesktop().displayMessage("The reaction " + reactionName + " doesn't exist in this model.");
                         }
-                        
+
                         setStatus(TaskStatus.FINISHED);
                 } catch (Exception e) {
                         setStatus(TaskStatus.ERROR);

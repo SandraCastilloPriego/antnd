@@ -19,6 +19,7 @@ package ND.desktop.impl;
 
 import ND.data.Dataset;
 import ND.desktop.Desktop;
+import ND.main.NDCore;
 import ND.util.GUIUtils;
 import ND.util.components.DragOrderedJList;
 import java.awt.BorderLayout;
@@ -43,8 +44,7 @@ import org.sbml.jsbml.SBMLWriter;
 /**
  * This class implements a selector of data sets
  *
- * @author Taken from MZmine2
- * http://mzmine.sourceforge.net/
+ * @author Taken from MZmine2 http://mzmine.sourceforge.net/
  */
 public class ItemSelector extends JPanel implements ActionListener,
         MouseListener, ListSelectionListener {
@@ -84,18 +84,19 @@ public class ItemSelector extends JPanel implements ActionListener,
                 setLayout(new BorderLayout());
                 add(rawDataPanel, BorderLayout.CENTER);
 
-                dataFilePopupMenu = new JPopupMenu();                
+                dataFilePopupMenu = new JPopupMenu();
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Show Model", this, "SHOW_DATASET");
+                GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
 
-       
+
 
         }
 
         void addSelectionListener(ListSelectionListener listener) {
                 DatasetFiles.addListSelectionListener(listener);
-        }       
+        }
 
         // Implementation of action listener interface
         public void actionPerformed(ActionEvent e) {
@@ -108,9 +109,12 @@ public class ItemSelector extends JPanel implements ActionListener,
                 if (command.equals("SHOW_DATASET")) {
                         showData();
                 }
-                
-                 if (command.equals("SAVE_DATASET")) {
+
+                if (command.equals("SAVE_DATASET")) {
                         saveData();
+                }
+                if (command.equals("SHOW_INFO")) {
+                        showInfo();
                 }
         }
 
@@ -119,6 +123,19 @@ public class ItemSelector extends JPanel implements ActionListener,
                 for (Dataset file : selectedFiles) {
                         if (file != null) {
                                 GUIUtils.showNewTable(file, false);
+                        }
+                }
+        }
+
+        private void showInfo() {
+                Dataset[] selectedFiles = getSelectedDatasets();
+                for (Dataset file : selectedFiles) {
+                        if (file != null) {
+                                JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);                        
+                                JScrollPane panel = new JScrollPane(file.getInfo());
+                                frame.setSize(new Dimension(700, 500));
+                                frame.add(panel);
+                                NDCore.getDesktop().addInternalFrame(frame);
                         }
                 }
         }
@@ -163,7 +180,6 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         }
 
-      
         public void mouseClicked(MouseEvent e) {
 
                 if ((e.getClickCount() == 2) && (e.getButton() == MouseEvent.BUTTON1)) {
@@ -215,11 +231,11 @@ public class ItemSelector extends JPanel implements ActionListener,
                         if (dataset.getDatasetName().matches(DatasetNamesModel.getElementAt(i).toString())) {
                                 dataset.setDatasetName(dataset.getDatasetName() + "_" + ++copies);
                         }
-                }              
+                }
                 this.DatasetFilesModel.add(dataset);
                 DatasetNamesModel.addElement(dataset.getDatasetName());
                 this.DatasetFiles.revalidate();
-                
+
         }
 
         private void saveData() {
@@ -229,12 +245,12 @@ public class ItemSelector extends JPanel implements ActionListener,
                         if (file != null) {
                                 try {
                                         System.out.println(file.getPath());
-                                        SBMLWriter.write(file.getDocument(), file.getPath().replace(".sbml","")+"(copy).sbml", "AntND", "1.0");
+                                        SBMLWriter.write(file.getDocument(), file.getPath().replace(".sbml", "") + "(copy).sbml", "AntND", "1.0");
                                 } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
                                         Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                         }
                 }
-                
+
         }
 }

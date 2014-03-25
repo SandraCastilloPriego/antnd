@@ -83,4 +83,13 @@ public class Graph {
         public Node getLastNode() {
                 return this.nodes.get(this.nodes.size()-1);
         }
+        
+        @Override
+        public String toString(){
+                String str = "";
+                for(Node n : this.nodes){
+                        str = str + n.getId().split(" - ")[0] + " - ";
+                }
+                return str;
+        }
 }

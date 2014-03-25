@@ -17,6 +17,7 @@
  */
 package ND.data;
 
+import javax.swing.JTextArea;
 import org.sbml.jsbml.SBMLDocument;
 
 /**
@@ -99,7 +100,7 @@ public interface Dataset {
          *
          * @return General information about the data set
          */
-        public String getInfo();
+        public JTextArea getInfo();
 
         /**
          * Adds general information about the data set.

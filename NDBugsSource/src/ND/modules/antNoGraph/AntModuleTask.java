@@ -66,16 +66,16 @@ public class AntModuleTask extends AbstractTask {
         private HashMap<String, String[]> bounds;
         private Map<String, Double> sources;
         private List<String> sourcesList;
-        private int n = 0;
         private JInternalFrame frame;
         private JScrollPane panel;
         private JPanel pn;
         private int shortestPath = Integer.MAX_VALUE;
         private Graph graph;
         private int iterations, pheromones, removePheromones;
+        private SimpleParameterSet parameters;
 
         public AntModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
-
+                this.parameters = parameters;
                 this.networkDS = dataset;
                 this.exchangeReactions = parameters.getParameter(AntModuleParameters.exchangeReactions).getValue();
                 this.biomassID = parameters.getParameter(AntModuleParameters.objectiveReaction).getValue();
@@ -156,7 +156,13 @@ public class AntModuleTask extends AbstractTask {
                                         System.out.println(ex.toString());
                                 }
                         }
-
+                        String info = "";
+                        if (this.graph != null) {
+                                info = "Simulation\n" + this.parameters.toString() + "\nResult: " + this.graph.toString();
+                        } else {
+                                info = "Simulation\n" + this.parameters.toString() + "\nResult: No path found";
+                        }
+                        this.networkDS.setInfo(info + "\n--------------------------");
                         setStatus(TaskStatus.FINISHED);
 
                 } catch (Exception e) {
@@ -202,7 +208,7 @@ public class AntModuleTask extends AbstractTask {
                         //add the number of initial ants using the sources.. and add them
                         // in the list of nodes with ants
                         if (this.sources.containsKey(s.getId())) {
-                               // double amount = this.sources.get(s.getId());
+                                // double amount = this.sources.get(s.getId());
                                 double antAmount = 50;
                                 if (antAmount < 1) {
                                         antAmount = 1;
@@ -230,7 +236,7 @@ public class AntModuleTask extends AbstractTask {
                                 } catch (Exception ex) {
                                         reaction.setBounds(-1000, 1000);
                                 }
-                        }                        
+                        }
                         for (SpeciesReference s : r.getListOfReactants()) {
                                 Species sp = s.getSpeciesInstance();
                                 reaction.addReactant(sp.getId(), s.getStoichiometry());
@@ -280,7 +286,7 @@ public class AntModuleTask extends AbstractTask {
                                         ubound.setValue(Double.valueOf(data[4]));
                                         law.addLocalParameter(ubound);
                                         r.setKineticLaw(law);
-                                } 
+                                }
                         }
                 } catch (FileNotFoundException ex) {
                         java.util.logging.Logger.getLogger(AntModuleParameters.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);

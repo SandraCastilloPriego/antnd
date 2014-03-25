@@ -123,7 +123,7 @@ public class AddReactionTask extends AbstractTask {
                                 NDCore.getDesktop().displayErrorMessage("The reaction " + this.reactionName + " already exists in the model.");
                         } else {
                                 m.addReaction(r);
-                                String info = "Adding reaction: " + this.reactionName + "bounds:" + this.lb + "-" + this.ub + "\n" + this.compounds + "\n" + this.stoichiometry;
+                                String info = "Adding reaction: " + this.reactionName + " bounds:" + this.lb + " - " + this.ub + "\nCompounds: " + this.compounds + "\nStoichiometry: " + this.stoichiometry + "\n--------------------------";
                                 this.networkDS.setInfo(info);
 
                         }

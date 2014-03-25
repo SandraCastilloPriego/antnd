@@ -19,6 +19,7 @@ package ND.data.impl.datasets;
 
 import ND.data.Dataset;
 import ND.data.DatasetType;
+import javax.swing.JTextArea;
 import org.sbml.jsbml.SBMLDocument;
 
 /**
@@ -33,6 +34,7 @@ public class SimpleBasicDataset implements Dataset {
         StringBuffer infoDataset;
         private int ID;
         private SBMLDocument document;
+        private JTextArea textArea;
 
         /**
          *
@@ -43,11 +45,13 @@ public class SimpleBasicDataset implements Dataset {
                 this.infoDataset = new StringBuffer();
                 this.path = path;
                 type = DatasetType.MODELS;
+                this.textArea = new JTextArea();
         }
 
         public SimpleBasicDataset() {
                 type = DatasetType.MODELS;
                 this.infoDataset = new StringBuffer();
+                this.textArea = new JTextArea();
         }
 
         @Override
@@ -64,12 +68,12 @@ public class SimpleBasicDataset implements Dataset {
         public String getDatasetName() {
                 return this.datasetName;
         }
-        
+
         @Override
         public String getPath() {
                 return this.path;
         }
-        
+
         @Override
         public void setPath(String path) {
                 this.path = path;
@@ -91,13 +95,14 @@ public class SimpleBasicDataset implements Dataset {
         }
 
         @Override
-        public String getInfo() {
-                return infoDataset.toString();
+        public JTextArea getInfo() {              
+                return this.textArea;
         }
 
         @Override
         public void setInfo(String info) {
                 this.infoDataset.append(info).append("\n");
+                this.textArea.setText(infoDataset.toString());
         }
 
         @Override
