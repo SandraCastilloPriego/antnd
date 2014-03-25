@@ -1,18 +1,18 @@
 /*
  * Copyright 2007-2012 
- * This file is part of MetModels.
+ * This file is part of AntND.
  *
- * MetModels is free software; you can redistribute it and/or modify it under the
+ * AntND is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  *
- * MetModels is distributed in the hope that it will be useful, but WITHOUT ANY
+ * AntND is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * MetModels; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+ * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
 package ND.desktop.impl;
@@ -51,7 +51,7 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         public static final String DATA_FILES_LABEL = "Data set Files";
         private DragOrderedJList DatasetFiles;
-        private List<Dataset> DatasetFilesModel = new ArrayList<Dataset>();
+        private List<Dataset> DatasetFilesModel = new ArrayList<>();
         private DefaultListModel DatasetNamesModel = new DefaultListModel();
         private JPopupMenu dataFilePopupMenu;
         private int copies = 0;
@@ -99,6 +99,7 @@ public class ItemSelector extends JPanel implements ActionListener,
         }
 
         // Implementation of action listener interface
+        @Override
         public void actionPerformed(ActionEvent e) {
                 Runtime.getRuntime().freeMemory();
                 String command = e.getActionCommand();
@@ -180,6 +181,7 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
 
                 if ((e.getClickCount() == 2) && (e.getButton() == MouseEvent.BUTTON1)) {
@@ -188,14 +190,17 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
                 // ignore
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
                 // ignore
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
 
                 if (e.isPopupTrigger()) {
@@ -206,6 +211,7 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                         if (e.getSource() == DatasetFiles) {
@@ -214,6 +220,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 }
         }
 
+        @Override
         public void valueChanged(ListSelectionEvent event) {
 
                 Object src = event.getSource();
@@ -244,7 +251,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 for (Dataset file : selectedFiles) {
                         if (file != null) {
                                 try {
-                                        System.out.println(file.getPath());
+                                        System.out.println(file.getPath());                                        
                                         SBMLWriter.write(file.getDocument(), file.getPath().replace(".sbml", "") + "(copy).sbml", "AntND", "1.0");
                                 } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
                                         Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);

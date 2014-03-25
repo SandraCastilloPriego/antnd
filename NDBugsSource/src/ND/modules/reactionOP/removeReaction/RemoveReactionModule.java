@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2010 VTT Biotechnology
+ * Copyright 2013-2014 VTT Biotechnology
  * This file is part of NDBugs.
  *
  * NDBugs is free software; you can redistribute it and/or modify it under the
@@ -12,7 +12,7 @@
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * GopiBugs; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+ * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
 package ND.modules.reactionOP.removeReaction;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2010 VTT Biotechnology
+ * Copyright 2013-2014 VTT Biotechnology
  * This file is part of NDBugs.
  *
  * NDBugs is free software; you can redistribute it and/or modify it under the
