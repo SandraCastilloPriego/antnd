@@ -28,7 +28,7 @@ import org.sbml.jsbml.SBMLDocument;
  */
 public class SimpleBasicDataset implements Dataset {
 
-        String datasetName;
+        String datasetName, path;
         protected DatasetType type;
         StringBuffer infoDataset;
         private int ID;
@@ -38,14 +38,16 @@ public class SimpleBasicDataset implements Dataset {
          *
          * @param datasetName Name of the data set
          */
-        public SimpleBasicDataset(String datasetName) {
+        public SimpleBasicDataset(String datasetName, String path) {
                 this.datasetName = datasetName;
                 this.infoDataset = new StringBuffer();
+                this.path = path;
                 type = DatasetType.MODELS;
         }
 
         public SimpleBasicDataset() {
                 type = DatasetType.MODELS;
+                this.infoDataset = new StringBuffer();
         }
 
         @Override
@@ -61,6 +63,16 @@ public class SimpleBasicDataset implements Dataset {
         @Override
         public String getDatasetName() {
                 return this.datasetName;
+        }
+        
+        @Override
+        public String getPath() {
+                return this.path;
+        }
+        
+        @Override
+        public void setPath(String path) {
+                this.path = path;
         }
 
         @Override
@@ -90,7 +102,7 @@ public class SimpleBasicDataset implements Dataset {
 
         @Override
         public SimpleBasicDataset clone() {
-                SimpleBasicDataset newDataset = new SimpleBasicDataset(this.datasetName);
+                SimpleBasicDataset newDataset = new SimpleBasicDataset(this.datasetName, this.path);
                 newDataset.setType(this.type);
                 newDataset.setDocument(this.getDocument());
                 return newDataset;

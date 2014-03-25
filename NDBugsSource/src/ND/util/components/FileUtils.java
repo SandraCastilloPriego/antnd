@@ -31,7 +31,7 @@ public class FileUtils {
         Dataset newDataset = null;
         switch (dataset.getType()) {            
             case MODELS:
-                newDataset = new SimpleBasicDataset(Name + dataset.getDatasetName());
+                newDataset = new SimpleBasicDataset(Name + dataset.getDatasetName(), dataset.getPath());
                 break;            
         }
         newDataset.setType(dataset.getType());

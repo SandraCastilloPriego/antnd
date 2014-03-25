@@ -55,7 +55,6 @@ public class ItemSelector extends JPanel implements ActionListener,
         private DefaultListModel DatasetNamesModel = new DefaultListModel();
         private JPopupMenu dataFilePopupMenu;
         private int copies = 0;
-        private NameChangeParameter parameterName;
 
         /**
          * Constructor
@@ -90,7 +89,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
 
-                this.parameterName = new NameChangeParameter();
+       
 
         }
 
@@ -229,7 +228,8 @@ public class ItemSelector extends JPanel implements ActionListener,
                 for (Dataset file : selectedFiles) {
                         if (file != null) {
                                 try {
-                                        SBMLWriter.write(file.getDocument(), file.getDatasetName()+".xml", file.getDatasetName(), "1.0");
+                                        System.out.println(file.getPath());
+                                        SBMLWriter.write(file.getDocument(), file.getPath().replace(".sbml","")+"(copy).sbml", "AntND", "1.0");
                                 } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
                                         Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);
                                 }

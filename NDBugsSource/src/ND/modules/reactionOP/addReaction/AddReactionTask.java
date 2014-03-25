@@ -118,10 +118,15 @@ public class AddReactionTask extends AbstractTask {
                         law.addLocalParameter(uboundP);
                         r.setKineticLaw(law);
 
-                        m.addReaction(r);
+                        if (m.getReaction(this.reactionName) != null) {
+                                setStatus(TaskStatus.ERROR);
+                                NDCore.getDesktop().displayErrorMessage("The reaction " + this.reactionName + " already exists in the model.");
+                        } else {
+                                m.addReaction(r);
+                                String info = "Adding reaction: " + this.reactionName + "bounds:" + this.lb + "-" + this.ub + "\n" + this.compounds + "\n" + this.stoichiometry;
+                                this.networkDS.setInfo(info);
 
-
-
+                        }
                         setStatus(TaskStatus.FINISHED);
                 } catch (Exception e) {
                         setStatus(TaskStatus.ERROR);

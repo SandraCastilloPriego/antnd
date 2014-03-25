@@ -25,9 +25,9 @@ import org.sbml.jsbml.SBMLDocument;
  * @author scsandra
  */
 public interface Dataset {
-        
+
         public SBMLDocument getDocument();
-        
+
         public void setDocument(SBMLDocument document);
 
         /**
@@ -51,13 +51,23 @@ public interface Dataset {
         public int getID();
 
         /**
-         * Every dataset has a name to allow the user to identify it
-         * Returns the name of the data set.
+         * Every dataset has a name to allow the user to identify it Returns the
+         * name of the data set.
          *
          * @return Name of the data set
          */
-        public String getDatasetName();  
-       
+        public String getDatasetName();
+        
+        /**
+         * Every dataset has a path to allow the user to identify it Returns the
+         * name of the data set.
+         *
+         * @return path of the data set
+         */
+        public String getPath();
+        
+        public void setPath(String path);
+
         /**
          * Sets the name of the dataset.
          *
@@ -67,6 +77,7 @@ public interface Dataset {
 
         /**
          * The type of the data set can be LC-MS, GCxGC-Tof or others.
+         *
          * @see ND.data.DatasetType
          *
          * @return DatasetType class
@@ -75,17 +86,16 @@ public interface Dataset {
 
         /**
          * Sets the type of the data set. It can be LC-MS, GCxGC-Tof or others.
+         *
          * @see ND.data.DatasetType
          *
          * @param type DatasetType
          */
-        public void setType(DatasetType type);      
+        public void setType(DatasetType type);
 
-
-       
         /**
-         * Returns general information about the data set.
-         * It will be written by the user.
+         * Returns general information about the data set. It will be written by
+         * the user.
          *
          * @return General information about the data set
          */
@@ -97,7 +107,4 @@ public interface Dataset {
          * @param info Information about the data set
          */
         public void setInfo(String info);
-
-       
-
 }

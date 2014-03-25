@@ -123,7 +123,7 @@ public class NDCore implements Runnable {
 
                 desktop.getMainFrame().dispose();
 
-                logger.info("Exiting ND");
+                logger.info("Exiting AntND");
 
                 System.exit(0);
 
@@ -220,7 +220,7 @@ public class NDCore implements Runnable {
                 ((MainWindow) desktop).setVisible(true);
 
                 // show the welcome message
-                desktop.setStatusBarText("Welcome to AanND!");
+                desktop.setStatusBarText("Welcome to AntND!");
                 preferences.setProxy();
 
         }

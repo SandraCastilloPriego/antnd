@@ -53,6 +53,7 @@ public class BasicFilesParserSBML implements Parser {
                         this.document = SBMLReader.read(new File(this.datasetPath));
                         dataset.setDocument(document);
                         dataset.setDatasetName(document.getModel().getId());
+                        dataset.setPath(this.datasetPath);
                 } catch (XMLStreamException | IOException ex) {
                         Logger.getLogger(BasicFilesParserSBML.class.getName()).log(Level.SEVERE, null, ex);
                 }
