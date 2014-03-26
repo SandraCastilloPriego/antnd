@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.antNoGraph;
+package ND.modules.simulation.antNoGraph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,7 +155,7 @@ public class ReactionFA {
                 return false;
         }
 
-        void resetPheromones() {
+        public void resetPheromones() {
                 this.pheromones = 0;
         }
 }

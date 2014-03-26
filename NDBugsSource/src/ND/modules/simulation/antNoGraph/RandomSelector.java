@@ -15,25 +15,27 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.antNoGraph;
+package ND.modules.simulation.antNoGraph;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  *
  * @author scsandra
  */
-public class uniqueId {
+public class RandomSelector {
 
-        private static final String alphabet =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        private static int currentId;
+        private List<String> reactions = new ArrayList<>();
 
-        public static String nextId() {
-                int id = currentId++;
-                StringBuilder b = new StringBuilder();
-                do {
-                        b.append(alphabet.charAt(id % alphabet.length()));
-                } while ((id /= alphabet.length()) != 0);
+        public void Add(String reaction, int pheromone) {
+                for (int i = 0; i < pheromone + 1; i++) {
+                        reactions.add(reaction);
+                }
+        }
 
-                return b.toString();
+        public String GetRandom(Random rand) {
+                return reactions.get(rand.nextInt(reactions.size()));
         }
 }

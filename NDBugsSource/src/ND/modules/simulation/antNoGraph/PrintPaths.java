@@ -15,11 +15,11 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.antNoGraph;
+package ND.modules.simulation.antNoGraph;
 
-import ND.modules.antNoGraph.network.Edge;
-import ND.modules.antNoGraph.network.Graph;
-import ND.modules.antNoGraph.network.Node;
+import ND.modules.simulation.antNoGraph.network.Edge;
+import ND.modules.simulation.antNoGraph.network.Graph;
+import ND.modules.simulation.antNoGraph.network.Node;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.SparseMultigraph;

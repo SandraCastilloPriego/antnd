@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ND.modules.antNoGraph;
+package ND.modules.simulation.antNoGraph;
 
-import ND.modules.antNoGraph.network.Edge;
-import ND.modules.antNoGraph.network.Graph;
-import ND.modules.antNoGraph.network.Node;
+import ND.modules.simulation.antNoGraph.network.Edge;
+import ND.modules.simulation.antNoGraph.network.Graph;
+import ND.modules.simulation.antNoGraph.network.Node;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +72,7 @@ public class Ant {
                 this.location = location;
         }
 
-        void print() {
+        public void print() {
                 System.out.print("size: "+ this.getPathSize() +" - location: " + this.location + "//");
                 for (String p : this.path) {
                         System.out.print(" - " + p.split(" - ")[0]);
@@ -80,7 +80,7 @@ public class Ant {
                 System.out.print("\n");
         }
 
-        void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts) {
+        public void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts) {
                 Node node = new Node(reactionChoosen + " - " + uniqueId.nextId());
                 
                 for (Ant ant : combinedAnts.keySet()) {
@@ -107,7 +107,7 @@ public class Ant {
                 }
                 this.pathsize++;
                 this.path.add(node.getId());
-                if (this.getPathSize() > 200) {
+                if (this.getPathSize() > 500) {
                         this.lost = true;
                 }
 

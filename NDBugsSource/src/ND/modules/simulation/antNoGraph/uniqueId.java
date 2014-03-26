@@ -15,30 +15,25 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.antNoGraph.network;
-
+package ND.modules.simulation.antNoGraph;
 
 /**
  *
  * @author scsandra
  */
-public class Node {
+public class uniqueId {
 
-        final private String id;
-        public Node(String id) {
-                this.id = id;
-        } 
-        
-        public String getId() {
-                return id;
-        }      
+        private static final String alphabet =
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private static int currentId;
 
-        @Override
-        public int hashCode() {
-                final int prime = 31;
-                int result = 1;
-                result = prime * result + ((id == null) ? 0 : id.hashCode());
-                return result;
+        public static String nextId() {
+                int id = currentId++;
+                StringBuilder b = new StringBuilder();
+                do {
+                        b.append(alphabet.charAt(id % alphabet.length()));
+                } while ((id /= alphabet.length()) != 0);
+
+                return b.toString();
         }
-       
 }

@@ -15,13 +15,13 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.antNoGraph;
+package ND.modules.simulation.antNoGraph;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
-import ND.modules.antNoGraph.network.Edge;
-import ND.modules.antNoGraph.network.Graph;
-import ND.modules.antNoGraph.network.Node;
+import ND.modules.simulation.antNoGraph.network.Edge;
+import ND.modules.simulation.antNoGraph.network.Graph;
+import ND.modules.simulation.antNoGraph.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
@@ -156,13 +156,16 @@ public class AntModuleTask extends AbstractTask {
                                         System.out.println(ex.toString());
                                 }
                         }
-                        String info = "";
-                        if (this.graph != null) {
-                                info = "Simulation\n" + this.parameters.toString() + "\nResult: " + this.graph.toString();
-                        } else {
-                                info = "Simulation\n" + this.parameters.toString() + "\nResult: No path found";
+                        if (this.graph == null) {
+                                NDCore.getDesktop().displayMessage("No path was found.");
                         }
-                        this.networkDS.setInfo(info + "\n--------------------------");
+                        /* String info = "";
+                         if (this.graph != null) {
+                         info = "Simulation\n" + this.parameters.toString() + "\nResult: " + this.graph.toString();
+                         } else {
+                         info = "Simulation\n" + this.parameters.toString() + "\nResult: No path found";
+                         }
+                         this.networkDS.setInfo(info + "\n--------------------------");*/
                         setStatus(TaskStatus.FINISHED);
 
                 } catch (Exception e) {
@@ -188,7 +191,7 @@ public class AntModuleTask extends AbstractTask {
                                         }
                                 }
                         } catch (IOException ex) {
-                                Logger.getLogger(ND.modules.antNoGraph.AntModuleTask.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(ND.modules.simulation.antNoGraph.AntModuleTask.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
                         return exchangeMap;
@@ -203,22 +206,23 @@ public class AntModuleTask extends AbstractTask {
                 Model m = doc.getModel();
                 for (Species s : m.getListOfSpecies()) {
                         SpeciesFA specie = new SpeciesFA(s.getId());
-                        this.compounds.put(s.getId(), specie);
-
                         //add the number of initial ants using the sources.. and add them
                         // in the list of nodes with ants
                         if (this.sources.containsKey(s.getId())) {
                                 // double amount = this.sources.get(s.getId());
                                 double antAmount = 50;
-                                if (antAmount < 1) {
-                                        antAmount = 1;
+                                if (s.getId().contains("C00001")) {
+                                        antAmount = 5000;
                                 }
+
+
                                 for (int i = 0; i < antAmount; i++) {
                                         Ant ant = new Ant(specie.getId());
                                         ant.initAnt();
                                         specie.addAnt(ant);
                                 }
                         }
+                        this.compounds.put(s.getId(), specie);
                 }
 
                 for (Reaction r : m.getListOfReactions()) {
@@ -407,7 +411,11 @@ public class AntModuleTask extends AbstractTask {
                         if (this.compounds.containsKey(key)) {
                                 SpeciesFA specie = this.compounds.get(key);
                                 double amount = 50;
+                                if (specie.getId().contains("C00001")) {
+                                        amount = 1000;
+                                }
                                 double antAmount = amount - specie.getNumberOfAnts();
+
                                 if (antAmount < 1) {
                                         antAmount = 0;
                                 }
@@ -427,8 +435,11 @@ public class AntModuleTask extends AbstractTask {
                 List<String> possibleReactions = new ArrayList<>();
                 SpeciesFA sp = this.compounds.get(node);
                 List<String> connectedReactions = sp.getReactions();
-
-                for (String reaction : connectedReactions) {
+                Ant ant = sp.getAnt();
+                if (ant == null) {
+                        return possibleReactions;
+                }
+                for (String reaction : connectedReactions) {                        
                         ReactionFA r = this.reactions.get(reaction);
 
                         boolean isPossible = true;
@@ -436,7 +447,7 @@ public class AntModuleTask extends AbstractTask {
                                 if (r.getub() > 0) {
                                         List<String> reactants = r.getReactants();
                                         for (String reactant : reactants) {
-                                                if (!allEnoughAnts(reactant, r.getStoichiometry(reactant))) {
+                                                if (!allEnoughAnts(reactant, r.getStoichiometry(reactant), reaction)) {
                                                         isPossible = false;
                                                         break;
                                                 }
@@ -451,7 +462,7 @@ public class AntModuleTask extends AbstractTask {
                                         List<String> products = r.getProducts();
                                         for (String product : products) {
 
-                                                if (!allEnoughAnts(product, r.getStoichiometry(product))) {
+                                                if (!allEnoughAnts(product, r.getStoichiometry(product), reaction)) {
                                                         isPossible = false;
                                                 }
                                         }
@@ -476,8 +487,12 @@ public class AntModuleTask extends AbstractTask {
                 return selector.GetRandom(rand);
         }
 
-        private boolean allEnoughAnts(String species, double stoichiometry) {
+        private boolean allEnoughAnts(String species, double stoichiometry, String reaction) {
                 SpeciesFA s = this.compounds.get(species);
+                Ant ant = s.getAnt();
+                if (ant == null || ant.contains(reaction)) {
+                        return false;
+                }
                 if (s.getNumberOfAnts() >= stoichiometry) {
                         return true;
                 }

@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.antNoGraph;
+package ND.modules.simulation.antNoGraph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
  *
  * @author scsandra
  */
-class SpeciesFA {
+public class SpeciesFA {
 
         private String id;
         private List<String> reactions;
@@ -89,7 +89,7 @@ class SpeciesFA {
                 this.ants.clear();
         }
 
-        void removeAnt(Ant a) {
+        public void removeAnt(Ant a) {
                 this.ants.remove(a);
         }
 
