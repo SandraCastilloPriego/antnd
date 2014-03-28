@@ -249,7 +249,7 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                         }
 
                         if (getStatus() == TaskStatus.PROCESSING) {
-                                PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID);
+                                PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID, this.networkDS.getDocument().getModel());
                                 try {
                                         this.pn.add(print.printPathwayInFrame(this.graph));
                                 } catch (NullPointerException ex) {

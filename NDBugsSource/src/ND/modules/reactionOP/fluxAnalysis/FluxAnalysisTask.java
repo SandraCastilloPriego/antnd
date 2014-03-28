@@ -140,7 +140,7 @@ public class FluxAnalysisTask extends AbstractTask {
                         frame.setSize(new Dimension(700, 500));
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
-                        PrintPaths print = new PrintPaths(this.sourcesList, null);
+                        PrintPaths print = new PrintPaths(this.sourcesList, null, newModel);
                         this.pn.add(print.printPathwayInFrame(this.createGraph(newModel)));
 
                         setStatus(TaskStatus.FINISHED);

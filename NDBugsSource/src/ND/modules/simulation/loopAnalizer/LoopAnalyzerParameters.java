@@ -15,7 +15,7 @@
  * NDBugs; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.superAnt;
+package ND.modules.simulation.loopAnalizer;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
@@ -23,18 +23,18 @@ import ND.parameters.parametersType.FileNameParameter;
 import ND.parameters.parametersType.IntegerParameter;
 import ND.parameters.parametersType.StringParameter;
 
-public class SuperAntModuleParameters extends SimpleParameterSet {
+public class LoopAnalyzerParameters extends SimpleParameterSet {
 
         public static final FileNameParameter exchangeReactions = new FileNameParameter(
                 "ExchangeReactions", "Define the exchange reactions", null);
         public static final FileNameParameter bounds = new FileNameParameter(
                 "Reaction bounds", "Define the bounds of the reactions", null);
         public static final StringParameter objectiveReaction = new StringParameter(
-                "Compound ID", "ID of the compound you want to maximize");        
+                "Compound ID", "ID of the compound you want to find");        
         public static final IntegerParameter numberOfIterations = new IntegerParameter(
                 "Number of Iterations", "Number of Iterations", 100);
 
-        public SuperAntModuleParameters() {
+        public LoopAnalyzerParameters() {
                 super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, numberOfIterations});
         }
 }

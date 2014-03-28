@@ -149,7 +149,7 @@ public class AntModuleTask extends AbstractTask {
                                 /* for (String key : this.reactions.keySet()) {
                                  System.out.println(key + "," + this.reactions.get(key).getPheromones());
                                  }*/
-                                PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID);
+                                PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID, this.networkDS.getDocument().getModel());
                                 try {
                                         this.pn.add(print.printPathwayInFrame(this.graph));
                                 } catch (NullPointerException ex) {

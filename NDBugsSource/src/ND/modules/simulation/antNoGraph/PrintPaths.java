@@ -28,56 +28,64 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
+import org.sbml.jsbml.Model;
 
 /**
  *
  * @author scsandra
  */
 public class PrintPaths {
-
+        
         private List<String> initialIds;
         private String finalId;
-
-        public PrintPaths(List<String> initialIds, String finalId) {
+        private Model m;
+        private TransFrame transFrame = null;
+        
+        public PrintPaths(List<String> initialIds, String finalId, Model m) {
+                this.m = m;
                 this.initialIds = initialIds;
                 this.finalId = finalId;
         }
-
+        
         public VisualizationViewer printPathwayInFrame(Graph graph) {
                 edu.uci.ics.jung.graph.Graph<String, String> g = new SparseMultigraph<>();
                 List<Node> nodes = graph.getNodes();
-                System.out.println("Number of nodes: "+ nodes.size() + " - " + graph.getEdges().size());
+                System.out.println("Number of nodes: " + nodes.size() + " - " + graph.getEdges().size());
                 List<Edge> edges = graph.getEdges();
                 for (Node node : nodes) {
                         if (node != null) {
                                 g.addVertex(node.getId());
                         }
                 }
-
+                
                 for (Edge edge : edges) {
                         if (edge != null) {
                                 g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
                         }
                 }
-
-System.out.println("1");
+                
+                
                 Layout<String, String> layout = new KKLayout(g);
                 layout.setSize(new Dimension(1400, 1000)); // sets the initial size of the space
                 VisualizationViewer<String, String> vv = new VisualizationViewer<>(layout);
                 vv.setPreferredSize(new Dimension(1400, 1000));
                 Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
                         @Override
-                        public Paint transform(String id) {                                
-                                if (initialIds != null && initialIds.contains(id.replace("sp:","").split(" - ")[0])) {
+                        public Paint transform(String id) {
+                                if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
                                         return Color.BLUE;
                                 } else if (finalId != null && id.split("-")[0].contains(finalId)) {
                                         return Color.RED;
@@ -88,7 +96,37 @@ System.out.println("1");
                                 }
                         }
                 };
-System.out.println("2");
+                
+                
+                final PickedState<String> pickedState = vv.getPickedVertexState();
+                pickedState.addItemListener(new ItemListener() {
+                        @Override
+                        public void itemStateChanged(ItemEvent e) {
+                                Object subject = e.getItem();
+                                if (subject instanceof String) {
+                                        String vertex = (String) subject;
+                                        
+                                        if (pickedState.isPicked(vertex)) {                                                
+                                                if (m != null) {                                                        
+                                                        transFrame = new TransFrame(m, vertex.split(" - ")[0]);
+                                                }else{
+                                                        System.out.println("Vertex " + vertex
+                                                        + " is now selected");
+                                                }
+                                        } else {
+                                                if (transFrame != null) {
+                                                        transFrame.setVisible(false);
+                                                        transFrame.dispose();
+                                                }else{
+                                                System.out.println("Vertex " + vertex
+                                                        + " no longer selected");
+                                                }
+                                        }
+                                }
+                        }
+                });
+                
+                
                 float dash[] = {1.0f};
                 final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
@@ -99,7 +137,7 @@ System.out.println("2");
                                 return edgeStroke;
                         }
                 };
-
+                
                 Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
                         new ToStringLabeller<>(),
                         new Transformer<String, String>() {
@@ -116,7 +154,7 @@ System.out.println("2");
                                         return "<html><b><font color=\"black\">" + input;
                                 }
                         }});
-System.out.println("3");
+                
                 vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
                 vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
                 vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
