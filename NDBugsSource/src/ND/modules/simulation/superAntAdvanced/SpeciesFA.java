@@ -15,8 +15,9 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.antNoGraph;
+package ND.modules.simulation.superAntAdvanced;
 
+import ND.modules.simulation.antNoGraph.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +40,9 @@ public class SpeciesFA {
                 return ant;
         }
 
-        public void addAnt(Ant ant) {
-                if (this.ant == null || ant.getPathSize() < this.ant.getPathSize()) {
+        public void addAnt(Ant ant, String[] mReaction) {
+                boolean isThere = this.hasMiddle(ant.getPath(), mReaction);
+                if (this.ant == null || isThere || (!isThere && ant.getPathSize() < this.ant.getPathSize())) {
                         this.ant = ant;
                 }
         }
@@ -55,5 +57,16 @@ public class SpeciesFA {
 
         public List<String> getReactions() {
                 return this.reactions;
+        }
+
+        private boolean hasMiddle(List<String> path, String[] mReaction) {
+                for (String p : path) {
+                        for (String s : mReaction) {
+                                if (p.contains(s)) {
+                                        return true;
+                                }
+                        }
+                }
+                return false;
         }
 }

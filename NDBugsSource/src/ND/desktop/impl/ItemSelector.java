@@ -251,8 +251,9 @@ public class ItemSelector extends JPanel implements ActionListener,
                 for (Dataset file : selectedFiles) {
                         if (file != null) {
                                 try {
-                                        System.out.println(file.getPath());                                        
-                                        SBMLWriter.write(file.getDocument(), file.getPath().replace(".sbml", "") + "(copy).sbml", "AntND", "1.0");
+                                        System.out.println(file.getPath());          
+                                        SBMLWriter writer = new SBMLWriter("AntND", "1.0");
+                                        writer.write(file.getDocument(), file.getPath().replace(".sbml", "") + "(copy).sbml");
                                 } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
                                         Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);
                                 }

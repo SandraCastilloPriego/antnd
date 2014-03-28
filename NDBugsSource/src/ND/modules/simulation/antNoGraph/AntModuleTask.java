@@ -306,8 +306,7 @@ public class AntModuleTask extends AbstractTask {
                         List<String> possibleReactions = getPossibleReactions(compound);
 
                         if (possibleReactions.size() > 0) {
-                                String reactionChoosen = chooseReactions(possibleReactions);
-                                this.compounds.get(compound).removeCount();
+                                String reactionChoosen = chooseReactions(possibleReactions);                           
 
 
                                 ReactionFA rc = this.reactions.get(reactionChoosen);
@@ -336,7 +335,7 @@ public class AntModuleTask extends AbstractTask {
                                         combinedAnts.put(a, s);
                                 }
 
-                                for (String s : toBeRemoved) {
+                              /*  for (String s : toBeRemoved) {
                                         SpeciesFA spfa = this.compounds.get(s);
                                         for (int i = 0; i < rc.getStoichiometry(s); i++) {
                                                 Ant a = spfa.getAnt();
@@ -345,7 +344,7 @@ public class AntModuleTask extends AbstractTask {
                                                 }
                                         }
 
-                                }
+                                }*/
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
 
                                 if (!superAnt.isLost()) {
@@ -366,7 +365,7 @@ public class AntModuleTask extends AbstractTask {
                                         //System.out.println("Biomass produced!: " + rc.getId());
 
                                         SpeciesFA spFA = this.compounds.get(this.biomassID);
-                                        antsBiomass.addAll(spFA.getAnts());
+                                        antsBiomass.add(spFA.getAnt());
                                         for (Ant a : antsBiomass) {
                                                 List<String> localPath = a.getPath();
                                                 // Adding pheromones
@@ -388,13 +387,13 @@ public class AntModuleTask extends AbstractTask {
                                                         this.graph.addEdge(edge);
                                                         a.print();
                                                 }
-                                                spFA.removeAnt(a);
+                                               
                                         }
                                 }
 
 
                         } else {
-                                this.compounds.get(compound).addCount();
+                             //   this.compounds.get(compound).addCount();
                         }
 
                 }
@@ -414,7 +413,7 @@ public class AntModuleTask extends AbstractTask {
                                 if (specie.getId().contains("C00001")) {
                                         amount = 1000;
                                 }
-                                double antAmount = amount - specie.getNumberOfAnts();
+                                double antAmount = amount - 1;
 
                                 if (antAmount < 1) {
                                         antAmount = 0;
@@ -493,7 +492,7 @@ public class AntModuleTask extends AbstractTask {
                 if (ant == null || ant.contains(reaction)) {
                         return false;
                 }
-                if (s.getNumberOfAnts() >= stoichiometry) {
+                if (s.getAnt() != null) {
                         return true;
                 }
                 return false;

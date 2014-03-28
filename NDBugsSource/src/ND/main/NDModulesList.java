@@ -18,13 +18,14 @@
  */
 package ND.main;
 
-import ND.modules.simulation.antNoGraph.AntModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
+import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
+import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
 
 /**
  * List of modules included in MM
@@ -35,9 +36,11 @@ public class NDModulesList {
                 OpenBasicFileModule.class,
                // AntModule.class,
                 SuperAntModule.class,
+                SuperAntAdvancedModule.class,
                 AddReactionModule.class,
                 RemoveReactionModule.class,
                 ShowReactionModule.class,
-                ShowCompoundModule.class
+                ShowCompoundModule.class,
+                FluxAnalysisModule.class
         };
 }

@@ -105,4 +105,13 @@ public class Graph {
                 }
                 return str;
         }
+
+        public void addGraph(Graph g) {
+                for(Node n : g.getNodes()){
+                        this.nodes.add(n);
+                }
+                for(Edge e : g.getEdges()){
+                        this.edges.add(e);
+                }
+        }
 }

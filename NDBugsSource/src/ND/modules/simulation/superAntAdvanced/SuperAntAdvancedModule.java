@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.showCompound;
+package ND.modules.simulation.superAntAdvanced;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -29,10 +29,10 @@ import ND.taskcontrol.Task;
  *
  * @author scsandra
  */
-public class ShowCompoundModule implements NDProcessingModule {
+public class SuperAntAdvancedModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Show Compound";
-        private ShowCompoundParameters parameters = new ShowCompoundParameters();
+        public static final String MODULE_NAME = "Start Super Ant Advanced";
+        private SuperAntModuleAdvancedParameters parameters = new SuperAntModuleAdvancedParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -48,13 +48,9 @@ public class ShowCompoundModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new ShowCompoundTask[1];
-                SimpleBasicDataset dataset = null;
-                try {
-                        dataset = (SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0];
-                } catch (Exception e) {
-                }
-                tasks[0] = new ShowCompoundTask(dataset, (SimpleParameterSet) parameters);
+                Task tasks[] = new SuperAntAdvancedModuleTask[1];
+
+                tasks[0] = new SuperAntAdvancedModuleTask((SimpleBasicDataset)NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
 
                 NDCore.getTaskController().addTasks(tasks);
 
@@ -63,7 +59,7 @@ public class ShowCompoundModule implements NDProcessingModule {
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.REACTION;
+                return NDModuleCategory.SIMULATION;
         }
 
         @Override
@@ -73,6 +69,6 @@ public class ShowCompoundModule implements NDProcessingModule {
 
         @Override
         public boolean setSeparator() {
-                return true;
+                return false;
         }
 }

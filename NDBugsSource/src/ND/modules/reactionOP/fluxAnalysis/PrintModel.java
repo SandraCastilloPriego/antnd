@@ -15,8 +15,9 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.antNoGraph;
+package ND.modules.reactionOP.fluxAnalysis;
 
+import ND.modules.simulation.antNoGraph.*;
 import ND.modules.simulation.antNoGraph.network.Edge;
 import ND.modules.simulation.antNoGraph.network.Graph;
 import ND.modules.simulation.antNoGraph.network.Node;
@@ -42,12 +43,12 @@ import org.apache.commons.collections15.functors.ChainedTransformer;
  *
  * @author scsandra
  */
-public class PrintPaths {
+public class PrintModel {
 
         private List<String> initialIds;
         private String finalId;
 
-        public PrintPaths(List<String> initialIds, String finalId) {
+        public PrintModel(List<String> initialIds, String finalId) {
                 this.initialIds = initialIds;
                 this.finalId = finalId;
         }
@@ -77,11 +78,9 @@ public class PrintPaths {
                 Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
                         @Override
                         public Paint transform(String id) {
-                                if (initialIds != null && initialIds.contains(id.replace("sp:","").split(" - ")[0])) {
+                                if (initialIds.contains(id.split(" - ")[0])) {
                                         return Color.BLUE;
-                                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
-                                        return Color.RED;
-                                } else if (id.contains("sp:")) {
+                                } else if (id.split("-")[0].contains(finalId)) {
                                         return Color.RED;
                                 } else {
                                         return Color.GREEN;
