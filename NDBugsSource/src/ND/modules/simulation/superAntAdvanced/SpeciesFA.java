@@ -29,7 +29,8 @@ public class SpeciesFA {
 
         private String id;
         private List<String> reactions;
-        Ant ant;
+        private Ant ant;
+        private boolean isBiomass = false;
 
         public SpeciesFA(String id) {
                 this.id = id;
@@ -41,9 +42,26 @@ public class SpeciesFA {
         }
 
         public void addAnt(Ant ant, String[] mReaction) {
-                boolean isThere = this.hasMiddle(ant.getPath(), mReaction);
-                if (this.ant == null || isThere || (!isThere && ant.getPathSize() < this.ant.getPathSize())) {
+                boolean isThere = SpeciesFA.hasMiddle(ant.getPath(), mReaction);
+                if (this.ant == null) {
                         this.ant = ant;
+                } else {
+                        if (isBiomass) {
+                                boolean thisAntHasIt = SpeciesFA.hasMiddle(this.ant.getPath(), mReaction);
+                                if (isThere) {
+                                        if (thisAntHasIt && ant.getPathSize() < this.ant.getPathSize() || !thisAntHasIt) {
+                                                this.ant = ant;
+                                        }
+                                }/* else {
+                                        if (!thisAntHasIt && ant.getPathSize() < this.ant.getPathSize()) {
+                                                this.ant = ant;
+                                        }
+                                }*/
+                        } else {
+                                if (ant.getPathSize() < this.ant.getPathSize()) {
+                                        this.ant = ant;
+                                }
+                        }
                 }
         }
 
@@ -59,7 +77,7 @@ public class SpeciesFA {
                 return this.reactions;
         }
 
-        private boolean hasMiddle(List<String> path, String[] mReaction) {
+        public static boolean hasMiddle(List<String> path, String[] mReaction) {
                 for (String p : path) {
                         for (String s : mReaction) {
                                 if (p.contains(s)) {
@@ -68,5 +86,9 @@ public class SpeciesFA {
                         }
                 }
                 return false;
+        }
+
+        void setIsBiomass() {
+                this.isBiomass = true;
         }
 }

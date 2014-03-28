@@ -17,9 +17,11 @@
  */
 package ND.modules.simulation.superAntAdvanced;
 
-import ND.modules.simulation.antNoGraph.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
+import ND.modules.simulation.antNoGraph.Ant;
+import ND.modules.simulation.antNoGraph.PrintPaths;
+import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.modules.simulation.antNoGraph.network.Edge;
 import ND.modules.simulation.antNoGraph.network.Graph;
 import ND.modules.simulation.antNoGraph.network.Node;
@@ -138,103 +140,114 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                         frame.setSize(new Dimension(700, 500));
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
-                        String realbiomass = this.biomassID;
+                        /*String realbiomass = this.biomassID;
 
-                        ReactionFA r = this.reactions.get(this.mReactions[0]);
-                        List<Graph> graphs = new ArrayList<>();
-                        List<Graph> graphs2 = new ArrayList<>();
-                        if (r.getub() > 0) {
-                                System.out.println("here 1");
-                                for (String p : r.getProducts()) {
+                         ReactionFA r = this.reactions.get(this.mReactions[0]);
+                         /* List<Graph> graphs = new ArrayList<>();
+                         List<Graph> graphs2 = new ArrayList<>();
+                         if (r.getub() > 0) {
+                         System.out.println("here 1");
+                         for (String p : r.getProducts()) {
 
-                                        if (this.sources.containsKey(p)) {
-                                                Graph g = new Graph(null, null);
-                                                g.addNode(new Node(p + " - " + uniqueId.nextId()));
-                                        } else {
-                                                this.graph = null;
-                                                this.biomassID = p;
-                                                for (int i = 0; i < iterations; i++) {
-                                                        this.createWorld();
-                                                        this.cicle();
-                                                }
-                                                if (this.graph == null) {
-                                                        graphs.clear();
-                                                        break;
-                                                } else {
-                                                        graphs.add(this.graph);
-                                                }
-                                        }
+                         if (this.sources.containsKey(p)) {
+                         Graph g = new Graph(null, null);
+                         g.addNode(new Node(p + " - " + uniqueId.nextId()));
+                         } else {
+                         this.graph = null;
+                         this.biomassID = p;
+                         for (int i = 0; i < iterations; i++) {
+                         this.createWorld();
+                         this.cicle();
+                         }
+                         if (this.graph == null) {
+                         graphs.clear();
+                         break;
+                         } else {
+                         graphs.add(this.graph);
+                         }
+                         }
+                         }
+                         }
+                         if (r.getlb() < 0) {
+                         System.out.println("here 2");
+                         for (String p : r.getReactants()) {
+                         if (this.sources.containsKey(p)) {
+                         Graph g = new Graph(null, null);
+                         g.addNode(new Node(p + " - " + uniqueId.nextId()));
+                         graphs2.add(g);
+                         } else {
+                         this.graph = null;
+                         this.biomassID = p;
+                         for (int i = 0; i < iterations; i++) {
+                         this.createWorld();
+                         this.cicle();
+
+                         }
+                         if (this.graph == null) {
+                         graphs2.clear();
+                         break;
+                         } else {
+                         graphs2.add(this.graph);
+                         }
+                         }
+                         }
+                         }
+
+                         Map<String, Double> realSources = this.sources;
+                         if (graphs.size() > 0) {
+                         System.out.println("here 12");
+                         this.graph = null;
+                         for (String s : r.getProducts()) {
+                         this.sources.put(s, 1.0);
+                         }
+                         for (int i = 0; i < iterations; i++) {
+                         this.createWorld();
+                         this.biomassID = realbiomass;
+                         this.cicle();
+                         }
+
+                         if (this.graph != null && graph.getNode(this.mReactions[0]) == null) {
+                         for (Graph g : graphs) {
+                         this.graph.addGraph(g);
+                         }
+                         System.out.println("graph 12 :" +this.graph.toString());
+
+                         }
+                         }
+                         if (graphs2.size() > 0) {
+                         System.out.println("here 22");
+                         this.graph = null;
+                         this.sources = realSources;
+                         for (String s : r.getReactants()) {
+                         this.sources.put(s, 1.0);
+                         }
+                         for (int i = 0; i < iterations; i++) {
+                         this.createWorld();
+                         this.biomassID = realbiomass;
+                         this.cicle();
+                         }
+
+                         if (this.graph != null && graph.getNode(this.mReactions[0]) == null) {
+                         for (Graph g : graphs2) {
+                         this.graph.addGraph(g);
+
+                         }
+                         System.out.println("graph 22 :" +this.graph.toString());
+                         }
+                         }
+                         * 
+                         * 
+
+                         System.out.println(graphs.size() + " - " + graphs2.size());*/
+
+                        for (int i = 0; i < iterations; i++) {
+                                this.cicle();
+                                finishedPercentage = (double) i / iterations;
+                                if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
+                                        break;
                                 }
                         }
-                        if (r.getlb() < 0) {
-                                System.out.println("here 2");
-                                for (String p : r.getReactants()) {
-                                        if (this.sources.containsKey(p)) {
-                                                Graph g = new Graph(null, null);
-                                                g.addNode(new Node(p + " - " + uniqueId.nextId()));
-                                                graphs2.add(g);
-                                        } else {
-                                                this.graph = null;
-                                                this.biomassID = p;
-                                                for (int i = 0; i < iterations; i++) {
-                                                        this.createWorld();
-                                                        this.cicle();
 
-                                                }
-                                                if (this.graph == null) {
-                                                        graphs2.clear();
-                                                        break;
-                                                } else {
-                                                        graphs2.add(this.graph);
-                                                }
-                                        }
-                                }
-                        }
-
-                        Map<String, Double> realSources = this.sources;
-                        if (graphs.size() > 0) {
-                                System.out.println("here 12");
-                                this.graph = null;
-                                for (String s : r.getProducts()) {
-                                        this.sources.put(s, 1.0);
-                                }
-                                for (int i = 0; i < iterations; i++) {
-                                        this.createWorld();
-                                        this.biomassID = realbiomass;
-                                        this.cicle();
-                                }
-
-                                if (this.graph != null && graph.getNode(this.mReactions[0]) == null) {
-                                        for (Graph g : graphs) {
-                                                this.graph.addGraph(g);
-                                        }
-                                        System.out.println("graph 12 :" +this.graph.toString());
-
-                                }
-                        }
-                        if (graphs2.size() > 0) {
-                                System.out.println("here 22");
-                                this.graph = null;
-                                this.sources = realSources;
-                                for (String s : r.getReactants()) {
-                                        this.sources.put(s, 1.0);
-                                }
-                                for (int i = 0; i < iterations; i++) {
-                                        this.createWorld();
-                                        this.biomassID = realbiomass;
-                                        this.cicle();
-                                }
-
-                                if (this.graph != null && graph.getNode(this.mReactions[0]) == null) {
-                                        for (Graph g : graphs2) {
-                                                this.graph.addGraph(g);
-
-                                        }
-                                        System.out.println("graph 22 :" +this.graph.toString());
-                                }
-                        }
-
-                        System.out.println(graphs.size() + " - " + graphs2.size());
                         if (getStatus() == TaskStatus.PROCESSING) {
                                 PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID);
                                 try {
@@ -286,6 +299,9 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                 Model m = doc.getModel();
                 for (Species s : m.getListOfSpecies()) {
                         SpeciesFA specie = new SpeciesFA(s.getId());
+                        if (s.getId().contains(this.biomassID)) {
+                                specie.setIsBiomass();
+                        }
                         //add the number of initial ants using the sources.. and add them
                         // in the list of nodes with ants
                         if (this.sources.containsKey(s.getId())) {
@@ -427,8 +443,7 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
 
                                         SpeciesFA spFA = this.compounds.get(this.biomassID);
                                         antsBiomass.add(spFA.getAnt());
-                                        for (Ant a : antsBiomass) {
-                                                // saving the shortest path
+                                        for (Ant a : antsBiomass) {                                                
                                                 if (a.getPathSize() < shortestPath) {
                                                         this.shortestPath = a.getPathSize();
                                                         this.graph = a.getGraph();

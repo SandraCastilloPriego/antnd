@@ -55,7 +55,7 @@ public class PrintPaths {
         public VisualizationViewer printPathwayInFrame(Graph graph) {
                 edu.uci.ics.jung.graph.Graph<String, String> g = new SparseMultigraph<>();
                 List<Node> nodes = graph.getNodes();
-                System.out.println(nodes.size());
+                System.out.println("Number of nodes: "+ nodes.size() + " - " + graph.getEdges().size());
                 List<Edge> edges = graph.getEdges();
                 for (Node node : nodes) {
                         if (node != null) {
@@ -69,14 +69,14 @@ public class PrintPaths {
                         }
                 }
 
-
+System.out.println("1");
                 Layout<String, String> layout = new KKLayout(g);
                 layout.setSize(new Dimension(1400, 1000)); // sets the initial size of the space
                 VisualizationViewer<String, String> vv = new VisualizationViewer<>(layout);
                 vv.setPreferredSize(new Dimension(1400, 1000));
                 Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
                         @Override
-                        public Paint transform(String id) {
+                        public Paint transform(String id) {                                
                                 if (initialIds != null && initialIds.contains(id.replace("sp:","").split(" - ")[0])) {
                                         return Color.BLUE;
                                 } else if (finalId != null && id.split("-")[0].contains(finalId)) {
@@ -88,7 +88,7 @@ public class PrintPaths {
                                 }
                         }
                 };
-
+System.out.println("2");
                 float dash[] = {1.0f};
                 final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
@@ -116,7 +116,7 @@ public class PrintPaths {
                                         return "<html><b><font color=\"black\">" + input;
                                 }
                         }});
-
+System.out.println("3");
                 vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
                 vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
                 vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
