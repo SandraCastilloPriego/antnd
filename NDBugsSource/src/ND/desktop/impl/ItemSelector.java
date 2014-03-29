@@ -85,8 +85,9 @@ public class ItemSelector extends JPanel implements ActionListener,
                 add(rawDataPanel, BorderLayout.CENTER);
 
                 dataFilePopupMenu = new JPopupMenu();
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Show Model", this, "SHOW_DATASET");
+                GUIUtils.addMenuItem(dataFilePopupMenu, "Show Tree Model", this, "SHOW_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
+                GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
 
@@ -117,6 +118,9 @@ public class ItemSelector extends JPanel implements ActionListener,
                 if (command.equals("SHOW_INFO")) {
                         showInfo();
                 }
+                if (command.equals("VISUALIZE")) {
+                        visualize();
+                }
         }
 
         private void showData() {
@@ -132,7 +136,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 Dataset[] selectedFiles = getSelectedDatasets();
                 for (Dataset file : selectedFiles) {
                         if (file != null) {
-                                JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);                        
+                                JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);
                                 JScrollPane panel = new JScrollPane(file.getInfo());
                                 frame.setSize(new Dimension(700, 500));
                                 frame.add(panel);
@@ -251,7 +255,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 for (Dataset file : selectedFiles) {
                         if (file != null) {
                                 try {
-                                        System.out.println(file.getPath());          
+                                        System.out.println(file.getPath());
                                         SBMLWriter writer = new SBMLWriter("AntND", "1.0");
                                         writer.write(file.getDocument(), file.getPath().replace(".sbml", "") + "(copy).sbml");
                                 } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
@@ -260,5 +264,26 @@ public class ItemSelector extends JPanel implements ActionListener,
                         }
                 }
 
+        }
+
+        private void visualize() {
+                Dataset[] selectedFiles = getSelectedDatasets();
+
+                for (Dataset file : selectedFiles) {
+                        JInternalFrame frame = new JInternalFrame(file.getDatasetName(), true, true, true, true);
+                        JPanel pn = new JPanel();
+                        JScrollPane panel = new JScrollPane(pn);
+
+                        frame.setSize(new Dimension(700, 500));
+                        frame.add(panel);
+                        NDCore.getDesktop().addInternalFrame(frame);
+
+                        PrintPaths print = new PrintPaths(file.getSources(), file.getBiomassId(), file.getDocument().getModel());
+                        try {
+                                 pn.add(print.printPathwayInFrame(file.getGraph()));
+                        } catch (NullPointerException ex) {
+                                System.out.println(ex.toString());
+                        }
+                }
         }
 }

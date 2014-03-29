@@ -17,6 +17,7 @@
  */
 package ND.modules.simulation.loopAnalizer;
 
+import ND.desktop.impl.PrintPaths;
 import ND.modules.simulation.antNoGraph.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;

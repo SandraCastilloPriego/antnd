@@ -19,7 +19,7 @@ package ND.modules.reactionOP.fluxAnalysis;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
-import ND.modules.simulation.antNoGraph.PrintPaths;
+import ND.desktop.impl.PrintPaths;
 import ND.modules.simulation.antNoGraph.network.Edge;
 import ND.modules.simulation.antNoGraph.network.Graph;
 import ND.modules.simulation.antNoGraph.network.Node;
@@ -137,12 +137,15 @@ public class FluxAnalysisTask extends AbstractTask {
 
                         NDCore.getDesktop().AddNewFile(dataset);
 
-                        frame.setSize(new Dimension(700, 500));
-                        frame.add(this.panel);
-                        NDCore.getDesktop().addInternalFrame(frame);
-                        PrintPaths print = new PrintPaths(this.sourcesList, null, newModel);
-                        this.pn.add(print.printPathwayInFrame(this.createGraph(newModel)));
+                        dataset.setGraph(this.createGraph(newModel));
+                        dataset.setSources(sourcesList);
 
+                        /*frame.setSize(new Dimension(700, 500));
+                         frame.add(this.panel);
+                         NDCore.getDesktop().addInternalFrame(frame);
+                         PrintPaths print = new PrintPaths(this.sourcesList, null, newModel);
+                         this.pn.add(print.printPathwayInFrame(this.createGraph(newModel)));
+                         */
                         setStatus(TaskStatus.FINISHED);
 
                 } catch (Exception e) {
@@ -210,9 +213,6 @@ public class FluxAnalysisTask extends AbstractTask {
                         }
 
                         for (SpeciesReference sp : reactants) {
-                                if (sp.getSpeciesInstance().getId().contains("C00001") || sp.getSpeciesInstance().getId().contains("C00011")) {
-                                        continue;
-                                }
                                 Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
                                 if (newNode == null) {
                                         newNode = new Node("sp:" + sp.getSpeciesInstance().getId());
@@ -222,10 +222,7 @@ public class FluxAnalysisTask extends AbstractTask {
                                 edges.add(edge);
                         }
 
-                        for (SpeciesReference sp : products) {
-                                if (sp.getSpeciesInstance().getId().contains("C00001") || sp.getSpeciesInstance().getId().contains("C00011")) {
-                                        continue;
-                                }
+                        for (SpeciesReference sp : products) {                                
                                 Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
                                 if (newNode == null) {
                                         newNode = new Node("sp:" + sp.getSpeciesInstance().getId());

@@ -17,6 +17,7 @@
  */
 package ND.modules.simulation.superAnt;
 
+import ND.desktop.impl.PrintPaths;
 import ND.modules.simulation.antNoGraph.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -32,6 +33,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,6 +47,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -165,6 +169,8 @@ public class SuperAntModuleTask extends AbstractTask {
                          info = "Simulation\n" + this.parameters.toString() + "\nResult: No path found";
                          }
                          this.networkDS.setInfo(info + "\n--------------------------");*/
+                        
+                        createDataFile();
                         setStatus(TaskStatus.FINISHED);
 
                 } catch (Exception e) {
@@ -524,17 +530,62 @@ public class SuperAntModuleTask extends AbstractTask {
                 return false;
         }
 
-        private void addAnts() {
-                for (String source : sources.keySet()) {
-                        SpeciesFA sp = this.compounds.get(source);
-                        if (sp != null) {
-                                for (int i = 0; i < 20; i++) {
-                                        Ant newAnt = new Ant(source);
-                                        newAnt.initAnt();
-                                        sp.addAnt(newAnt);
+        private void createDataFile() {
+                if (this.graph != null) {
+                        SBMLDocument newDoc = this.networkDS.getDocument().clone();
+                        Model m = this.networkDS.getDocument().getModel();
+                        Model newModel = newDoc.getModel();
 
+                        for (Reaction reaction : m.getListOfReactions()) {
+                                if (!isInGraph(reaction.getId())) {
+                                        newModel.removeReaction(reaction.getId());
                                 }
                         }
+
+
+                        for (Species sp : m.getListOfSpecies()) {
+                                if (!this.isInReactions(newModel.getListOfReactions(), sp)) {
+                                        newModel.removeSpecies(sp.getId());
+                                }
+                        }
+
+
+
+
+                        SimpleBasicDataset dataset = new SimpleBasicDataset();
+
+                        dataset.setDocument(newDoc);
+                        dataset.setDatasetName(newModel.getId());
+                        Path path = Paths.get(this.networkDS.getPath());
+                        Path fileName = path.getFileName();
+                        String name = fileName.toString();
+                        String p = this.networkDS.getPath().replace(name, "");
+                        p = p + newModel.getId();
+                        dataset.setPath(p);
+
+                        NDCore.getDesktop().AddNewFile(dataset);
+
+                        dataset.setGraph(this.graph);
+                        dataset.setSources(sourcesList);
+                        dataset.setBiomass(biomassID);
                 }
+        }
+
+        private boolean isInGraph(String id) {
+                for(Node n : this.graph.getNodes()){
+                        if(n.getId().contains(id)){
+                                return true;
+                        }
+                }
+                return false;
+        }
+
+        private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
+                for (Reaction r : listOfReactions) {
+                        if (r.hasProduct(sp) || r.hasReactant(sp)) {
+                                return true;
+                        }
+                }
+                return false;
         }
 }

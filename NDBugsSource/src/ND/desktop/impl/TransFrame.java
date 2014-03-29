@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ND.modules.simulation.antNoGraph;
+package ND.desktop.impl;
 
 /**
  *
@@ -63,6 +63,7 @@ public class TransFrame extends JInternalFrame {
                         }
                 }
                 this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                this.setClosable(true);
                 this.setResizable(true);
                 // create and add a scroll pane and text area
                 JTextArea textArea = new JTextArea(5, 30);

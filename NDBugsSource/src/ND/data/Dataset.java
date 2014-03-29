@@ -17,6 +17,10 @@
  */
 package ND.data;
 
+import ND.modules.simulation.antNoGraph.network.Edge;
+import ND.modules.simulation.antNoGraph.network.Graph;
+import ND.modules.simulation.antNoGraph.network.Node;
+import java.util.List;
 import javax.swing.JTextArea;
 import org.sbml.jsbml.SBMLDocument;
 
@@ -58,7 +62,7 @@ public interface Dataset {
          * @return Name of the data set
          */
         public String getDatasetName();
-        
+
         /**
          * Every dataset has a path to allow the user to identify it Returns the
          * name of the data set.
@@ -66,7 +70,7 @@ public interface Dataset {
          * @return path of the data set
          */
         public String getPath();
-        
+
         public void setPath(String path);
 
         /**
@@ -108,4 +112,24 @@ public interface Dataset {
          * @param info Information about the data set
          */
         public void setInfo(String info);
+
+        public void setNodes(List<Node> nodes);
+
+        public void setEdges(List<Edge> edges);
+
+        public List<Node> getNodes();
+
+        public List<Edge> getEdges();
+
+        public void setSources(List<String> sources);
+
+        public void setBiomass(String biomassId);
+
+        public List<String> getSources();
+
+        public String getBiomassId();
+        
+        public void setGraph(Graph graph);
+        
+        public Graph getGraph();
 }

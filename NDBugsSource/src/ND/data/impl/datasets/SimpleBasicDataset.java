@@ -19,6 +19,11 @@ package ND.data.impl.datasets;
 
 import ND.data.Dataset;
 import ND.data.DatasetType;
+import ND.modules.simulation.antNoGraph.network.Edge;
+import ND.modules.simulation.antNoGraph.network.Graph;
+import ND.modules.simulation.antNoGraph.network.Node;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JTextArea;
 import org.sbml.jsbml.SBMLDocument;
 
@@ -35,6 +40,11 @@ public class SimpleBasicDataset implements Dataset {
         private int ID;
         private SBMLDocument document;
         private JTextArea textArea;
+        private List<Node> nodes;
+        private List<Edge> edges;
+        private List<String> sources;
+        private Graph graph;
+        private String biomassId;
 
         /**
          *
@@ -46,12 +56,66 @@ public class SimpleBasicDataset implements Dataset {
                 this.path = path;
                 type = DatasetType.MODELS;
                 this.textArea = new JTextArea();
+                this.nodes = new ArrayList<>();
+                this.edges = new ArrayList<>();
         }
 
         public SimpleBasicDataset() {
                 type = DatasetType.MODELS;
                 this.infoDataset = new StringBuffer();
                 this.textArea = new JTextArea();
+                this.nodes = new ArrayList<>();
+                this.edges = new ArrayList<>();
+        }
+
+        @Override
+        public void setNodes(List<Node> nodes) {
+                this.nodes = nodes;
+        }
+
+        @Override
+        public void setEdges(List<Edge> edges) {
+                this.edges = edges;
+        }
+
+        @Override
+        public List<Node> getNodes() {
+                return this.nodes;
+        }
+
+        @Override
+        public List<Edge> getEdges() {
+                return this.edges;
+        }
+
+        @Override
+        public void setSources(List<String> sources) {
+                this.sources = sources;
+        }
+
+        @Override
+        public void setBiomass(String biomassId) {
+                this.biomassId = biomassId;
+        }
+
+        @Override
+        public List<String> getSources() {
+                return this.sources;
+        }
+
+        @Override
+        public String getBiomassId() {
+                return this.biomassId;
+        }
+
+        @Override
+        public void setGraph(Graph graph) {
+                this.graph = graph;
+        }
+
+        @Override
+        public Graph getGraph() {
+                return this.graph;
         }
 
         @Override
@@ -95,7 +159,7 @@ public class SimpleBasicDataset implements Dataset {
         }
 
         @Override
-        public JTextArea getInfo() {              
+        public JTextArea getInfo() {
                 return this.textArea;
         }
 
