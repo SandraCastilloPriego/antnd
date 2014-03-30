@@ -46,7 +46,7 @@ class ItemSelectorListRenderer extends DefaultListCellRenderer {
                 // becomes blank when the ListModel is updated
                 component.setPreferredSize(new Dimension(100, 15));
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, hasFocus);
-                if (value.toString().contains("LC-MS")) {
+                /*if (value.toString().contains("LC-MS")) {
                         label.setIcon(new ImageIcon("icons/lcms.png"));
                 } else if (value.toString().contains("Text File")) {
                         label.setIcon(new ImageIcon("icons/others.png"));
@@ -56,7 +56,8 @@ class ItemSelectorListRenderer extends DefaultListCellRenderer {
                         label.setIcon(new ImageIcon("icons/gcgc.png"));
                 }else{
                          label.setIcon(new ImageIcon("icons/openfile.png"));
-                }
+                }*/
+                label.setIcon(new ImageIcon("icons/sbml.png"));
 
                 return component;
         }

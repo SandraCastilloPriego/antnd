@@ -69,7 +69,7 @@ public class ShowReactionModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/others.png";
+                return "icons/ShowReaction.png";
         }
 
         @Override

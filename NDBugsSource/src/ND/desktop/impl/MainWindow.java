@@ -70,6 +70,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 return menuBar;
         }
 
+        @Override
         public void addInternalFrame(JInternalFrame frame) {
                 try {
                         desktopPane.add(frame);
@@ -79,14 +80,17 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 }
         }
 
+        @Override
         public void setParameteresPath(String path) {
                 this.parametersFilePath = path;
         }
 
+        @Override
         public String getParameteresPath() {
                 return this.parametersFilePath;
         }
 
+        @Override
         public void loadParameterPathFromXML(Element xmlElement) {
                 NodeList list = xmlElement.getElementsByTagName("parameter");
                 for (int i = 0; i < list.getLength(); i++) {
@@ -105,6 +109,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 }
         }
 
+        @Override
         public void saveParameterPathToXML(Element xmlElement) {
                 Document parentDocument = xmlElement.getOwnerDocument();
                 Element paramElement = parentDocument.createElement("parameter");
@@ -119,6 +124,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
         /**
          * This method returns the desktop
          */
+        @Override
         public JDesktopPane getDesktopPane() {
                 return desktopPane;
         }
@@ -126,48 +132,60 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
         /**
          * WindowListener interface implementation
          */
+        @Override
         public void windowOpened(WindowEvent e) {
         }
 
+        @Override
         public void windowClosing(WindowEvent e) {
                 NDCore.exitND();
         }
 
+        @Override
         public void windowClosed(WindowEvent e) {
         }
 
+        @Override
         public void windowIconified(WindowEvent e) {
         }
 
+        @Override
         public void windowDeiconified(WindowEvent e) {
         }
 
+        @Override
         public void windowActivated(WindowEvent e) {
         }
 
+        @Override
         public void windowDeactivated(WindowEvent e) {
         }
 
+        @Override
         public void setStatusBarText(String text) {
                 setStatusBarText(text, Color.black);
         }
 
         /**
          */
+        @Override
         public void displayMessage(String msg) {
                 displayMessage("Message", msg, JOptionPane.INFORMATION_MESSAGE);
         }
 
         /**
          */
+        @Override
         public void displayMessage(String title, String msg) {
                 displayMessage(title, msg, JOptionPane.INFORMATION_MESSAGE);
         }
 
+        @Override
         public void displayErrorMessage(String msg) {
                 displayMessage("Error", msg);
         }
 
+        @Override
         public void displayErrorMessage(String title, String msg) {
                 displayMessage(title, msg, JOptionPane.ERROR_MESSAGE);
         }
@@ -189,7 +207,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
 
                 try {
                         BufferedImage NDIcon = ImageIO.read(new File(
-                                "icons/MMIcon.png"));
+                                "icons/NDIcon.png"));
                         setIconImage(NDIcon);
                 } catch (IOException e) {
                        // e.printStackTrace();
@@ -208,7 +226,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 desktopPane.setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
 
                 desktopPane.setBorder(new EtchedBorder(EtchedBorder.RAISED));
-                //desktopPane.setBackground(new Color(251, 161, 82));
+                desktopPane.setBackground(new Color(251, 161, 82));
                 Container c = getContentPane();
                 c.setLayout(new BorderLayout());
                 c.add(split, BorderLayout.CENTER);
@@ -240,22 +258,27 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 setTitle("AntND " + NDCore.getNDVersion());
         }
 
+        @Override
         public JFrame getMainFrame() {
                 return this;
         }
 
+        @Override
         public JInternalFrame getSelectedFrame() {
                 return desktopPane.getSelectedFrame();
         }
 
+        @Override
         public JInternalFrame[] getInternalFrames() {
                 return desktopPane.getAllFrames();
         }
 
+        @Override
         public void setStatusBarText(String text, Color textColor) {
                 statusBar.setStatusText(text, textColor);
         }
 
+        @Override
         public ParameterSet getParameterSet() {
                 // return parameters;
                 return null;
@@ -269,6 +292,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 return itemSelector;
         }
 
+        @Override
         public Dataset[] getSelectedDataFiles() {
                 return this.itemSelector.getSelectedDatasets();
         }
@@ -276,14 +300,21 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
         /*public Vector[] getSelectedExperiments() {
         return this.itemSelector.getSelectedExperiments();
         }*/
+        /**
+         *
+         * @param dataset
+         */
+        @Override
         public void AddNewFile(Dataset dataset) {
                 this.itemSelector.addNewFile(dataset);
         }
 
+        @Override
         public void removeData(Dataset file) {
                 this.itemSelector.removeData(file);
         }
 
+        @Override
         public void displayException(Exception e) {
                 displayErrorMessage(ExceptionUtils.exceptionToString(e));
         }

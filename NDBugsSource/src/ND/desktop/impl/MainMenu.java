@@ -25,6 +25,7 @@ import ND.parameters.ParameterSet;
 import ND.util.dialogs.ExitCode;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import ca.guydavis.swing.desktop.JWindowsMenu;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -44,17 +45,22 @@ public class MainMenu extends JMenuBar implements ActionListener {
         private Map<JMenuItem, NDProcessingModule> moduleMenuItems = new HashMap<JMenuItem, NDProcessingModule>();
 
         MainMenu() {
-
+                this.setBackground(Color.WHITE);
+                
+                
                 fileMenu = new JMenu("File");
                 fileMenu.setMnemonic(KeyEvent.VK_F);
+                fileMenu.setIcon(new ImageIcon("icons/file.jpg"));
                 add(fileMenu);
 
                 utilsMenu = new JMenu("Simulation");
                 utilsMenu.setMnemonic(KeyEvent.VK_S);
+                utilsMenu.setIcon(new ImageIcon("icons/simulationMenu.png"));
                 add(utilsMenu);
 
                 reactionMenu = new JMenu("Model");
                 reactionMenu.setMnemonic(KeyEvent.VK_R);
+                reactionMenu.setIcon(new ImageIcon("icons/model.png"));
                 add(reactionMenu);
 
                 JDesktopPane mainDesktopPane = ((MainWindow) NDCore.getDesktop()).getDesktopPane();
@@ -63,6 +69,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
                         mainDesktopPane);
                 windowsMenu.setWindowPositioner(positioner);
                 windowsMenu.setMnemonic(KeyEvent.VK_W);
+                windowsMenu.setIcon(new ImageIcon("icons/window.png"));
                 this.add(windowsMenu);
 
 
@@ -71,6 +78,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
                  */
                 helpMenu = new JMenu("Help");
                 helpMenu.setMnemonic(KeyEvent.VK_H);
+                helpMenu.setIcon(new ImageIcon("icons/helpMenu.png"));
                 this.add(helpMenu);
 
                 showAbout = new JMenuItem("About ND ...");

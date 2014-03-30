@@ -64,7 +64,7 @@ public class LoopAnalyzerModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/others.png";
+                return "icons/loopAnalyzer.png";
         }
 
         @Override

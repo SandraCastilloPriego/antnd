@@ -64,7 +64,7 @@ public class OpenBasicFileModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/others.png";
+                return "icons/opensbml.png";
         }
 
         @Override

@@ -64,7 +64,7 @@ public class SuperAntModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/others.png";
+                return "icons/simulation.png";
         }
 
         @Override

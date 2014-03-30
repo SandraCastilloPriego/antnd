@@ -64,7 +64,7 @@ public class FluxAnalysisModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/others.png";
+                return "icons/ShowCompound.png";
         }
 
         @Override

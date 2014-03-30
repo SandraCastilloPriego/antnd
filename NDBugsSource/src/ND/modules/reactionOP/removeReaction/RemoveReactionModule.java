@@ -68,7 +68,7 @@ public class RemoveReactionModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/others.png";
+                return "icons/DeleteReaction.png";
         }
 
         @Override

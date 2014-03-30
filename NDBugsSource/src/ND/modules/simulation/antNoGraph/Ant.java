@@ -73,7 +73,7 @@ public class Ant {
         }
 
         public void print() {
-                System.out.print("size: "+ this.getPathSize() +" - location: " + this.location + "//");
+                System.out.print("size: " + this.getPathSize() + " - location: " + this.location + "//");
                 for (String p : this.path) {
                         System.out.print(" - " + p.split(" - ")[0]);
                 }
@@ -82,7 +82,7 @@ public class Ant {
 
         public void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts) {
                 Node node = new Node(reactionChoosen + " - " + uniqueId.nextId());
-                
+
                 for (Ant ant : combinedAnts.keySet()) {
                         this.pathsize = this.pathsize + ant.getPathSize();
                         g.addNode(node);
@@ -129,8 +129,19 @@ public class Ant {
         public void setPathSize(int pathsize) {
                 this.pathsize = pathsize;
         }
-        
-        public int getPathSize(){
+
+        public int getPathSize() {
                 return this.pathsize;
+        }
+
+        public boolean compare(Ant ant) {
+                for (String p : this.getPath()) {
+                        for (String op : ant.getPath()) {
+                                if (!p.split(" - ")[0].equals(op.split(" - ")[0])) {
+                                        return false;
+                                }
+                        }
+                }
+                return true;
         }
 }
