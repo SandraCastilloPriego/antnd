@@ -215,7 +215,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
 
                 // Initialize item selector
                 itemSelector = new ItemSelector(this);
-
+                
 
                 // Place objects on main window
                 desktopPane = new JDesktopPane();
@@ -226,7 +226,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 desktopPane.setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
 
                 desktopPane.setBorder(new EtchedBorder(EtchedBorder.RAISED));
-                desktopPane.setBackground(new Color(251, 161, 82));
+                desktopPane.setBackground(Color.WHITE);
                 Container c = getContentPane();
                 c.setLayout(new BorderLayout());
                 c.add(split, BorderLayout.CENTER);

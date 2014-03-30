@@ -26,6 +26,7 @@ import ND.util.dialogs.ExitCode;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import ca.guydavis.swing.desktop.JWindowsMenu;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -46,20 +47,22 @@ public class MainMenu extends JMenuBar implements ActionListener {
 
         MainMenu() {
                 this.setBackground(Color.WHITE);
-                
-                
+                            
                 fileMenu = new JMenu("File");
                 fileMenu.setMnemonic(KeyEvent.VK_F);
+                fileMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
                 fileMenu.setIcon(new ImageIcon("icons/file.jpg"));
                 add(fileMenu);
 
                 utilsMenu = new JMenu("Simulation");
                 utilsMenu.setMnemonic(KeyEvent.VK_S);
+                utilsMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
                 utilsMenu.setIcon(new ImageIcon("icons/simulationMenu.png"));
                 add(utilsMenu);
 
                 reactionMenu = new JMenu("Model");
                 reactionMenu.setMnemonic(KeyEvent.VK_R);
+                reactionMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
                 reactionMenu.setIcon(new ImageIcon("icons/model.png"));
                 add(reactionMenu);
 
@@ -69,6 +72,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
                         mainDesktopPane);
                 windowsMenu.setWindowPositioner(positioner);
                 windowsMenu.setMnemonic(KeyEvent.VK_W);
+                windowsMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
                 windowsMenu.setIcon(new ImageIcon("icons/window.png"));
                 this.add(windowsMenu);
 
@@ -78,6 +82,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
                  */
                 helpMenu = new JMenu("Help");
                 helpMenu.setMnemonic(KeyEvent.VK_H);
+                helpMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
                 helpMenu.setIcon(new ImageIcon("icons/helpMenu.png"));
                 this.add(helpMenu);
 

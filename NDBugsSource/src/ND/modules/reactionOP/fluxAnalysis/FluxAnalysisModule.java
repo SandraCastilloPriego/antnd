@@ -24,6 +24,7 @@ import ND.modules.NDProcessingModule;
 import ND.parameters.ParameterSet;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.Task;
+import ND.taskcontrol.TaskStatus;
 
 /**
  *
@@ -49,10 +50,14 @@ public class FluxAnalysisModule implements NDProcessingModule {
 
                 // prepare a new group of tasks
                 Task tasks[] = new FluxAnalysisTask[1];
+                if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
+                        NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
+                } else {
 
-                tasks[0] = new FluxAnalysisTask((SimpleBasicDataset)NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
+                        tasks[0] = new FluxAnalysisTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
 
-                NDCore.getTaskController().addTasks(tasks);
+                        NDCore.getTaskController().addTasks(tasks);
+                }
 
                 return tasks;
         }

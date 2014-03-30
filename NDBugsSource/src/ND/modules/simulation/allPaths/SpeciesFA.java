@@ -38,13 +38,21 @@ public class SpeciesFA {
                 this.ant = new ArrayList();
         }
 
-        public Ant getAnt(Random rand) {
+        public Ant getAnt() {
                 return sortestAnt();
+        }
+
+        public Ant getAntandRemoveIt() {
+                Ant a = sortestAnt();
+                if (a != null && this.ant.size() > 1) {
+                        this.ant.remove(a);
+                }
+                return a;
         }
 
         public void addAnt(Ant ant) {
                 if (!isHere(ant)) {
-                                               
+
                         this.ant.add(ant);
                 }
         }
@@ -73,8 +81,8 @@ public class SpeciesFA {
         private Ant sortestAnt() {
                 Ant shortest = null;
                 int size = Integer.MAX_VALUE;
-                for(Ant a : this.ant){
-                        if(a.getPathSize() < size){
+                for (Ant a : this.ant) {
+                        if (a.getPathSize() < size) {
                                 shortest = a;
                                 size = a.getPathSize();
                         }

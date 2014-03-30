@@ -19,7 +19,6 @@ package ND.modules.reactionOP.fluxAnalysis;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
-import ND.desktop.impl.PrintPaths;
 import ND.modules.simulation.antNoGraph.network.Edge;
 import ND.modules.simulation.antNoGraph.network.Graph;
 import ND.modules.simulation.antNoGraph.network.Node;
@@ -28,7 +27,6 @@ import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import com.csvreader.CsvReader;
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -96,6 +94,7 @@ public class FluxAnalysisTask extends AbstractTask {
         public void run() {
                 try {
                         setStatus(TaskStatus.PROCESSING);
+                        
                         this.readExchangeReactions();
                         this.fluxes = this.readFluxes();
                         System.out.println(this.fluxes.size());
@@ -222,7 +221,7 @@ public class FluxAnalysisTask extends AbstractTask {
                                 edges.add(edge);
                         }
 
-                        for (SpeciesReference sp : products) {                                
+                        for (SpeciesReference sp : products) {
                                 Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
                                 if (newNode == null) {
                                         newNode = new Node("sp:" + sp.getSpeciesInstance().getId());

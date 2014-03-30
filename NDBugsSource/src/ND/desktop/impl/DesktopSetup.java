@@ -60,8 +60,8 @@ public class DesktopSetup {
                 }
 
                 // Set small font where necessary
-                UIManager.put("List.font", smallFont);
-                UIManager.put("Table.font", smallFont);
+                UIManager.put("List.font", defaultFont);
+                UIManager.put("Table.font", defaultFont);
                 UIManager.put("ToolTip.font", tinyFont);
 
                 // Set platform look & feel

@@ -199,7 +199,9 @@ public class PrintPaths implements KeyListener {
                 });
                 panel.add(button);
                 panel.setPreferredSize(new Dimension(150,40));
+                panel.setBackground(Color.WHITE);
                 vv.add(panel);
+                vv.setBackground(Color.WHITE);
                 return vv;
         }
 

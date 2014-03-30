@@ -169,7 +169,7 @@ public class SuperAntModuleTask extends AbstractTask {
                          info = "Simulation\n" + this.parameters.toString() + "\nResult: No path found";
                          }
                          this.networkDS.setInfo(info + "\n--------------------------");*/
-                        
+
                         createDataFile();
                         setStatus(TaskStatus.FINISHED);
 
@@ -286,7 +286,7 @@ public class SuperAntModuleTask extends AbstractTask {
                                 b.put(reactionName, data);
 
                                 Reaction r = m.getReaction(reactionName);
-                                if (r != null) {
+                                if (r != null && r.getKineticLaw() == null) {
                                         KineticLaw law = new KineticLaw();
                                         LocalParameter lbound = new LocalParameter("LOWER_BOUND");
                                         lbound.setValue(Double.valueOf(data[3]));
@@ -309,13 +309,13 @@ public class SuperAntModuleTask extends AbstractTask {
 
                 for (String compound : compounds.keySet()) {
 
-                        List<String> possibleReactions = getPossibleReactions(compound);                       
+                        List<String> possibleReactions = getPossibleReactions(compound);
 
                         for (String reactionChoosen : possibleReactions) {
                                 ReactionFA rc = this.reactions.get(reactionChoosen);
                                 // for (int i = 0; i < rc.getPheromones()+1; i++) {
                                 //String reactionChoosen = chooseReactions(possibleReactions);
-                              
+
 
 
 
@@ -339,7 +339,7 @@ public class SuperAntModuleTask extends AbstractTask {
                                         Ant a = spfa.getAnt();
                                         combinedAnts.put(a, s);
                                 }
-                                
+
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
 
                                 if (!superAnt.isLost()) {
@@ -386,16 +386,16 @@ public class SuperAntModuleTask extends AbstractTask {
                                 // }
                         }
 
-                       /* for (String s : removeAtTheEnd) {
-                                if (!this.sources.containsKey(s)) {
-                                        SpeciesFA spfa = this.compounds.get(s);
+                        /* for (String s : removeAtTheEnd) {
+                         if (!this.sources.containsKey(s)) {
+                         SpeciesFA spfa = this.compounds.get(s);
 
-                                        Ant ant = spfa.getAnt();
-                                        if (ant != null) {
-                                                spfa.removeAnt(ant);
-                                        }
-                                }
-                        }*/
+                         Ant ant = spfa.getAnt();
+                         if (ant != null) {
+                         spfa.removeAnt(ant);
+                         }
+                         }
+                         }*/
 
                 }
 
@@ -463,16 +463,16 @@ public class SuperAntModuleTask extends AbstractTask {
                                 }
 
                         } else {
-                              /*  if (reaction.contains("R03084")) {
-                                        List<String> products = r.getProducts();
-                                        System.out.println(products.size());
-                                }*/
+                                /*  if (reaction.contains("R03084")) {
+                                 List<String> products = r.getProducts();
+                                 System.out.println(products.size());
+                                 }*/
                                 if (r.getlb() < 0) {
                                         List<String> products = r.getProducts();
                                         for (String product : products) {
                                                 /*if (reaction.contains("R03084")) {
-                                                        System.out.println(node + " - " + product);
-                                                }*/
+                                                 System.out.println(node + " - " + product);
+                                                 }*/
                                                 if (!allEnoughAnts(product, r.getStoichiometry(product), reaction)) {
                                                         isPossible = false;
                                                         break;
@@ -485,8 +485,8 @@ public class SuperAntModuleTask extends AbstractTask {
                         }
 
                         /*if (reaction.contains("R03084")) {
-                                System.out.println(r.getId() + " - " + r.getlb() + " - " + r.getub() + " - " + isPossible);
-                        }*/
+                         System.out.println(r.getId() + " - " + r.getlb() + " - " + r.getub() + " - " + isPossible);
+                         }*/
 
                         if (isPossible) {
                                 possibleReactions.add(reaction);
@@ -508,24 +508,24 @@ public class SuperAntModuleTask extends AbstractTask {
                 SpeciesFA s = this.compounds.get(species);
                 Ant ant = s.getAnt();
                 if (ant != null && ant.contains(reaction)) {
-                       /* if (reaction.contains("R03084")) {
-                                System.out.println(species + "is repeated");
-                        }*/
+                        /* if (reaction.contains("R03084")) {
+                         System.out.println(species + "is repeated");
+                         }*/
 
                         return false;
 
                 }
 
                 if (ant != null) {
-                       /* if (reaction.contains("R03084")) {
-                                System.out.println(species + "is true");
-                        }*/
+                        /* if (reaction.contains("R03084")) {
+                         System.out.println(species + "is true");
+                         }*/
                         //   
                         return true;
                 }
-              /*  if (reaction.contains("R03084")) {
-                        System.out.println(species + "is false");
-                }*/
+                /*  if (reaction.contains("R03084")) {
+                 System.out.println(species + "is false");
+                 }*/
 
                 return false;
         }
@@ -572,8 +572,8 @@ public class SuperAntModuleTask extends AbstractTask {
         }
 
         private boolean isInGraph(String id) {
-                for(Node n : this.graph.getNodes()){
-                        if(n.getId().contains(id)){
+                for (Node n : this.graph.getNodes()) {
+                        if (n.getId().contains(id)) {
                                 return true;
                         }
                 }

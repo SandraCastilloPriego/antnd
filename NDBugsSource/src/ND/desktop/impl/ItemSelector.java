@@ -49,7 +49,7 @@ import org.sbml.jsbml.SBMLWriter;
 public class ItemSelector extends JPanel implements ActionListener,
         MouseListener, ListSelectionListener {
 
-        public static final String DATA_FILES_LABEL = "Data set Files";
+        public static final String DATA_FILES_LABEL = "SBML Files";
         private DragOrderedJList DatasetFiles;
         private List<Dataset> DatasetFilesModel = new ArrayList<>();
         private DefaultListModel DatasetNamesModel = new DefaultListModel();
@@ -61,12 +61,12 @@ public class ItemSelector extends JPanel implements ActionListener,
          */
         public ItemSelector(Desktop desktop) {
 
-
-                // Create panel for raw data objects
+                                // Create panel for raw data objects
                 JPanel rawDataPanel = new JPanel();
-                rawDataPanel.setBackground(new Color(251, 161, 82));
+                rawDataPanel.setBackground(new Color(119, 186, 155));
                 JLabel rawDataTitle = new JLabel(DATA_FILES_LABEL);
-
+                rawDataTitle.setBackground(Color.red);
+                
                 DatasetFiles = new DragOrderedJList(DatasetNamesModel);
                 DatasetFiles.setCellRenderer(new ItemSelectorListRenderer());
                 DatasetFiles.addMouseListener(this);

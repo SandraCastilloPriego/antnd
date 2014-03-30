@@ -376,7 +376,7 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                 b.put(reactionName, data);
 
                                 Reaction r = m.getReaction(reactionName);
-                                if (r != null) {
+                                if (r != null && r.getKineticLaw() == null) {
                                         KineticLaw law = new KineticLaw();
                                         LocalParameter lbound = new LocalParameter("LOWER_BOUND");
                                         lbound.setValue(Double.valueOf(data[3]));
@@ -579,8 +579,8 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
         }
 
         private boolean isInGraph(String id) {
-                for(Node n : this.graph.getNodes()){
-                        if(n.getId().contains(id)){
+                for (Node n : this.graph.getNodes()) {
+                        if (n.getId().contains(id)) {
                                 return true;
                         }
                 }
