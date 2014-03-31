@@ -20,7 +20,6 @@ package ND.modules.simulation.allPaths;
 import ND.modules.simulation.antNoGraph.Ant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  *
@@ -39,11 +38,11 @@ public class SpeciesFA {
         }
 
         public Ant getAnt() {
-                return sortestAnt();
+                return shortestAnt();
         }
 
         public Ant getAntandRemoveIt() {
-                Ant a = sortestAnt();
+                Ant a = shortestAnt();
                 if (a != null && this.ant.size() > 1) {
                         this.ant.remove(a);
                 }
@@ -78,7 +77,7 @@ public class SpeciesFA {
                 return false;
         }
 
-        private Ant sortestAnt() {
+        private Ant shortestAnt() {
                 Ant shortest = null;
                 int size = Integer.MAX_VALUE;
                 for (Ant a : this.ant) {

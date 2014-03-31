@@ -67,7 +67,7 @@ public class TransFrame extends JInternalFrame {
                 this.setResizable(true);
                 // create and add a scroll pane and text area
                 JTextArea textArea = new JTextArea(5, 30);
-                textArea.setBackground(new Color(251, 161, 82));
+                textArea.setBackground(new Color(119, 186, 155));
                 Font font = textArea.getFont();
                 textArea.setFont(font.deriveFont(Font.BOLD));
                 JScrollPane scrollPane = new JScrollPane(textArea);

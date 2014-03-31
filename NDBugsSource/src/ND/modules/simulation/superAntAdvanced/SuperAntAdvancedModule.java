@@ -49,11 +49,13 @@ public class SuperAntAdvancedModule implements NDProcessingModule {
 
                 // prepare a new group of tasks
                 Task tasks[] = new SuperAntAdvancedModuleTask[1];
+                if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
+                        NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
+                } else {
+                        tasks[0] = new SuperAntAdvancedModuleTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
 
-                tasks[0] = new SuperAntAdvancedModuleTask((SimpleBasicDataset)NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
-
-                NDCore.getTaskController().addTasks(tasks);
-
+                        NDCore.getTaskController().addTasks(tasks);
+                }
                 return tasks;
         }
 

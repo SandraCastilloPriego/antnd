@@ -65,7 +65,6 @@ public class ItemSelector extends JPanel implements ActionListener,
                 JPanel rawDataPanel = new JPanel();
                 rawDataPanel.setBackground(new Color(119, 186, 155));
                 JLabel rawDataTitle = new JLabel(DATA_FILES_LABEL);
-                rawDataTitle.setBackground(Color.red);
                 
                 DatasetFiles = new DragOrderedJList(DatasetNamesModel);
                 DatasetFiles.setCellRenderer(new ItemSelectorListRenderer());
