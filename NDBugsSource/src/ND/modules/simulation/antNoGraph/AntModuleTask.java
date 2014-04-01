@@ -76,10 +76,8 @@ public class AntModuleTask extends AbstractTask {
         private int shortestPath = Integer.MAX_VALUE;
         private Graph graph;
         private int iterations, pheromones, removePheromones;
-        private SimpleParameterSet parameters;
 
-        public AntModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
-                this.parameters = parameters;
+        public AntModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {    
                 this.networkDS = dataset;
                 this.exchangeReactions = parameters.getParameter(AntModuleParameters.exchangeReactions).getValue();
                 this.biomassID = parameters.getParameter(AntModuleParameters.objectiveReaction).getValue();

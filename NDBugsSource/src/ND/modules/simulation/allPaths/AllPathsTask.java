@@ -74,12 +74,18 @@ public class AllPathsTask extends AbstractTask {
         private JInternalFrame frame;
         private JScrollPane panel;
         private JPanel pn;
-        private int shortestPath = Integer.MAX_VALUE;
         private List<Graph> graphs;
         private int iterations;
+        private int shortestPath = Integer.MAX_VALUE;
+        private List<Reaction> reactionsRemoved;
+        private Graph graph;
+        private boolean removedReaction = false;
+        private int count = 0;
+        private Model m = null;
 
         public AllPathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
+                this.m = this.networkDS.getDocument().getModel().clone();
                 this.exchangeReactions = parameters.getParameter(AllPathsParameters.exchangeReactions).getValue();
                 this.biomassID = parameters.getParameter(AllPathsParameters.objectiveReaction).getValue();
                 this.boundsFile = parameters.getParameter(AllPathsParameters.bounds).getValue();
@@ -94,6 +100,7 @@ public class AllPathsTask extends AbstractTask {
                 this.bounds = new HashMap<>();
                 this.sourcesList = new ArrayList<>();
                 this.graphs = new ArrayList<>();
+                this.reactionsRemoved = new ArrayList<>();
 
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.pn = new JPanel();
@@ -135,33 +142,32 @@ public class AllPathsTask extends AbstractTask {
                         System.out.println("Reading bounds");
                         this.bounds = this.readBounds();
                         System.out.println("Creating world");
-                        this.createWorld();
+                        // this.createWorld();
                         System.out.println("Starting simulation");
-                        frame.setSize(new Dimension(700, 500));
-                        frame.add(this.panel);
-                        NDCore.getDesktop().addInternalFrame(frame);
+                        // frame.setSize(new Dimension(700, 500));
+                        //frame.add(this.panel);
+                        //  NDCore.getDesktop().addInternalFrame(frame);
 
-                        for (int i = 0; i < iterations; i++) {
-                                this.cicle();
-                                finishedPercentage = (double) i / iterations;
-                                if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
-                                        break;
-                                }
-                                if (this.graphs.size() > 50) {
-                                        break;
-                                }
-                        }
-
+                        this.doSimulation();
                         if (!this.graphs.isEmpty()) {
                                 Graph g = joinGraphs();
+                                // for (Graph g : this.graphs) {
+                                this.frame = new JInternalFrame("Result", true, true, true, true);
+                                this.pn = new JPanel();
+                                this.panel = new JScrollPane(pn);
+                                frame.setSize(new Dimension(700, 500));
+                                frame.add(this.panel);
                                 if (getStatus() == TaskStatus.PROCESSING) {
                                         PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID, this.networkDS.getDocument().getModel());
                                         try {
                                                 this.pn.add(print.printPathwayInFrame(g));
+                                                NDCore.getDesktop().addInternalFrame(frame);
                                         } catch (NullPointerException ex) {
                                                 System.out.println(ex.toString());
                                         }
                                 }
+
+                                // }
                                 createDataFile(g);
                         } else {
                                 NDCore.getDesktop().displayMessage("No path was found.");
@@ -194,7 +200,6 @@ public class AllPathsTask extends AbstractTask {
                                                 String[] exchangeRow = exchange.getValues();
                                                 exchangeMap.put(exchangeRow[0], Double.parseDouble(exchangeRow[1]));
                                                 this.sourcesList.add(exchangeRow[0]);
-                                                //totalSource += Double.parseDouble(exchangeRow[1]);
                                         } catch (IOException | NumberFormatException e) {
                                                 e.printStackTrace();
                                         }
@@ -211,20 +216,12 @@ public class AllPathsTask extends AbstractTask {
         }
 
         private void createWorld() {
-                SBMLDocument doc = this.networkDS.getDocument();
-                Model m = doc.getModel();
                 for (Species s : m.getListOfSpecies()) {
                         SpeciesFA specie = new SpeciesFA(s.getId());
                         //add the number of initial ants using the sources.. and add them
                         // in the list of nodes with ants
                         if (this.sources.containsKey(s.getId())) {
-                                // double amount = this.sources.get(s.getId());
                                 double antAmount = 50;
-                                /*if (s.getId().contains("C00001")) {
-                                 antAmount = 5000;
-                                 }*/
-
-
                                 for (int i = 0; i < antAmount; i++) {
                                         Ant ant = new Ant(specie.getId());
                                         ant.initAnt();
@@ -312,74 +309,78 @@ public class AllPathsTask extends AbstractTask {
         public void cicle() {
 
                 for (String compound : compounds.keySet()) {
+                        if (!this.removedReaction) {
+                                List<String> possibleReactions = getPossibleReactions(compound);
 
-                        List<String> possibleReactions = getPossibleReactions(compound);
+                                for (String reactionChoosen : possibleReactions) {
+                                        ReactionFA rc = this.reactions.get(reactionChoosen);
 
-                        for (String reactionChoosen : possibleReactions) {
-                                ReactionFA rc = this.reactions.get(reactionChoosen);
-
-                                List<String> toBeAdded, toBeRemoved;
-                                if (rc.hasReactant(compound)) {
-                                        toBeAdded = rc.getProducts();
-                                        toBeRemoved = rc.getReactants();
-                                } else {
-                                        toBeAdded = rc.getReactants();
-                                        toBeRemoved = rc.getProducts();
-                                }
-
-                                // get the ants that must be removed from the reactants ..
-                                // creates a superAnt with all the paths until this reaction joined..
-
-                                Ant superAnt = new Ant(null);
-                                HashMap<Ant, String> combinedAnts = new HashMap<>();
-                                for (String s : toBeRemoved) {
-                                        SpeciesFA spfa = this.compounds.get(s);
-
-                                        Ant a = spfa.getAntandRemoveIt();
-                                        if (a != null) {
-                                                combinedAnts.put(a, s);
+                                        List<String> toBeAdded, toBeRemoved;
+                                        if (rc.hasReactant(compound)) {
+                                                toBeAdded = rc.getProducts();
+                                                toBeRemoved = rc.getReactants();
                                         } else {
-                                                System.out.println("why??");
+                                                toBeAdded = rc.getReactants();
+                                                toBeRemoved = rc.getProducts();
                                         }
-                                }
 
-                                superAnt.joinGraphs(reactionChoosen, combinedAnts);
+                                        // get the ants that must be removed from the reactants ..
+                                        // creates a superAnt with all the paths until this reaction joined..
 
-                                if (!superAnt.isLost()) {
-                                        // move the ants to the products...   
-                                        for (String s : toBeAdded) {
+                                        Ant superAnt = new Ant(null);
+                                        HashMap<Ant, String> combinedAnts = new HashMap<>();
+                                        for (String s : toBeRemoved) {
                                                 SpeciesFA spfa = this.compounds.get(s);
-                                                for (int e = 0; e < rc.getStoichiometry(s); e++) {
-                                                        Ant newAnt = superAnt.clone();
-                                                        newAnt.setLocation(spfa.getId());
-                                                        spfa.addAnt(newAnt);
+
+                                                Ant a = spfa.getAnt();
+                                                if (a != null) {
+                                                        combinedAnts.put(a, s);
+                                                }/* else {
+                                                 System.out.println("why??");
+                                                 }*/
+                                        }
+
+                                        superAnt.joinGraphs(reactionChoosen, combinedAnts);
+
+                                        if (!superAnt.isLost()) {
+                                                // move the ants to the products...   
+                                                for (String s : toBeAdded) {
+                                                        SpeciesFA spfa = this.compounds.get(s);
+                                                        for (int e = 0; e < rc.getStoichiometry(s); e++) {
+                                                                Ant newAnt = superAnt.clone();
+                                                                newAnt.setLocation(spfa.getId());
+                                                                spfa.addAnt(newAnt);
+                                                        }
+                                                }
+
+
+                                                // When the ants arrive to the biomass
+                                                if (toBeAdded.contains(this.biomassID)) {
+
+                                                        SpeciesFA spFA = this.compounds.get(this.biomassID);
+                                                        Ant a = spFA.getAnt();
+                                                        System.out.println("Biomass produced!: " + a.getPathSize());
+
+                                                        // saving the shortest path
+                                                        if (a.getPathSize() < shortestPath) {
+                                                                this.shortestPath = a.getPathSize();
+                                                                this.graph = a.getGraph();
+                                                                String biomassName = this.biomassID + " - " + uniqueId.nextId();
+                                                                Node biomass = new Node(biomassName);
+                                                                this.graph.addNode(biomass);
+                                                                Node lastNode = this.graph.getNode(reactionChoosen);
+                                                                Edge edge = new Edge(biomassName, lastNode, biomass);
+                                                                this.graph.addEdge(edge);
+                                                                this.graphs.add(this.graph);
+                                                                a.print();
+                                                                removeReaction(a.getPath());
+                                                                count++;
+
+                                                        }
                                                 }
                                         }
-
                                 }
-                                // When the ants arrive to the biomass
-                                if (toBeAdded.contains(this.biomassID)) {
-                                        List<Ant> antsBiomass = new ArrayList<>();
-                                        System.out.println("Biomass produced!: " + rc.getId());
-
-                                        SpeciesFA spFA = this.compounds.get(this.biomassID);
-                                        antsBiomass.add(spFA.getAnt());
-                                        for (Ant a : antsBiomass) {
-                                                this.shortestPath = a.getPathSize();
-                                                Graph g = a.getGraph();
-                                                String biomassString = this.biomassID + uniqueId.nextId();
-                                                Node biomass = new Node(biomassString);
-                                                g.addNode(biomass);
-                                                Node lastNode = g.getNode(reactionChoosen);
-                                                Edge edge = new Edge(biomassString, lastNode, biomass);
-                                                g.addEdge(edge);
-                                                this.graphs.add(g);
-                                                a.print();
-                                        }
-                                }
-
                         }
-
                 }
 
         }
@@ -388,6 +389,7 @@ public class AllPathsTask extends AbstractTask {
 
                 List<String> possibleReactions = new ArrayList<>();
                 SpeciesFA sp = this.compounds.get(node);
+
                 Ant ant = sp.getAnt();
                 if (!this.sources.containsKey(node) && ant == null) {
                         return possibleReactions;
@@ -398,90 +400,60 @@ public class AllPathsTask extends AbstractTask {
                 for (String reaction : connectedReactions) {
 
                         ReactionFA r = this.reactions.get(reaction);
+                        if (r != null && !this.reactionsRemoved.contains(r)) {
+                                boolean isPossible = true;
 
-                        boolean isPossible = true;
+                                if (r.hasReactant(node)) {
 
-                        if (r.hasReactant(node)) {
+                                        if (r.getub() > 0) {
+                                                List<String> reactants = r.getReactants();
+                                                for (String reactant : reactants) {
 
-                                if (r.getub() > 0) {
-                                        List<String> reactants = r.getReactants();
-                                        for (String reactant : reactants) {
-
-                                                if (!allEnoughAnts(reactant, r.getStoichiometry(reactant), reaction)) {
-                                                        isPossible = false;
-                                                        break;
+                                                        if (!allEnoughAnts(reactant, reaction)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
                                                 }
+
+                                        } else {
+                                                isPossible = false;
                                         }
 
                                 } else {
-                                        isPossible = false;
-                                }
 
-                        } else {
-                                /*  if (reaction.contains("R03084")) {
-                                 List<String> products = r.getProducts();
-                                 System.out.println(products.size());
-                                 }*/
-                                if (r.getlb() < 0) {
-                                        List<String> products = r.getProducts();
-                                        for (String product : products) {
-                                                /*if (reaction.contains("R03084")) {
-                                                 System.out.println(node + " - " + product);
-                                                 }*/
-                                                if (!allEnoughAnts(product, r.getStoichiometry(product), reaction)) {
-                                                        isPossible = false;
-                                                        break;
+                                        if (r.getlb() < 0) {
+                                                List<String> products = r.getProducts();
+                                                for (String product : products) {
+                                                        if (!allEnoughAnts(product, reaction)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
                                                 }
+                                        } else {
+                                                isPossible = false;
                                         }
-                                } else {
-                                        isPossible = false;
+
                                 }
 
-                        }
-
-                        /*if (reaction.contains("R03084")) {
-                         System.out.println(r.getId() + " - " + r.getlb() + " - " + r.getub() + " - " + isPossible);
-                         }*/
-
-                        if (isPossible) {
-                                possibleReactions.add(reaction);
+                                if (isPossible) {
+                                        possibleReactions.add(reaction);
+                                }
                         }
 
                 }
                 return possibleReactions;
         }
 
-        private String chooseReactions(List<String> possibleReactions) {
-                RandomSelector selector = new RandomSelector();
-                for (String r : possibleReactions) {
-                        selector.Add(r, this.reactions.get(r).getPheromones());
-                }
-                return selector.GetRandom(rand);
-        }
-
-        private boolean allEnoughAnts(String species, double stoichiometry, String reaction) {
+        private boolean allEnoughAnts(String species, String reaction) {
                 SpeciesFA s = this.compounds.get(species);
                 Ant ant = s.getAnt();
                 if (ant != null && ant.contains(reaction)) {
-                        /* if (reaction.contains("R03084")) {
-                         System.out.println(species + "is repeated");
-                         }*/
-
                         return false;
-
                 }
 
                 if (ant != null) {
-                        /* if (reaction.contains("R03084")) {
-                         System.out.println(species + "is true");
-                         }*/
-                        //   
                         return true;
                 }
-                /*  if (reaction.contains("R03084")) {
-                 System.out.println(species + "is false");
-                 }*/
-
                 return false;
         }
 
@@ -545,16 +517,68 @@ public class AllPathsTask extends AbstractTask {
         }
 
         private Graph joinGraphs() {
+                System.out.println("joining graphs");
                 Graph g = new Graph(null, null);
-                for (Graph graph : this.graphs) {
-                        for (Node n : graph.getNodes()) {
-                                g.addNode(n);
+                for (Graph grph : this.graphs) {
+
+                        grph.toString();
+                        for (Node n : grph.getNodes()) {
+                                System.out.print(", " + n.getId());
+                                g.addNode2(n);
                         }
-                        for (Edge e : graph.getEdges()) {
-                                g.addEdge(e);
+                        for (Edge e : grph.getEdges()) {
+                                try {
+                                        Node source = e.getSource();
+                                        e.setSource(g.getNode(source.getId().split(" - ")[0]));
+                                        Node destination = e.getDestination();
+                                        e.setDestination(g.getNode(destination.getId().split(" - ")[0]));
+                                        g.addEdge2(e);
+                                } catch (Exception ex) {
+                                }
                         }
                 }
-
+                System.out.println(g.getNumberOfNodes() + " - " + g.getNumberOfEdges());
+                System.out.println("\n" + g.toString());
                 return g;
+        }
+
+        private void removeReaction(List<String> path) {
+                String r = path.get(this.rand.nextInt(path.size()));
+                r = r.split(" - ")[0];
+                this.removedReaction = true;
+                m.removeReaction(r);
+
+                if (this.reactionsRemoved.size() > 2) {
+                        this.reactionsRemoved.add(m.getReaction(r));
+                        m.addReaction(this.reactionsRemoved.get(0));
+                        this.reactionsRemoved.remove(0);
+                }
+
+
+        }
+
+        private void resetWorld() {
+                this.compounds.clear();
+                this.reactions.clear();
+                this.createWorld();
+        }
+
+        private void doSimulation() {
+
+                this.resetWorld();
+                this.shortestPath = Integer.MAX_VALUE;
+                for (int i = 0; i < iterations; i++) {
+                        if (!this.removedReaction) {
+                                this.cicle();
+                                finishedPercentage = (double) i / iterations;
+                                if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
+                                        break;
+                                }
+                        } else {
+                                this.removedReaction = false;
+                                doSimulation();
+                                break;
+                        }
+                }
         }
 }

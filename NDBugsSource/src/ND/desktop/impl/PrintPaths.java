@@ -71,9 +71,11 @@ public class PrintPaths implements KeyListener {
 
         public VisualizationViewer printPathwayInFrame(Graph graph) {
                 g = new SparseMultigraph<>();
-                List<Node> nodes = graph.getNodes();
-                System.out.println("Number of nodes: " + nodes.size() + " - " + graph.getEdges().size());
+        
+                List<Node> nodes = graph.getNodes();              
                 List<Edge> edges = graph.getEdges();
+                System.out.println("Number of nodes: " + nodes.size() + " - " + edges.size());
+                
                 for (Node node : nodes) {
                         if (node != null) {
                                 g.addVertex(node.getId());
@@ -85,7 +87,7 @@ public class PrintPaths implements KeyListener {
                                 g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
                         }
                 }
-
+               
 
                 Layout<String, String> layout = new KKLayout(g);
                 layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space

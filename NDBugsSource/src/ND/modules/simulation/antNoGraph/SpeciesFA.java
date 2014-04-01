@@ -31,6 +31,7 @@ public class SpeciesFA {
         Ant ant;
 
         public SpeciesFA(String id) {
+                this.ant = null;
                 this.id = id;
                 this.reactions = new ArrayList<>();
         }
@@ -55,5 +56,9 @@ public class SpeciesFA {
 
         public List<String> getReactions() {
                 return this.reactions;
+        }
+        
+        public void clearAnts(){
+                this.ant = null;
         }
 }

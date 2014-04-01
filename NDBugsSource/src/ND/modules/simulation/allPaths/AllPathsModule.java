@@ -31,7 +31,7 @@ import ND.taskcontrol.Task;
  */
 public class AllPathsModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Get all Paths";
+        public static final String MODULE_NAME = "Get Some Paths";
         private AllPathsParameters parameters = new AllPathsParameters();
 
         @Override

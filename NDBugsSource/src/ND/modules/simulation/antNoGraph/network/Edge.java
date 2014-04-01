@@ -66,5 +66,10 @@ public class Edge {
                 this.id = id;
         }       
       
+        @Override
+        public Edge clone(){
+                Edge e = new Edge(this.id, this.source, this.destination);
+                return e;
+        }
              
 }

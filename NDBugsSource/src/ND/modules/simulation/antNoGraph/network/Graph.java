@@ -69,16 +69,24 @@ public class Graph {
                 return edges;
         }
 
-        public void addNode(Node node) {
-                if (!this.nodes.contains(node)) {
+        public void addNode2(Node node) {
+                if (!IsInNodes(node)) {
                         this.nodes.add(node);
                 }
         }
 
-        public void addEdge(Edge edge) {
-                if (!this.edges.contains(edge)) {
+        public void addNode(Node node) {
+                this.nodes.add(node);
+        }
+
+        public void addEdge2(Edge edge) {
+                if (!isInEdges(edge)) {
                         this.edges.add(edge);
                 }
+        }
+
+        public void addEdge(Edge edge) {
+                this.edges.add(edge);
         }
 
         public int getNumberOfNodes() {
@@ -94,24 +102,64 @@ public class Graph {
         }
 
         public Node getLastNode() {
-                return this.nodes.get(this.nodes.size()-1);
+                return this.nodes.get(this.nodes.size() - 1);
         }
-        
+
         @Override
-        public String toString(){
+        public String toString() {
                 String str = "";
-                for(Node n : this.nodes){
+                for (Node n : this.nodes) {
                         str = str + n.getId().split(" - ")[0] + " - ";
                 }
                 return str;
         }
 
         public void addGraph(Graph g) {
-                for(Node n : g.getNodes()){
+                for (Node n : g.getNodes()) {
                         this.nodes.add(n);
                 }
-                for(Edge e : g.getEdges()){
+                for (Edge e : g.getEdges()) {
                         this.edges.add(e);
                 }
+        }
+
+        @Override
+        public Graph clone() {
+                Graph g = new Graph(null, null);
+                for (Node n : this.nodes) {
+                        g.addNode(n.clone());
+                }
+                for (Edge e : this.edges) {
+                        Edge edge = e.clone();
+                        Node source = g.getNode(edge.getSource().getId());
+                        Node destination = g.getNode(edge.getDestination().getId());
+                        edge.setSource(source);
+                        edge.setDestination(destination);
+                        g.addEdge(edge);
+                }
+
+                return g;
+        }
+
+        private boolean IsInNodes(Node node) {
+                for (Node n : this.nodes) {
+                        if (n.getId().split(" - ")[0].equals(node.getId().split(" - ")[0])) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+
+        private boolean isInEdges(Edge edge) {
+                for (Edge thisEdge : this.edges) {
+                        String source = edge.getSource().getId().split(" - ")[0];
+                        String destination = edge.getDestination().getId().split(" - ")[0];
+                        String thisSource = thisEdge.getSource().getId().split(" - ")[0];
+                        String thisDestination = thisEdge.getDestination().getId().split(" - ")[0];
+                        if (source.equals(thisSource) && destination.equals(thisDestination)) {
+                                return true;
+                        }
+                }
+                return false;
         }
 }
