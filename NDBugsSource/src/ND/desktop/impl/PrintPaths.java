@@ -97,13 +97,13 @@ public class PrintPaths implements KeyListener {
                         @Override
                         public Paint transform(String id) {
                                 if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
-                                        return Color.BLUE;
+                                        return new Color(29,140,243);
                                 } else if (finalId != null && id.split("-")[0].contains(finalId)) {
-                                        return Color.RED;
+                                        return new Color(255,0,0);
                                 } else if (id.contains("sp:")) {
                                         return Color.RED;
                                 } else {
-                                        return Color.GREEN;
+                                        return new Color(156,244,125);
                                 }
                         }
                 };

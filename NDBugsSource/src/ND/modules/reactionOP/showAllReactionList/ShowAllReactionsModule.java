@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.showReaction;
+package ND.modules.reactionOP.showAllReactionList;
 
 
 import ND.data.impl.datasets.SimpleBasicDataset;
@@ -23,21 +23,19 @@ import ND.main.NDCore;
 import ND.modules.NDModuleCategory;
 import ND.modules.NDProcessingModule;
 import ND.parameters.ParameterSet;
-import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.Task;
 
 /**
  *
  * @author scsandra
  */
-public class ShowReactionModule implements NDProcessingModule {
+public class ShowAllReactionsModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Show Reaction";
-        private ShowReactionParameters parameters = new ShowReactionParameters();
-
+        public static final String MODULE_NAME = "Show All Reactions";
+       
         @Override
         public ParameterSet getParameterSet() {
-                return parameters;
+                return null;
         }
 
         @Override
@@ -55,7 +53,7 @@ public class ShowReactionModule implements NDProcessingModule {
                         dataset = (SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0];
                 } catch (Exception e) {
                 }
-                tasks[0] = new ShowReactionTask(dataset, (SimpleParameterSet) parameters);
+                tasks[0] = new ShowReactionTask(dataset);
 
                 NDCore.getTaskController().addTasks(tasks);
 
@@ -69,11 +67,11 @@ public class ShowReactionModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/ShowReaction.png";
+                return "icons/allReactions.png";
         }
 
         @Override
         public boolean setSeparator() {
-                return false;
+                return true;
         }
 }
