@@ -1,3 +1,5 @@
+package ND.modules.reactionOP.CombineModels;
+
 /*
  * Copyright 2013-2014 VTT Biotechnology
  * This file is part of NDBugs.
@@ -15,29 +17,25 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.fluxAnalysis;
-
+import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.modules.NDModuleCategory;
 import ND.modules.NDProcessingModule;
 import ND.parameters.ParameterSet;
-import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.Task;
-import ND.taskcontrol.TaskStatus;
 
 /**
  *
  * @author scsandra
  */
-public class FluxAnalysisModule implements NDProcessingModule {
+public class CombineModelsModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Analyze fluxes";
-        private FluxAnalysisParameters parameters = new FluxAnalysisParameters();
+        public static final String MODULE_NAME = "Combine models";
 
         @Override
         public ParameterSet getParameterSet() {
-                return parameters;
+                return null;
         }
 
         @Override
@@ -49,16 +47,14 @@ public class FluxAnalysisModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new FluxAnalysisTask[1];
+                Task tasks[] = new CombineModelsTask[1];
                 if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
                         NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
                 } else {
-
-                        tasks[0] = new FluxAnalysisTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
+                        tasks[0] = new CombineModelsTask((Dataset[]) NDCore.getDesktop().getSelectedDataFiles());
 
                         NDCore.getTaskController().addTasks(tasks);
                 }
-
                 return tasks;
         }
 
@@ -69,11 +65,11 @@ public class FluxAnalysisModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/AnalyzeFluxes.png";
+                return "icons/ShowReaction.png";
         }
 
         @Override
         public boolean setSeparator() {
-                return false;
+                return true;
         }
 }

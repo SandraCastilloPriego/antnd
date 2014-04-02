@@ -17,6 +17,7 @@
  */
 package ND.modules.reactionOP.showReaction;
 
+
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.StringParameter;
@@ -25,7 +26,7 @@ public class ShowReactionParameters extends SimpleParameterSet {
    
 
         public static final StringParameter reactionName = new StringParameter(
-                "Reaction name", "Name of the reaction you want to search.", "");
+                "Reaction name", "Name of the reaction that will be showed", "");
        
 
         public ShowReactionParameters() {

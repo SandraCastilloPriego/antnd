@@ -68,7 +68,7 @@ public class ShowCompoundModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/ShowReaction.png";
+                return "icons/ShowCompound.png";
         }
 
         @Override
