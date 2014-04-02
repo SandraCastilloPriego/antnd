@@ -22,6 +22,7 @@ import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
+import ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule;
 import ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
@@ -35,6 +36,9 @@ import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
  */
 public class NDModulesList {
 
+        /**
+         *
+         */
         public static final Class<?> MODULES[] = new Class<?>[]{
                 OpenBasicFileModule.class,
                // AntModule.class,
@@ -45,6 +49,7 @@ public class NDModulesList {
                 ShowReactionModule.class,
                 ShowAllReactionsModule.class,
                 ShowCompoundModule.class,
+                ShowAllCompoundsModule.class,
                 FluxAnalysisModule.class,
                 AllPathsModule.class,
                 LoopAnalyzerModule.class

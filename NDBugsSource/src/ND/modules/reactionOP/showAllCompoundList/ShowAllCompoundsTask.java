@@ -15,10 +15,12 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.showAllReactionList;
+package ND.modules.reactionOP.showAllCompoundList;
 
+import ND.modules.reactionOP.showCompound.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
+import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
@@ -27,19 +29,16 @@ import java.util.List;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import org.sbml.jsbml.KineticLaw;
-import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
 
 /**
  *
  * @author scsandra
  */
-public class ShowReactionTask extends AbstractTask {
+public class ShowAllCompoundsTask extends AbstractTask {
 
         private SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
@@ -48,7 +47,7 @@ public class ShowReactionTask extends AbstractTask {
         private JTextArea tf;
         private StringBuffer info;
 
-        public ShowReactionTask(SimpleBasicDataset dataset) {
+        public ShowAllCompoundsTask(SimpleBasicDataset dataset) {
                 networkDS = dataset;
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.tf = new JTextArea();
@@ -59,7 +58,7 @@ public class ShowReactionTask extends AbstractTask {
 
         @Override
         public String getTaskDescription() {
-                return "Showing all reactions... ";
+                return "Showing compounds... ";
         }
 
         @Override
@@ -83,17 +82,16 @@ public class ShowReactionTask extends AbstractTask {
 
                         SBMLDocument doc = this.networkDS.getDocument();
                         Model m = doc.getModel();
+                        info.append("There are ").append(m.getNumSpecies()).append(" species in the model:\n");
+                        info.append("\n----------------------------------- \n");
+                        this.showCompounds(m.getListOfSpecies(), m);
 
-                        info.append("The model contains ").append(m.getNumReactions()).append(" reactions:\n");
-                        info.append("----------------------------------- \n");
-
-                        this.showReactions(m.getListOfReactions());
-
-                        for (Reaction r : m.getListOfReactions()) {
-                                info.append(r.getId()).append("\n");
+                        for (Species sp : m.getListOfSpecies()) {
+                                info.append(sp.getId()).append(" - ").append(sp.getName()).append("\n");
                         }
 
                         this.tf.setText(info.toString());
+
                         frame.setSize(new Dimension(700, 500));
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
@@ -106,31 +104,19 @@ public class ShowReactionTask extends AbstractTask {
                 }
         }
 
-        private void showReactions(List<Reaction> possibleReactions) {
+        private void showCompounds(List<Species> possibleReactions, Model m) {
                 float count = 0;
-                for (Reaction r : possibleReactions) {
-
-                        KineticLaw law = r.getKineticLaw();
-                        if (law != null) {
-                                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
-                                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                                info.append(r.getId()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
-                        } else {
-                                info.append(r.getId()).append(":\n");
+                for (Species sp : possibleReactions) {
+                        info.append(sp.getId()).append(" - ").append(sp.getName());
+                        info.append("\nPresent in: ");
+                        for (Reaction r : m.getListOfReactions()) {
+                                if (r.hasReactant(sp) || r.hasProduct(sp)) {
+                                        info.append(r.getId()).append(", ");
+                                }
                         }
-                        info.append("Reactants: \n");
-                        for (SpeciesReference sr : r.getListOfReactants()) {
-                                Species sp = sr.getSpeciesInstance();
-                                info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append("\n");
-                        }
-                        info.append("Products: \n");
-                        for (SpeciesReference sr : r.getListOfProducts()) {
-                                Species sp = sr.getSpeciesInstance();
-                                info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append(" \n");
-                        }
-                        info.append("----------------------------------- \n");
-                        this.finishedPercentage = count / possibleReactions.size();
+                        this.finishedPercentage = count / m.getNumSpecies();
                         count++;
+                        info.append("\n----------------------------------- \n");
                 }
         }
 }

@@ -73,6 +73,6 @@ public class ShowCompoundModule implements NDProcessingModule {
 
         @Override
         public boolean setSeparator() {
-                return true;
+                return false;
         }
 }
