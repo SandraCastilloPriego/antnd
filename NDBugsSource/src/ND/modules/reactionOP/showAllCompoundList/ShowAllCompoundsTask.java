@@ -17,14 +17,11 @@
  */
 package ND.modules.reactionOP.showAllCompoundList;
 
-import ND.modules.reactionOP.showCompound.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
-import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;

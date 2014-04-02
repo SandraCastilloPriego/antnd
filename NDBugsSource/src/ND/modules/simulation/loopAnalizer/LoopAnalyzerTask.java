@@ -375,7 +375,7 @@ public class LoopAnalyzerTask extends AbstractTask {
         }
 
         private void analyzeLoop(Ant superAnt) {
-                System.out.println("1");
+               System.out.println("1");
                List<String> path =  superAnt.getPath();
                Map<String,Integer> map = new HashMap<>();
                System.out.println("2");
