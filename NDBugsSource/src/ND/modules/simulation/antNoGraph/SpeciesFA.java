@@ -26,9 +26,9 @@ import java.util.List;
  */
 public class SpeciesFA {
 
-        private String id;
-        private List<String> reactions;
-        Ant ant;
+        private final String id;
+        private final List<String> reactions;
+        private Ant ant;
 
         public SpeciesFA(String id) {
                 this.ant = null;

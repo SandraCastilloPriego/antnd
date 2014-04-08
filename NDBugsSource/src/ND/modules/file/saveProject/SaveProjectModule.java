@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.file.openfile;
+package ND.modules.file.saveProject;
 
 import ND.main.NDCore;
 import ND.modules.NDModuleCategory;
@@ -28,10 +28,10 @@ import java.io.File;
  *
  * @author scsandra
  */
-public class OpenBasicFileModule implements NDProcessingModule {
+public class SaveProjectModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Open SBML file";
-        private OpenBasicFileParameters parameters = new OpenBasicFileParameters();
+        public static final String MODULE_NAME = "Save Project";
+        private final SaveProjectParameters parameters = new SaveProjectParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -45,13 +45,12 @@ public class OpenBasicFileModule implements NDProcessingModule {
 
         @Override
         public Task[] runModule(ParameterSet parameters) {
-                File[] files = this.parameters.getParameter(OpenBasicFileParameters.fileNames).getValue();
+                File file = this.parameters.getParameter(SaveProjectParameters.fileNames).getValue();
 
                 // prepare a new group of tasks
-                Task tasks[] = new OpenBasicFileTask[files.length];
-                for (int i = 0; i < files.length; i++) {
-                        tasks[i] = new OpenBasicFileTask(files[i].getAbsolutePath());
-                }
+                Task tasks[] = new SaveProjectTask[1];
+                tasks[0] = new SaveProjectTask(file);
+
                 NDCore.getTaskController().addTasks(tasks);
 
                 return tasks;
@@ -69,6 +68,6 @@ public class OpenBasicFileModule implements NDProcessingModule {
 
         @Override
         public boolean setSeparator() {
-                return true;
+                return false;
         }
 }

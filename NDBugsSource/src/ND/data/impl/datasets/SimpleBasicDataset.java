@@ -49,6 +49,7 @@ public class SimpleBasicDataset implements Dataset {
         /**
          *
          * @param datasetName Name of the data set
+         * @param path
          */
         public SimpleBasicDataset(String datasetName, String path) {
                 this.datasetName = datasetName;
@@ -91,6 +92,14 @@ public class SimpleBasicDataset implements Dataset {
         @Override
         public void setSources(List<String> sources) {
                 this.sources = sources;
+        }
+
+        @Override
+        public void addSource(String source) {
+                if(this.sources == null){
+                        this.sources = new ArrayList<>();                        
+                }
+                this.sources.add(source);
         }
 
         @Override

@@ -31,7 +31,6 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
@@ -55,11 +54,11 @@ import org.sbml.jsbml.Model;
  */
 public class PrintPaths implements KeyListener {
 
-        private List<String> initialIds;
-        private String finalId;
-        private Model m;
+        private final List<String> initialIds;
+        private final String finalId;
+        private final Model m;
         private TransFrame transFrame = null;
-        private String selectedNode;
+        private String selectedEdge;
         private edu.uci.ics.jung.graph.Graph<String, String> g;
         private boolean showInfo = false;
 
@@ -119,7 +118,7 @@ public class PrintPaths implements KeyListener {
                                         String vertex = (String) subject;
 
                                         if (pickedState.isPicked(vertex)) {
-                                                selectedNode = vertex;
+                                                selectedEdge = vertex;
                                                 if (m != null && showInfo) {
                                                         if(vertex.contains(" / ")){
                                                                 vertex = vertex.split(" / ")[0];
@@ -130,7 +129,7 @@ public class PrintPaths implements KeyListener {
                                                                 + " is now selected");
                                                 }
                                         } else {
-                                                selectedNode = null;
+                                                selectedEdge = null;
                                                 if (transFrame != null && showInfo) {
                                                         transFrame.setVisible(false);
                                                         transFrame.dispose();
@@ -142,7 +141,36 @@ public class PrintPaths implements KeyListener {
                                 }
                         }
                 });
+                
+                final PickedState<String> pickedEdgeState = vv.getPickedEdgeState();
+                pickedEdgeState.addItemListener(new ItemListener() {
+                        @Override
+                        public void itemStateChanged(ItemEvent e) {
+                                Object subject = e.getItem();
+                                if (subject instanceof String) {
+                                        String edge = (String) subject;
 
+                                        if (pickedEdgeState.isPicked(edge)) {
+                                                selectedEdge = edge;
+                                                if (m != null && showInfo) {                                                        
+                                                        transFrame = new TransFrame(m, edge.replace("sp:", "").split(" - ")[0]);
+                                                } else {
+                                                        System.out.println("Edge " + edge
+                                                                + " is now selected");
+                                                }
+                                        } else {
+                                                selectedEdge = null;
+                                                if (transFrame != null && showInfo) {
+                                                        transFrame.setVisible(false);
+                                                        transFrame.dispose();
+                                                } else {
+                                                        System.out.println("Edge " + edge
+                                                                + " no longer selected");
+                                                }
+                                        }
+                                }
+                        }
+                });
 
 
                 float dash[] = {1.0f};
@@ -210,8 +238,8 @@ public class PrintPaths implements KeyListener {
         @Override
         public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
-                        if (this.selectedNode != null) {
-                                g.removeVertex(this.selectedNode);
+                        if (this.selectedEdge != null) {
+                                g.removeVertex(this.selectedEdge);
                         }
                 }
         }

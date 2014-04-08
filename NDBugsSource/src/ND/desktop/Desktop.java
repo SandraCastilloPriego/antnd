@@ -118,6 +118,8 @@ public interface Desktop extends NDModule {
          * @return Array of selected raw data files
          */
         public Dataset[] getSelectedDataFiles();
+        
+        public Dataset[] getAllDataFiles();
 
         public void AddNewFile(Dataset dataset);
 

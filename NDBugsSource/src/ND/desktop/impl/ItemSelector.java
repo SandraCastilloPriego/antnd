@@ -51,14 +51,15 @@ public class ItemSelector extends JPanel implements ActionListener,
         MouseListener, ListSelectionListener {
 
         public static final String DATA_FILES_LABEL = "SBML Files";
-        private DragOrderedJList DatasetFiles;
-        private List<Dataset> DatasetFilesModel = new ArrayList<>();
-        private DefaultListModel DatasetNamesModel = new DefaultListModel();
-        private JPopupMenu dataFilePopupMenu;
+        private final DragOrderedJList DatasetFiles;
+        private final List<Dataset> DatasetFilesModel = new ArrayList<>();
+        private final DefaultListModel DatasetNamesModel = new DefaultListModel();
+        private final JPopupMenu dataFilePopupMenu;
         private int copies = 0;
 
         /**
          * Constructor
+         * @param desktop
          */
         public ItemSelector(Desktop desktop) {
 
@@ -77,8 +78,6 @@ public class ItemSelector extends JPanel implements ActionListener,
                 rawDataPanel.add(rawDataScroll, BorderLayout.CENTER);
                 rawDataPanel.setMinimumSize(new Dimension(150, 10));
 
-
-
                 // Add panels to a split and put split on the main panel
                 setPreferredSize(new Dimension(200, 10));
                 setLayout(new BorderLayout());
@@ -91,8 +90,6 @@ public class ItemSelector extends JPanel implements ActionListener,
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
-
-
 
         }
 
@@ -321,5 +318,9 @@ public class ItemSelector extends JPanel implements ActionListener,
         private void combine() {
                 CombineModelsModule combine = new CombineModelsModule();
                 combine.runModule(null);
+        }
+
+        public Dataset[] getAllDatasets() {              
+                return DatasetFilesModel.toArray(new Dataset[0]);
         }
 }

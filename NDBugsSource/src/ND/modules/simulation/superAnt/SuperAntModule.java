@@ -32,7 +32,7 @@ import ND.taskcontrol.Task;
 public class SuperAntModule implements NDProcessingModule {
 
         public static final String MODULE_NAME = "Start Super Ant flux";
-        private SuperAntModuleParameters parameters = new SuperAntModuleParameters();
+        private final SuperAntModuleParameters parameters = new SuperAntModuleParameters();
 
         @Override
         public ParameterSet getParameterSet() {

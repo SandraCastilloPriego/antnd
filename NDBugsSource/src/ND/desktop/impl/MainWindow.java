@@ -297,9 +297,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 return this.itemSelector.getSelectedDatasets();
         }
 
-        /*public Vector[] getSelectedExperiments() {
-        return this.itemSelector.getSelectedExperiments();
-        }*/
+        
         /**
          *
          * @param dataset
@@ -329,5 +327,10 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 hs.setHomeID(aboutHelpID);
 
                 hb.setDisplayed(true);
+        }
+
+        @Override
+        public Dataset[] getAllDataFiles() {
+                return this.itemSelector.getAllDatasets();
         }
 }

@@ -68,8 +68,13 @@ public class Ant {
                 this.path = path;
         }
 
-        @Override
-        public Ant clone() {
+    /**
+     *
+     * @return
+     * @throws CloneNotSupportedException
+     */
+    @Override
+        public Ant clone() throws CloneNotSupportedException {
                 Ant ant = new Ant(this.location);
                 ant.setGraph(this.g);
                 ant.setPath(path);

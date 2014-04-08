@@ -18,7 +18,9 @@
  */
 package ND.main;
 
+import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
+import ND.modules.file.saveProject.SaveProjectModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
@@ -41,6 +43,8 @@ public class NDModulesList {
          */
         public static final Class<?> MODULES[] = new Class<?>[]{
                 OpenBasicFileModule.class,
+                OpenProjectModule.class,
+                SaveProjectModule.class,
                // AntModule.class,
                 SuperAntModule.class,
                 SuperAntAdvancedModule.class,

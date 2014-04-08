@@ -24,8 +24,7 @@ import ND.data.parser.impl.BasicFilesParserSBML;
 import ND.main.NDCore;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-
-
+import java.io.File;
 
 /**
  *
@@ -33,7 +32,7 @@ import ND.taskcontrol.TaskStatus;
  */
 public class OpenBasicFileTask extends AbstractTask {
 
-        private String fileDir; 
+        private String fileDir;
         private Parser parser;
 
         public OpenBasicFileTask(String fileDir) {
@@ -54,7 +53,7 @@ public class OpenBasicFileTask extends AbstractTask {
                 } else {
                         return 0.0f;
                 }
-        }        
+        }
 
         @Override
         public void cancel() {
@@ -76,13 +75,16 @@ public class OpenBasicFileTask extends AbstractTask {
                 try {
                         if (getStatus() == TaskStatus.PROCESSING) {
                                 parser = new BasicFilesParserSBML(fileDir);
-                                parser.createDataset();
+                                File f = new File(fileDir);
+                                parser.createDataset(f.getName());
                                 Dataset dataset = (SimpleBasicDataset) parser.getDataset();
-                                NDCore.getDesktop().AddNewFile(dataset);
+                                if (dataset.getDocument() != null) {
+                                        NDCore.getDesktop().AddNewFile(dataset);
+                                }
                         }
                 } catch (Exception ex) {
                 }
 
                 setStatus(TaskStatus.FINISHED);
-        }        
+        }
 }

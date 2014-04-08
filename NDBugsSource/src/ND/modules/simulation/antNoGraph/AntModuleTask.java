@@ -355,7 +355,12 @@ public class AntModuleTask extends AbstractTask {
                                         for (String s : toBeAdded) {
                                                 SpeciesFA spfa = this.compounds.get(s);
                                                 for (int i = 0; i < rc.getStoichiometry(s); i++) {
-                                                        Ant newAnt = superAnt.clone();
+                                                        Ant newAnt;
+                                                        try {
+                                                                newAnt = superAnt.clone();
+                                                        } catch (CloneNotSupportedException ex) {
+                                                                newAnt = superAnt;
+                                                        }
                                                         newAnt.setLocation(spfa.getId());
                                                         spfa.addAnt(newAnt);
                                                 }

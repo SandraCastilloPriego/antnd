@@ -20,10 +20,9 @@ package ND.data.parser.impl;
 import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.data.parser.Parser;
+import ND.main.NDCore;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
@@ -34,10 +33,10 @@ import org.sbml.jsbml.SBMLReader;
  */
 public class BasicFilesParserSBML implements Parser {
 
-        private String datasetPath;
-        private SimpleBasicDataset dataset;
-        private int rowsNumber;
-        private int rowsReaded;
+        private final String datasetPath;
+        private final SimpleBasicDataset dataset;
+        private final int rowsNumber;
+        private final int rowsReaded;
         private SBMLDocument document;
 
         public BasicFilesParserSBML(String datasetPath) {
@@ -48,14 +47,14 @@ public class BasicFilesParserSBML implements Parser {
         }
 
         @Override
-        public void createDataset() {
+        public void createDataset(String name) {
                 try {
                         this.document = SBMLReader.read(new File(this.datasetPath));
                         dataset.setDocument(document);
-                        dataset.setDatasetName(document.getModel().getId());
+                        dataset.setDatasetName(name);
                         dataset.setPath(this.datasetPath);
                 } catch (XMLStreamException | IOException ex) {
-                        Logger.getLogger(BasicFilesParserSBML.class.getName()).log(Level.SEVERE, null, ex);
+                        NDCore.getDesktop().displayErrorMessage("The file should be SBML.");
                 }
         }
 

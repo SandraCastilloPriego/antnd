@@ -61,23 +61,23 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class AllPathsTask extends AbstractTask {
 
-        private SimpleBasicDataset networkDS;
+        private final SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
-        private File exchangeReactions, boundsFile;
-        private String biomassID;
-        private Random rand;
-        private HashMap<String, ReactionFA> reactions;
-        private HashMap<String, SpeciesFA> compounds;
+        private final File exchangeReactions, boundsFile;
+        private final String biomassID;
+        private final Random rand;
+        private final HashMap<String, ReactionFA> reactions;
+        private final HashMap<String, SpeciesFA> compounds;
         private HashMap<String, String[]> bounds;
         private Map<String, Double> sources;
-        private List<String> sourcesList;
+        private final List<String> sourcesList;
         private JInternalFrame frame;
         private JScrollPane panel;
         private JPanel pn;
-        private List<Graph> graphs;
-        private int iterations;
+        private final List<Graph> graphs;
+        private final int iterations;
         private int shortestPath = Integer.MAX_VALUE;
-        private List<Reaction> reactionsRemoved;
+        private final List<Reaction> reactionsRemoved;
         private Graph graph;
         private boolean removedReaction = false;
         private int count = 0;
@@ -106,11 +106,9 @@ public class AllPathsTask extends AbstractTask {
                 this.pn = new JPanel();
                 this.panel = new JScrollPane(pn);
 
-
                 // Initialize the random number generator using the
                 // time from above.
                 rand.setSeed(time);
-
 
         }
 
@@ -179,7 +177,6 @@ public class AllPathsTask extends AbstractTask {
                          info = "Simulation\n" + this.parameters.toString() + "\nResult: No path found";
                          }
                          this.networkDS.setInfo(info + "\n--------------------------");*/
-
 
                         setStatus(TaskStatus.FINISHED);
 
@@ -326,7 +323,6 @@ public class AllPathsTask extends AbstractTask {
 
                                         // get the ants that must be removed from the reactants ..
                                         // creates a superAnt with all the paths until this reaction joined..
-
                                         Ant superAnt = new Ant(null);
                                         HashMap<Ant, String> combinedAnts = new HashMap<>();
                                         for (String s : toBeRemoved) {
@@ -338,6 +334,7 @@ public class AllPathsTask extends AbstractTask {
                                                 }/* else {
                                                  System.out.println("why??");
                                                  }*/
+
                                         }
 
                                         superAnt.joinGraphs(reactionChoosen, combinedAnts);
@@ -347,12 +344,16 @@ public class AllPathsTask extends AbstractTask {
                                                 for (String s : toBeAdded) {
                                                         SpeciesFA spfa = this.compounds.get(s);
                                                         for (int e = 0; e < rc.getStoichiometry(s); e++) {
-                                                                Ant newAnt = superAnt.clone();
+                                                                Ant newAnt;
+                                                                try {
+                                                                        newAnt = superAnt.clone();
+                                                                } catch (CloneNotSupportedException ex) {
+                                                                        newAnt = superAnt;
+                                                                }
                                                                 newAnt.setLocation(spfa.getId());
                                                                 spfa.addAnt(newAnt);
                                                         }
                                                 }
-
 
                                                 // When the ants arrive to the biomass
                                                 if (toBeAdded.contains(this.biomassID)) {
@@ -394,7 +395,6 @@ public class AllPathsTask extends AbstractTask {
                 if (!this.sources.containsKey(node) && ant == null) {
                         return possibleReactions;
                 }
-
 
                 List<String> connectedReactions = sp.getReactions();
                 for (String reaction : connectedReactions) {
@@ -469,15 +469,11 @@ public class AllPathsTask extends AbstractTask {
                                 }
                         }
 
-
                         for (Species sp : m.getListOfSpecies()) {
                                 if (!this.isInReactions(newModel.getListOfReactions(), sp)) {
                                         newModel.removeSpecies(sp.getId());
                                 }
                         }
-
-
-
 
                         SimpleBasicDataset dataset = new SimpleBasicDataset();
 
@@ -553,7 +549,6 @@ public class AllPathsTask extends AbstractTask {
                         m.addReaction(this.reactionsRemoved.get(0));
                         this.reactionsRemoved.remove(0);
                 }
-
 
         }
 

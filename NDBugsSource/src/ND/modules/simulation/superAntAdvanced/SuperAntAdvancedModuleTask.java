@@ -107,7 +107,6 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                 // time from above.
                 rand.setSeed(time);
 
-
         }
 
         @Override
@@ -414,7 +413,6 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
 
                                 // get the ants that must be removed from the reactants ..
                                 // creates a superAnt with all the paths until this reaction joined..
-
                                 Ant superAnt = new Ant(null);
                                 HashMap<Ant, String> combinedAnts = new HashMap<>();
                                 for (String s : toBeRemoved) {
@@ -434,7 +432,12 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                         for (String s : toBeAdded) {
                                                 SpeciesFA spfa = this.compounds.get(s);
                                                 for (int e = 0; e < rc.getStoichiometry(s); e++) {
-                                                        Ant newAnt = superAnt.clone();
+                                                        Ant newAnt;
+                                                        try {
+                                                                newAnt = superAnt.clone();
+                                                        } catch (CloneNotSupportedException ex) {
+                                                                newAnt = superAnt;
+                                                        }
                                                         newAnt.setLocation(spfa.getId());
                                                         spfa.addAnt(newAnt, this.mReactions);
                                                 }
@@ -476,7 +479,6 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                 if (!this.sources.containsKey(node) && ant == null) {
                         return possibleReactions;
                 }
-
 
                 List<String> connectedReactions = sp.getReactions();
                 for (String reaction : connectedReactions) {
@@ -549,15 +551,11 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                 }
                         }
 
-
                         for (Species sp : m.getListOfSpecies()) {
                                 if (!this.isInReactions(newModel.getListOfReactions(), sp)) {
                                         newModel.removeSpecies(sp.getId());
                                 }
                         }
-
-
-
 
                         SimpleBasicDataset dataset = new SimpleBasicDataset();
 

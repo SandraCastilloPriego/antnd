@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2012 
+ * Copyright 2007-2013 VTT Biotechnology
  * This file is part of AntND.
  *
  * AntND is free software; you can redistribute it and/or modify it under the
@@ -15,19 +15,18 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.data.parser;
+package ND.modules.file.openProject;
 
-import ND.data.Dataset;
+import ND.parameters.Parameter;
+import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.FileNameParameter;
 
-/**
- *
- * @author scsandra
- */
-public interface Parser {
+public class OpenProjectParameters extends SimpleParameterSet {
 
-    public void createDataset(String name);
+        
+        public static final FileNameParameter fileNames = new FileNameParameter("Project name", "Set the path of the file", null);
 
-    public Dataset getDataset();
-
-    public float getProgress();
+        public OpenProjectParameters() {
+                super(new Parameter[]{fileNames});
+        }       
 }

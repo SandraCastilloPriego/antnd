@@ -122,6 +122,8 @@ public interface Dataset {
         public List<Edge> getEdges();
 
         public void setSources(List<String> sources);
+        
+        public void addSource(String source);
 
         public void setBiomass(String biomassId);
 
