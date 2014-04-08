@@ -59,6 +59,7 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         /**
          * Constructor
+         *
          * @param desktop
          */
         public ItemSelector(Desktop desktop) {
@@ -86,6 +87,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 dataFilePopupMenu = new JPopupMenu();
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Show Tree Model", this, "SHOW_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
+                GUIUtils.addMenuItem(dataFilePopupMenu, "Write Comment", this, "WRITE_INFO");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
@@ -122,6 +124,10 @@ public class ItemSelector extends JPanel implements ActionListener,
                 if (command.equals("COMBINE")) {
                         combine();
                 }
+                if (command.equals("WRITE_INFO")) {
+                        writeInfo();
+                }
+
         }
 
         private void showData() {
@@ -320,7 +326,50 @@ public class ItemSelector extends JPanel implements ActionListener,
                 combine.runModule(null);
         }
 
-        public Dataset[] getAllDatasets() {              
+        public Dataset[] getAllDatasets() {
                 return DatasetFilesModel.toArray(new Dataset[0]);
+        }
+
+        private void writeInfo() {
+                final Dataset[] selectedFile = getSelectedDatasets();
+                if (selectedFile != null) {
+                        final JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);
+                        JPanel pn = new JPanel();
+                        final JTextArea area = new JTextArea();
+                        
+                        JButton accept = new JButton("Accept");
+                        JButton cancel = new JButton("Cancel");
+                        JPanel buttonPanel = new JPanel();
+
+                        buttonPanel.add(accept);
+                        buttonPanel.add(cancel);
+                        buttonPanel.setBackground(Color.white);
+                        buttonPanel.setPreferredSize(new Dimension(700, 50));
+
+                        JScrollPane panel = new JScrollPane(area);
+                        panel.setPreferredSize(new Dimension(650, 400));
+                        pn.add(panel, BorderLayout.NORTH);
+                        pn.add(buttonPanel, BorderLayout.SOUTH);
+                        pn.setBackground(Color.white);
+                        frame.setSize(new Dimension(700, 500));
+                        frame.add(pn);
+                        NDCore.getDesktop().addInternalFrame(frame);
+
+                        accept.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                        selectedFile[0].setInfo(area.getText());
+                                        frame.doDefaultCloseAction();
+                                }
+                        });
+
+                        cancel.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                        frame.doDefaultCloseAction();
+                                }
+                        });
+                }
+
         }
 }
