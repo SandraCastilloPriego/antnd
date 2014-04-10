@@ -398,7 +398,7 @@ public class SuperAntModuleTask extends AbstractTask {
                                                                 break;
                                                         }
                                                 } else {
-                                                        if (r.getProducts().contains(this.biomassID) && correspondentCofactor(r.getProducts(), reactant)) {
+                                                        if (r.getProducts().contains(this.biomassID) && correspondentCofactor(r.getReactants(), this.biomassID)) {
                                                                 isPossible = false;
                                                                 break;
                                                         }
@@ -419,7 +419,7 @@ public class SuperAntModuleTask extends AbstractTask {
                                                                 break;
                                                         }
                                                 } else {
-                                                        if (r.getReactants().contains(this.biomassID) && correspondentCofactor(r.getReactants(), product)) {
+                                                        if (r.getReactants().contains(this.biomassID) && correspondentCofactor(r.getProducts(), this.biomassID)) {
                                                                 isPossible = false;
                                                                 break;
                                                         }
@@ -473,7 +473,7 @@ public class SuperAntModuleTask extends AbstractTask {
                         SimpleBasicDataset dataset = new SimpleBasicDataset();
 
                         dataset.setDocument(newDoc);
-                        dataset.setDatasetName(this.biomassID + " - "+ newModel.getId());
+                        dataset.setDatasetName(this.biomassID + " - "+ newModel.getId() + ".sbml");
                         Path path = Paths.get(this.networkDS.getPath());
                         Path fileName = path.getFileName();
                         String name = fileName.toString();
@@ -514,6 +514,8 @@ public class SuperAntModuleTask extends AbstractTask {
 
         private boolean correspondentCofactor(List<String> products, String reactant) {
                 return (reactant.equals("C00003") && products.contains("C00004"))
+                        || (reactant.equals("C00003") && products.contains("C00006"))
+                        || (reactant.equals("C00006") && products.contains("C00003"))
                         || (reactant.equals("C00002") && products.contains("C00008"))
                         || (reactant.equals("C00004") && products.contains("C00003"))
                         || (reactant.equals("C00008") && products.contains("C00002"))

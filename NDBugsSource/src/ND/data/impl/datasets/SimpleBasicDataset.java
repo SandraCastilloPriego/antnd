@@ -39,7 +39,7 @@ public class SimpleBasicDataset implements Dataset {
         StringBuffer infoDataset;
         private int ID;
         private SBMLDocument document;
-        private JTextArea textArea;
+        private final JTextArea textArea;
         private List<Node> nodes;
         private List<Edge> edges;
         private List<String> sources;
@@ -173,7 +173,7 @@ public class SimpleBasicDataset implements Dataset {
         }
 
         @Override
-        public void setInfo(String info) {
+        public void addInfo(String info) {
                 this.infoDataset.append(info).append("\n");
                 this.textArea.setText(infoDataset.toString());
         }
@@ -194,5 +194,11 @@ public class SimpleBasicDataset implements Dataset {
         @Override
         public void setDocument(SBMLDocument document) {
                 this.document = document;
+        }
+
+        @Override
+        public void setInfo(String info) {
+                this.infoDataset.delete(0, this.infoDataset.length());
+                this.infoDataset.append(info);
         }
 }

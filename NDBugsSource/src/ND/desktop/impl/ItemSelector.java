@@ -87,7 +87,6 @@ public class ItemSelector extends JPanel implements ActionListener,
                 dataFilePopupMenu = new JPopupMenu();
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Show Tree Model", this, "SHOW_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Write Comment", this, "WRITE_INFO");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
@@ -116,7 +115,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                         saveData();
                 }
                 if (command.equals("SHOW_INFO")) {
-                        showInfo();
+                        writeInfo();
                 }
                 if (command.equals("VISUALIZE")) {
                         visualize();
@@ -124,9 +123,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 if (command.equals("COMBINE")) {
                         combine();
                 }
-                if (command.equals("WRITE_INFO")) {
-                        writeInfo();
-                }
+                
 
         }
 
@@ -139,18 +136,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 }
         }
 
-        private void showInfo() {
-                Dataset[] selectedFiles = getSelectedDatasets();
-                for (Dataset file : selectedFiles) {
-                        if (file != null) {
-                                JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);
-                                JScrollPane panel = new JScrollPane(file.getInfo());
-                                frame.setSize(new Dimension(700, 500));
-                                frame.add(panel);
-                                NDCore.getDesktop().addInternalFrame(frame);
-                        }
-                }
-        }
+       
 
         private void removeData() {
                 Dataset[] selectedFiles = getSelectedDatasets();
@@ -247,7 +233,9 @@ public class ItemSelector extends JPanel implements ActionListener,
         public void addNewFile(Dataset dataset) {
                 for (int i = 0; i < DatasetNamesModel.getSize(); i++) {
                         if (dataset.getDatasetName().matches(DatasetNamesModel.getElementAt(i).toString())) {
-                                dataset.setDatasetName(dataset.getDatasetName() + "_" + ++copies);
+                                String name = dataset.getDatasetName();
+                                name = name.split("\\.")[0];
+                                dataset.setDatasetName(name + "_" + ++copies +".sbml");
                         }
                 }
                 this.DatasetFilesModel.add(dataset);
@@ -335,7 +323,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 if (selectedFile != null) {
                         final JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);
                         JPanel pn = new JPanel();
-                        final JTextArea area = new JTextArea();
+                        final JTextArea area = selectedFile[0].getInfo();
                         
                         JButton accept = new JButton("Accept");
                         JButton cancel = new JButton("Cancel");

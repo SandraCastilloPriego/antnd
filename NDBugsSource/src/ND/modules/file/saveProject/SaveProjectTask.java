@@ -106,7 +106,7 @@ public class SaveProjectTask extends AbstractTask {
 
                 for (final Dataset datafile : selectedFiles) {
                         if (datafile != null) {
-                                zipStream.putNextEntry(new ZipEntry(datafile.getDatasetName() + ".sbml"));
+                                zipStream.putNextEntry(new ZipEntry(datafile.getDatasetName()));
                                 File tempFile = File.createTempFile(datafile.getDatasetName(), ".tmp");
                                 SBMLWriter writer = new SBMLWriter("AntND", "1.0");
                                 try {

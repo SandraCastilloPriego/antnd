@@ -159,7 +159,7 @@ public class OpenProjectTask extends AbstractTask {
                                                         Edge e = new Edge(edgeName, source, destination);
                                                         g.addEdge(e);
                                                 } else {
-                                                        data.setInfo(strLine);
+                                                        data.addInfo(strLine);
                                                 }
                                         }
                                         data.setGraph(g);

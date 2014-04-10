@@ -124,7 +124,7 @@ public class AddReactionTask extends AbstractTask {
                         } else {
                                 m.addReaction(r);
                                 String info = "Adding reaction: " + this.reactionName + " bounds:" + this.lb + " - " + this.ub + "\nCompounds: " + this.compounds + "\nStoichiometry: " + this.stoichiometry + "\n--------------------------";
-                                this.networkDS.setInfo(info);
+                                this.networkDS.addInfo(info);
 
                         }
                         setStatus(TaskStatus.FINISHED);

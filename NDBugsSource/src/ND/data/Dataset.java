@@ -111,6 +111,8 @@ public interface Dataset {
          *
          * @param info Information about the data set
          */
+        public void addInfo(String info);
+        
         public void setInfo(String info);
 
         public void setNodes(List<Node> nodes);
