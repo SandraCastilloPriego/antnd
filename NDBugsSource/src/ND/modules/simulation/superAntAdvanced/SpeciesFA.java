@@ -27,8 +27,8 @@ import java.util.List;
  */
 public class SpeciesFA {
 
-        private String id;
-        private List<String> reactions;
+        private final String id;
+        private final List<String> reactions;
         private Ant ant;
         private boolean isBiomass = false;
 
@@ -41,24 +41,14 @@ public class SpeciesFA {
                 return ant;
         }
 
-        public void addAnt(Ant ant, String[] mReaction) {
+        public void addAnt(Ant ant, String mReaction) {
                 boolean isThere = SpeciesFA.hasMiddle(ant.getPath(), mReaction);
                 if (this.ant == null) {
                         this.ant = ant;
                 } else {
-                        if (isBiomass) {
-                                boolean thisAntHasIt = SpeciesFA.hasMiddle(this.ant.getPath(), mReaction);
-                                if (isThere) {
-                                        if (thisAntHasIt && ant.getPathSize() < this.ant.getPathSize() || !thisAntHasIt) {
-                                                this.ant = ant;
-                                        }
-                                }/* else {
-                                        if (!thisAntHasIt && ant.getPathSize() < this.ant.getPathSize()) {
-                                                this.ant = ant;
-                                        }
-                                }*/
-                        } else {
-                                if (ant.getPathSize() < this.ant.getPathSize()) {
+                        boolean thisAntHasIt = SpeciesFA.hasMiddle(this.ant.getPath(), mReaction);
+                        if (isThere) {
+                                if (thisAntHasIt && ant.getPathSize() < this.ant.getPathSize() || !thisAntHasIt) {
                                         this.ant = ant;
                                 }
                         }
@@ -77,12 +67,10 @@ public class SpeciesFA {
                 return this.reactions;
         }
 
-        public static boolean hasMiddle(List<String> path, String[] mReaction) {
+        public static boolean hasMiddle(List<String> path, String mReaction) {
                 for (String p : path) {
-                        for (String s : mReaction) {
-                                if (p.contains(s)) {
-                                        return true;
-                                }
+                        if (p.contains(mReaction)) {
+                                return true;
                         }
                 }
                 return false;

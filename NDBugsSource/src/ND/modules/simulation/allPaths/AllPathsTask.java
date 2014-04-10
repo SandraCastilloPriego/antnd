@@ -478,7 +478,7 @@ public class AllPathsTask extends AbstractTask {
                         SimpleBasicDataset dataset = new SimpleBasicDataset();
 
                         dataset.setDocument(newDoc);
-                        dataset.setDatasetName(newModel.getId());
+                        dataset.setDatasetName(this.biomassID + " - "+ newModel.getId() + ".sbml");
                         Path path = Paths.get(this.networkDS.getPath());
                         Path fileName = path.getFileName();
                         String name = fileName.toString();

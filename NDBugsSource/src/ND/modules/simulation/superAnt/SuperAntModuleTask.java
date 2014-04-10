@@ -442,12 +442,8 @@ public class SuperAntModuleTask extends AbstractTask {
         private boolean allEnoughAnts(String species, String reaction) {
                 SpeciesFA s = this.compounds.get(species);
                 Ant ant = s.getAnt();
-                if (ant != null && ant.contains(reaction)) {
-                        return false;
-                }
-
                 if (ant != null) {
-                        return true;
+                        return !ant.contains(reaction);
                 }
                 return false;
         }

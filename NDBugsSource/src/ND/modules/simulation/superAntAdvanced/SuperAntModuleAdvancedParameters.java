@@ -20,6 +20,7 @@ package ND.modules.simulation.superAntAdvanced;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.BooleanParameter;
 import ND.parameters.parametersType.FileNameParameter;
 import ND.parameters.parametersType.IntegerParameter;
 import ND.parameters.parametersType.StringParameter;
@@ -35,9 +36,11 @@ public class SuperAntModuleAdvancedParameters extends SimpleParameterSet {
         public static final StringParameter middleReactions = new StringParameter(
                 "Reaction", "Name of the reactions that should be in the path.", "");
         public static final IntegerParameter numberOfIterations = new IntegerParameter(
-                "Number of Iterations", "Number of Iterations", 100);
+                "Number of Iterations", "Number of Iterations", 100);        
+        public static final BooleanParameter steadyState = new BooleanParameter(
+                "Steady state", "NAD/NADH, ADP/ATP and NADP/NADPH will be balanced", true);
 
         public SuperAntModuleAdvancedParameters() {
-                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, middleReactions, numberOfIterations});
+                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, middleReactions, numberOfIterations, steadyState});
         }
 }

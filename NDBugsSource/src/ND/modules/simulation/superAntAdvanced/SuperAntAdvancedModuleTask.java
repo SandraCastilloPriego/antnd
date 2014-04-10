@@ -62,24 +62,25 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class SuperAntAdvancedModuleTask extends AbstractTask {
 
-        private SimpleBasicDataset networkDS;
+        private final SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
-        private File exchangeReactions, boundsFile;
-        private String biomassID;
-        private Random rand;
-        private HashMap<String, ReactionFA> reactions;
-        private HashMap<String, SpeciesFA> compounds;
+        private final File exchangeReactions, boundsFile;
+        private final String biomassID;
+        private final Random rand;
+        private final HashMap<String, ReactionFA> reactions;
+        private final HashMap<String, SpeciesFA> compounds;
         private HashMap<String, String[]> bounds;
         private Map<String, Double> sources;
-        private List<String> sourcesList;
-        private JInternalFrame frame;
-        private JScrollPane panel;
-        private JPanel pn;
+        private final List<String> sourcesList;
+        private final JInternalFrame frame;
+        private final JScrollPane panel;
+        private final JPanel pn;
         private int shortestPath = Integer.MAX_VALUE;
         private Graph graph;
-        private int iterations;
-        private String middleReactions;
-        private String[] mReactions;
+        private final int iterations;
+        private final String middleReaction;
+        private final String[] mReactions;
+        private final boolean steadyState;
 
         public SuperAntAdvancedModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
@@ -87,8 +88,10 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                 this.biomassID = parameters.getParameter(SuperAntModuleAdvancedParameters.objectiveReaction).getValue();
                 this.boundsFile = parameters.getParameter(SuperAntModuleAdvancedParameters.bounds).getValue();
                 this.iterations = parameters.getParameter(SuperAntModuleAdvancedParameters.numberOfIterations).getValue();
-                this.middleReactions = parameters.getParameter(SuperAntModuleAdvancedParameters.middleReactions).getValue();
-                this.mReactions = this.middleReactions.replace(" ", "").split(",");
+                this.middleReaction = parameters.getParameter(SuperAntModuleAdvancedParameters.middleReactions).getValue();
+                this.steadyState = parameters.getParameter(SuperAntModuleAdvancedParameters.steadyState).getValue();
+
+                this.mReactions = this.middleReaction.replace(" ", "").split(",");
 
                 this.rand = new Random();
                 Date date = new Date();
@@ -313,7 +316,7 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                 for (int i = 0; i < antAmount; i++) {
                                         Ant ant = new Ant(specie.getId());
                                         ant.initAnt();
-                                        specie.addAnt(ant, this.mReactions);
+                                        specie.addAnt(ant, this.middleReaction);
                                 }
                         }
                         this.compounds.put(s.getId(), specie);
@@ -417,33 +420,28 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                 HashMap<Ant, String> combinedAnts = new HashMap<>();
                                 for (String s : toBeRemoved) {
                                         SpeciesFA spfa = this.compounds.get(s);
-
-                                        Ant a = spfa.getAnt();
-                                        if (a.contains(rc.getId())) {
-                                                rc.resetPheromones();
+                                        Ant a = spfa.getAnt();                                        
+                                        if (a != null) {
+                                                combinedAnts.put(a, s);
                                         }
-                                        combinedAnts.put(a, s);
                                 }
-
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
-
-                                if (!superAnt.isLost()) {
-                                        // move the ants to the products...   
-                                        for (String s : toBeAdded) {
-                                                SpeciesFA spfa = this.compounds.get(s);
-                                                for (int e = 0; e < rc.getStoichiometry(s); e++) {
-                                                        Ant newAnt;
-                                                        try {
-                                                                newAnt = superAnt.clone();
-                                                        } catch (CloneNotSupportedException ex) {
-                                                                newAnt = superAnt;
-                                                        }
-                                                        newAnt.setLocation(spfa.getId());
-                                                        spfa.addAnt(newAnt, this.mReactions);
+                                
+                                // move the ants to the products...   
+                                for (String s : toBeAdded) {
+                                        SpeciesFA spfa = this.compounds.get(s);
+                                        for (int e = 0; e < rc.getStoichiometry(s); e++) {
+                                                Ant newAnt;
+                                                try {
+                                                        newAnt = superAnt.clone();
+                                                } catch (CloneNotSupportedException ex) {
+                                                        newAnt = superAnt;
                                                 }
+                                                newAnt.setLocation(spfa.getId());
+                                                spfa.addAnt(newAnt, this.middleReaction);
                                         }
-
                                 }
+                                
                                 // When the ants arrive to the biomass
                                 if (toBeAdded.contains(this.biomassID)) {
                                         List<Ant> antsBiomass = new ArrayList<>();
@@ -452,7 +450,8 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                         SpeciesFA spFA = this.compounds.get(this.biomassID);
                                         antsBiomass.add(spFA.getAnt());
                                         for (Ant a : antsBiomass) {
-                                                if (a.getPathSize() < shortestPath) {
+                                                if (a.getPathSize() < shortestPath
+                                                        && a.contains(this.middleReaction)) {
                                                         this.shortestPath = a.getPathSize();
                                                         this.graph = a.getGraph();
 
@@ -492,10 +491,16 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                 if (r.getub() > 0) {
                                         List<String> reactants = r.getReactants();
                                         for (String reactant : reactants) {
-
-                                                if (!allEnoughAnts(reactant, r.getStoichiometry(reactant), reaction)) {
-                                                        isPossible = false;
-                                                        break;
+                                                if (!this.isCofactor(reactant)) {
+                                                        if (!allEnoughAnts(reactant, reaction)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
+                                                } else {
+                                                        if (r.getProducts().contains(this.biomassID) && correspondentCofactor(r.getReactants(), this.biomassID)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
                                                 }
                                         }
 
@@ -507,17 +512,24 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                 if (r.getlb() < 0) {
                                         List<String> products = r.getProducts();
                                         for (String product : products) {
-                                                if (!allEnoughAnts(product, r.getStoichiometry(product), reaction)) {
-                                                        isPossible = false;
-                                                        break;
+                                                if (!this.isCofactor(product)) {
+                                                        if (!allEnoughAnts(product, reaction)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
+                                                } else {
+                                                        if (r.getReactants().contains(this.biomassID) && correspondentCofactor(r.getProducts(), this.biomassID)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
                                                 }
+
                                         }
                                 } else {
                                         isPossible = false;
                                 }
 
                         }
-
                         if (isPossible) {
                                 possibleReactions.add(reaction);
                         }
@@ -526,15 +538,11 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                 return possibleReactions;
         }
 
-        private boolean allEnoughAnts(String species, double stoichiometry, String reaction) {
+        private boolean allEnoughAnts(String species, String reaction) {
                 SpeciesFA s = this.compounds.get(species);
                 Ant ant = s.getAnt();
-                if (ant != null && ant.contains(reaction)) {
-                        return false;
-                }
-
                 if (ant != null) {
-                        return true;
+                        return !ant.contains(reaction);
                 }
                 return false;
         }
@@ -560,7 +568,7 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                         SimpleBasicDataset dataset = new SimpleBasicDataset();
 
                         dataset.setDocument(newDoc);
-                        dataset.setDatasetName(newModel.getId());
+                        dataset.setDatasetName(this.biomassID + " - " + newModel.getId() + ".sbml");
                         Path path = Paths.get(this.networkDS.getPath());
                         Path fileName = path.getFileName();
                         String name = fileName.toString();
@@ -592,5 +600,23 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                         }
                 }
                 return false;
+        }
+
+        private boolean isCofactor(String reactant) {
+                return this.steadyState && (reactant.equals("C00006")
+                        || reactant.equals("C00004") || reactant.equals("C00008"));
+        }
+
+        private boolean correspondentCofactor(List<String> products, String reactant) {
+                return (reactant.equals("C00003") && products.contains("C00004"))
+                        || (reactant.equals("C00003") && products.contains("C00006"))
+                        || (reactant.equals("C00006") && products.contains("C00003"))
+                        || (reactant.equals("C00002") && products.contains("C00008"))
+                        || (reactant.equals("C00004") && products.contains("C00003"))
+                        || (reactant.equals("C00008") && products.contains("C00002"))
+                        || (reactant.equals("C00003") && products.contains("C00004"))
+                        || (reactant.equals("C00005") && products.contains("C00006"))
+                        || (reactant.equals("C00006") && products.contains("C00005"));
+
         }
 }
