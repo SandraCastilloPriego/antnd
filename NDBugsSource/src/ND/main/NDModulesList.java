@@ -18,6 +18,7 @@
  */
 package ND.main;
 
+import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.file.saveProject.SaveProjectModule;
@@ -45,6 +46,7 @@ public class NDModulesList {
                 OpenBasicFileModule.class,
                 OpenProjectModule.class,
                 SaveProjectModule.class,
+                CofactorConfModule.class,
                // AntModule.class,
                 SuperAntModule.class,
                 SuperAntAdvancedModule.class,

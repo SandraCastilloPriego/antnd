@@ -38,31 +38,37 @@ import javax.swing.*;
 /**
  * @author Taken from MZmine2 http://mzmine.sourceforge.net/
  */
-public class MainMenu extends JMenuBar implements ActionListener {
+public final class MainMenu extends JMenuBar implements ActionListener {
 
-        private JMenu fileMenu, utilsMenu, reactionMenu, helpMenu;
-        private JWindowsMenu windowsMenu;
-        private JMenuItem showAbout;
-        private Map<JMenuItem, NDProcessingModule> moduleMenuItems = new HashMap<JMenuItem, NDProcessingModule>();
+        private final JMenu fileMenu, configurationMenu, simulationMenu, reactionMenu, helpMenu;
+        private final JWindowsMenu windowsMenu;
+        private final JMenuItem showAbout;
+        private final Map<JMenuItem, NDProcessingModule> moduleMenuItems = new HashMap<>();
 
         MainMenu() {
                 this.setBackground(Color.WHITE);
-                            
+
                 fileMenu = new JMenu("File");
                 fileMenu.setMnemonic(KeyEvent.VK_F);
                 fileMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
                 fileMenu.setIcon(new ImageIcon("icons/file.jpg"));
                 add(fileMenu);
 
-                utilsMenu = new JMenu("Simulation");
-                utilsMenu.setMnemonic(KeyEvent.VK_S);
-                utilsMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
-                utilsMenu.setIcon(new ImageIcon("icons/simulationMenu.png"));
-                add(utilsMenu);
+                configurationMenu = new JMenu("Configuration");
+                configurationMenu.setMnemonic(KeyEvent.VK_C);
+                configurationMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
+                configurationMenu.setIcon(new ImageIcon("icons/setting.png"));
+                add(configurationMenu);
+
+                simulationMenu = new JMenu("Simulation");
+                simulationMenu.setMnemonic(KeyEvent.VK_S);
+                simulationMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
+                simulationMenu.setIcon(new ImageIcon("icons/simulationMenu.png"));
+                add(simulationMenu);
 
                 reactionMenu = new JMenu("Model");
                 reactionMenu.setMnemonic(KeyEvent.VK_R);
-                reactionMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
+                reactionMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
                 reactionMenu.setIcon(new ImageIcon("icons/model.png"));
                 add(reactionMenu);
 
@@ -72,7 +78,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
                         mainDesktopPane);
                 windowsMenu.setWindowPositioner(positioner);
                 windowsMenu.setMnemonic(KeyEvent.VK_W);
-                windowsMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
+                windowsMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
                 windowsMenu.setIcon(new ImageIcon("icons/window.png"));
                 this.add(windowsMenu);
 
@@ -82,7 +88,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
                  */
                 helpMenu = new JMenu("Help");
                 helpMenu.setMnemonic(KeyEvent.VK_H);
-                helpMenu.setFont(new Font("SansSerif", Font.BOLD, 13));                
+                helpMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
                 helpMenu.setIcon(new ImageIcon("icons/helpMenu.png"));
                 this.add(helpMenu);
 
@@ -90,7 +96,6 @@ public class MainMenu extends JMenuBar implements ActionListener {
                 showAbout.addActionListener(this);
                 showAbout.setIcon(new ImageIcon("icons/help.png"));
                 addMenuItem(NDModuleCategory.HELPSYSTEM, showAbout);
-
 
         }
 
@@ -100,8 +105,11 @@ public class MainMenu extends JMenuBar implements ActionListener {
                         case FILE:
                                 fileMenu.add(newItem);
                                 break;
+                        case CONFIGURATION:
+                                configurationMenu.add(newItem);
+                                break;
                         case SIMULATION:
-                                utilsMenu.add(newItem);
+                                simulationMenu.add(newItem);
                                 break;
                         case REACTION:
                                 reactionMenu.add(newItem);
@@ -117,8 +125,11 @@ public class MainMenu extends JMenuBar implements ActionListener {
                         case FILE:
                                 fileMenu.addSeparator();
                                 break;
+                        case CONFIGURATION:
+                                configurationMenu.addSeparator();
+                                break;
                         case SIMULATION:
-                                utilsMenu.addSeparator();
+                                simulationMenu.addSeparator();
                                 break;
                         case REACTION:
                                 reactionMenu.addSeparator();
@@ -134,6 +145,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
          * @see
          * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
                 Object src = e.getSource();
 

@@ -21,6 +21,7 @@ import ND.desktop.impl.PrintPaths;
 import ND.modules.simulation.antNoGraph.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
+import ND.modules.configuration.cofactors.CofactorConfParameters;
 import ND.modules.simulation.antNoGraph.network.Edge;
 import ND.modules.simulation.antNoGraph.network.Graph;
 import ND.modules.simulation.antNoGraph.network.Node;
@@ -82,6 +83,7 @@ public class AllPathsTask extends AbstractTask {
         private boolean removedReaction = false;
         private Model m = null;
         private final boolean steadyState;
+        private final String NAD, NADH, NADP, NADPH, ADP, ATP;
 
         public AllPathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
@@ -91,6 +93,14 @@ public class AllPathsTask extends AbstractTask {
                 this.boundsFile = parameters.getParameter(AllPathsParameters.bounds).getValue();
                 this.iterations = parameters.getParameter(AllPathsParameters.numberOfIterations).getValue();
                 this.steadyState = parameters.getParameter(AllPathsParameters.steadyState).getValue();
+
+                CofactorConfParameters conf = new CofactorConfParameters();
+                this.NAD = conf.getParameter(CofactorConfParameters.NAD).getValue();
+                this.NADH = conf.getParameter(CofactorConfParameters.NADH).getValue();
+                this.NADP = conf.getParameter(CofactorConfParameters.NADP).getValue();
+                this.NADPH = conf.getParameter(CofactorConfParameters.NADPH).getValue();
+                this.ADP = conf.getParameter(CofactorConfParameters.ADP).getValue();
+                this.ATP = conf.getParameter(CofactorConfParameters.ATP).getValue();
 
                 this.rand = new Random();
                 Date date = new Date();
@@ -587,20 +597,16 @@ public class AllPathsTask extends AbstractTask {
         }
 
         private boolean isCofactor(String reactant) {
-                return this.steadyState && (reactant.equals("C00006")
-                        || reactant.equals("C00004") || reactant.equals("C00008"));
+                return this.steadyState && (reactant.equals(this.NAD)
+                        || reactant.equals(this.ADP) || reactant.equals(this.NADP));
         }
 
         private boolean correspondentCofactor(List<String> products, String reactant) {
-                return (reactant.equals("C00003") && products.contains("C00004"))
-                        || (reactant.equals("C00003") && products.contains("C00006"))
-                        || (reactant.equals("C00006") && products.contains("C00003"))
-                        || (reactant.equals("C00002") && products.contains("C00008"))
-                        || (reactant.equals("C00004") && products.contains("C00003"))
-                        || (reactant.equals("C00008") && products.contains("C00002"))
-                        || (reactant.equals("C00003") && products.contains("C00004"))
-                        || (reactant.equals("C00005") && products.contains("C00006"))
-                        || (reactant.equals("C00006") && products.contains("C00005"));
-
+                return (reactant.equals(this.NAD) && products.contains(this.NADH))
+                        || (reactant.equals(this.NADH) && products.contains(this.NAD)
+                        || (reactant.equals(this.NADP) && products.contains(this.NADPH))
+                        || (reactant.equals(this.ATP) && products.contains(this.ADP))
+                        || (reactant.equals(this.NADPH) && products.contains(this.NADP))
+                        || (reactant.equals(this.ADP) && products.contains(this.ATP)));
         }
 }

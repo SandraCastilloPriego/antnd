@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2012 
+ * Copyright 2007-2013 VTT Biotechnology
  * This file is part of AntND.
  *
  * AntND is free software; you can redistribute it and/or modify it under the
@@ -15,18 +15,21 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.configuration.general;
+package ND.modules.configuration.cofactors;
 
-import ND.main.NDCore;
 import ND.modules.NDModuleCategory;
 import ND.modules.NDProcessingModule;
 import ND.parameters.ParameterSet;
 import ND.taskcontrol.Task;
 
-public class GeneralConfiguration implements NDProcessingModule {
+/**
+ *
+ * @author scsandra
+ */
+public class CofactorConfModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "General configuration";
-        private final GeneralconfigurationParameters parameters = NDCore.getPreferences();
+        public static final String MODULE_NAME = "Cofactor configuration";
+        private final CofactorConfParameters parameters = new CofactorConfParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -40,18 +43,18 @@ public class GeneralConfiguration implements NDProcessingModule {
 
         @Override
         public Task[] runModule(ParameterSet parameters) {
-                NDCore.setPreferences((GeneralconfigurationParameters) parameters);
+                // prepare a new group of tasks                
                 return null;
         }
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.SIMULATION;
+                return NDModuleCategory.CONFIGURATION;
         }
 
         @Override
         public String getIcon() {
-                return "icons/configuration.png";
+                return "icons/cofactor.png";
         }
 
         @Override

@@ -33,14 +33,14 @@ public class SuperAntModuleAdvancedParameters extends SimpleParameterSet {
                 "Reaction bounds", "Define the bounds of the reactions", null);
         public static final StringParameter objectiveReaction = new StringParameter(
                 "Compound ID", "ID of the compound you want to find");   
-        public static final StringParameter middleReactions = new StringParameter(
-                "Reaction", "Name of the reactions that should be in the path.", "");
+        public static final StringParameter middleReaction = new StringParameter(
+                "Reaction", "Name of the reaction that should be in the path.", "");
         public static final IntegerParameter numberOfIterations = new IntegerParameter(
                 "Number of Iterations", "Number of Iterations", 100);        
         public static final BooleanParameter steadyState = new BooleanParameter(
                 "Steady state", "NAD/NADH, ADP/ATP and NADP/NADPH will be balanced", true);
 
         public SuperAntModuleAdvancedParameters() {
-                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, middleReactions, numberOfIterations, steadyState});
+                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, middleReaction, numberOfIterations, steadyState});
         }
 }

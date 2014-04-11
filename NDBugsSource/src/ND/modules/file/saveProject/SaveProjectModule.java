@@ -63,7 +63,7 @@ public class SaveProjectModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/opensbml.png";
+                return "icons/saveProject.png";
         }
 
         @Override

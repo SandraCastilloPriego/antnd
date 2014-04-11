@@ -19,5 +19,5 @@ package ND.desktop;
 
 public enum NDMenu {
 
-        FILE, SIMULATION, HELPSYSTEM,
+        FILE, SIMULATION, CONFIGURATION, HELPSYSTEM,
 };

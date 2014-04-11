@@ -40,7 +40,7 @@ public class WindowStateParameter implements Parameter {
 
 	@Override
 	public String getName() {
-		return "MM window state";
+		return "ND window state";
 	}
 
 	@Override
