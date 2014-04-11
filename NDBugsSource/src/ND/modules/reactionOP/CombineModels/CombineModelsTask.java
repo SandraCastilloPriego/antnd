@@ -41,8 +41,7 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class CombineModelsTask extends AbstractTask {
 
-        private Dataset[] networkDS;
-        private double finishedPercentage = 0.0f;
+        private final Dataset[] networkDS;
 
         public CombineModelsTask(Dataset[] dataset) {
                 networkDS = dataset;
@@ -55,7 +54,7 @@ public class CombineModelsTask extends AbstractTask {
 
         @Override
         public double getFinishedPercentage() {
-                return finishedPercentage;
+                return 0.0f;
         }
 
         @Override
@@ -135,7 +134,7 @@ public class CombineModelsTask extends AbstractTask {
                 SimpleBasicDataset dataset = new SimpleBasicDataset();
 
                 dataset.setDocument(newDoc);
-                dataset.setDatasetName("Combined" + newModel.getId());
+                dataset.setDatasetName("Combined - " + this.networkDS[0].getBiomassId()+".sbml");
                 Path path = Paths.get(this.networkDS[0].getPath());
                 Path fileName = path.getFileName();
                 String name = fileName.toString();

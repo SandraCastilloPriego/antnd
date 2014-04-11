@@ -80,8 +80,8 @@ public class AllPathsTask extends AbstractTask {
         private final List<Reaction> reactionsRemoved;
         private Graph graph;
         private boolean removedReaction = false;
-        private int count = 0;
         private Model m = null;
+        private final boolean steadyState;
 
         public AllPathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
@@ -90,6 +90,7 @@ public class AllPathsTask extends AbstractTask {
                 this.biomassID = parameters.getParameter(AllPathsParameters.objectiveReaction).getValue();
                 this.boundsFile = parameters.getParameter(AllPathsParameters.bounds).getValue();
                 this.iterations = parameters.getParameter(AllPathsParameters.numberOfIterations).getValue();
+                this.steadyState = parameters.getParameter(AllPathsParameters.steadyState).getValue();
 
                 this.rand = new Random();
                 Date date = new Date();
@@ -360,7 +361,7 @@ public class AllPathsTask extends AbstractTask {
 
                                                         SpeciesFA spFA = this.compounds.get(this.biomassID);
                                                         Ant a = spFA.getAnt();
-                                                        System.out.println("Biomass produced!: " + a.getPathSize());
+                                                       // System.out.println("Biomass produced!: " + a.getPathSize());
 
                                                         // saving the shortest path
                                                         if (a.getPathSize() < shortestPath) {
@@ -375,8 +376,6 @@ public class AllPathsTask extends AbstractTask {
                                                                 this.graphs.add(this.graph);
                                                                 a.print();
                                                                 removeReaction(a.getPath());
-                                                                count++;
-
                                                         }
                                                 }
                                         }
@@ -390,7 +389,6 @@ public class AllPathsTask extends AbstractTask {
 
                 List<String> possibleReactions = new ArrayList<>();
                 SpeciesFA sp = this.compounds.get(node);
-
                 Ant ant = sp.getAnt();
                 if (!this.sources.containsKey(node) && ant == null) {
                         return possibleReactions;
@@ -400,44 +398,55 @@ public class AllPathsTask extends AbstractTask {
                 for (String reaction : connectedReactions) {
 
                         ReactionFA r = this.reactions.get(reaction);
-                        if (r != null && !this.reactionsRemoved.contains(r)) {
-                                boolean isPossible = true;
 
-                                if (r.hasReactant(node)) {
+                        boolean isPossible = true;
 
-                                        if (r.getub() > 0) {
-                                                List<String> reactants = r.getReactants();
-                                                for (String reactant : reactants) {
+                        if (r.hasReactant(node)) {
 
+                                if (r.getub() > 0) {
+                                        List<String> reactants = r.getReactants();
+                                        for (String reactant : reactants) {
+                                                if (!this.isCofactor(reactant)) {
                                                         if (!allEnoughAnts(reactant, reaction)) {
                                                                 isPossible = false;
                                                                 break;
                                                         }
-                                                }
-
-                                        } else {
-                                                isPossible = false;
-                                        }
-
-                                } else {
-
-                                        if (r.getlb() < 0) {
-                                                List<String> products = r.getProducts();
-                                                for (String product : products) {
-                                                        if (!allEnoughAnts(product, reaction)) {
+                                                } else {
+                                                        if (r.getProducts().contains(this.biomassID) && correspondentCofactor(r.getReactants(), this.biomassID)) {
                                                                 isPossible = false;
                                                                 break;
                                                         }
                                                 }
-                                        } else {
-                                                isPossible = false;
                                         }
 
+                                } else {
+                                        isPossible = false;
                                 }
 
-                                if (isPossible) {
-                                        possibleReactions.add(reaction);
+                        } else {
+                                if (r.getlb() < 0) {
+                                        List<String> products = r.getProducts();
+                                        for (String product : products) {
+                                                if (!this.isCofactor(product)) {
+                                                        if (!allEnoughAnts(product, reaction)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
+                                                } else {
+                                                        if (r.getReactants().contains(this.biomassID) && correspondentCofactor(r.getProducts(), this.biomassID)) {
+                                                                isPossible = false;
+                                                                break;
+                                                        }
+                                                }
+
+                                        }
+                                } else {
+                                        isPossible = false;
                                 }
+
+                        }
+                        if (isPossible) {
+                                possibleReactions.add(reaction);
                         }
 
                 }
@@ -478,7 +487,7 @@ public class AllPathsTask extends AbstractTask {
                         SimpleBasicDataset dataset = new SimpleBasicDataset();
 
                         dataset.setDocument(newDoc);
-                        dataset.setDatasetName(this.biomassID + " - "+ newModel.getId() + ".sbml");
+                        dataset.setDatasetName(this.biomassID + " - " + newModel.getId() + ".sbml");
                         Path path = Paths.get(this.networkDS.getPath());
                         Path fileName = path.getFileName();
                         String name = fileName.toString();
@@ -575,5 +584,23 @@ public class AllPathsTask extends AbstractTask {
                                 break;
                         }
                 }
+        }
+
+        private boolean isCofactor(String reactant) {
+                return this.steadyState && (reactant.equals("C00006")
+                        || reactant.equals("C00004") || reactant.equals("C00008"));
+        }
+
+        private boolean correspondentCofactor(List<String> products, String reactant) {
+                return (reactant.equals("C00003") && products.contains("C00004"))
+                        || (reactant.equals("C00003") && products.contains("C00006"))
+                        || (reactant.equals("C00006") && products.contains("C00003"))
+                        || (reactant.equals("C00002") && products.contains("C00008"))
+                        || (reactant.equals("C00004") && products.contains("C00003"))
+                        || (reactant.equals("C00008") && products.contains("C00002"))
+                        || (reactant.equals("C00003") && products.contains("C00004"))
+                        || (reactant.equals("C00005") && products.contains("C00006"))
+                        || (reactant.equals("C00006") && products.contains("C00005"));
+
         }
 }
