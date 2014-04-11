@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.fluxAnalysis;
+package ND.modules.otimization.LP;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -24,14 +24,15 @@ import ND.modules.NDProcessingModule;
 import ND.parameters.ParameterSet;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.Task;
+
 /**
  *
  * @author scsandra
  */
-public class FluxAnalysisModule implements NDProcessingModule {
+public class LPModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Analyze fluxes";
-        private final FluxAnalysisParameters parameters = new FluxAnalysisParameters();
+        public static final String MODULE_NAME = "Optimize fluxes";
+        private final LPParameters parameters = new LPParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -47,12 +48,12 @@ public class FluxAnalysisModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new FluxAnalysisTask[1];
+                Task tasks[] = new LPTask[1];
                 if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
                         NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
                 } else {
 
-                        tasks[0] = new FluxAnalysisTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
+                        tasks[0] = new LPTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
 
                         NDCore.getTaskController().addTasks(tasks);
                 }
@@ -67,7 +68,7 @@ public class FluxAnalysisModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/AnalyzeFluxes.png";
+                return "icons/optimizer.png";
         }
 
         @Override

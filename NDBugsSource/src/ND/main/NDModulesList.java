@@ -22,6 +22,7 @@ import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.file.saveProject.SaveProjectModule;
+import ND.modules.otimization.LP.LPModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
@@ -47,7 +48,7 @@ public class NDModulesList {
                 OpenProjectModule.class,
                 SaveProjectModule.class,
                 CofactorConfModule.class,
-               // AntModule.class,
+                // AntModule.class,
                 SuperAntModule.class,
                 SuperAntAdvancedModule.class,
                 AddReactionModule.class,
@@ -56,8 +57,9 @@ public class NDModulesList {
                 ShowAllReactionsModule.class,
                 ShowCompoundModule.class,
                 ShowAllCompoundsModule.class,
-                FluxAnalysisModule.class,
                 AllPathsModule.class,
-                LoopAnalyzerModule.class
+                LoopAnalyzerModule.class,
+                LPModule.class,
+                FluxAnalysisModule.class
         };
 }

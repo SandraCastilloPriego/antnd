@@ -30,9 +30,9 @@ import org.apache.commons.collections.iterators.IteratorEnumeration;
  */
 public class NDHelpMap implements Map {
 
-        private HelpSet helpset; // the top HelpSet
+        private final HelpSet helpset; // the top HelpSet
         private HashMap<String, String> lookup = null;
-        private boolean test;
+        private final boolean test;
 
         public NDHelpMap(boolean test) {
                 lookup = new HashMap<>();
@@ -188,7 +188,7 @@ public class NDHelpMap implements Map {
         /**
          * Determines the IDs related to this URL.
          *
-         * @param URL The URL to compare the Map IDs to.
+         * @param url The URL to compare the Map IDs to.
          * @return Enumeration of Map.IDs
          */
         @Override
@@ -204,7 +204,7 @@ public class NDHelpMap implements Map {
                                 if (url.sameFile(tmpURL) == true) {
                                         ids.add(key);
                                 }
-                        } catch (Exception ex) {
+                        } catch (MalformedURLException ex) {
                         }
                 }
                 return new FlatEnumeration(ids.listIterator(), helpset);
@@ -212,8 +212,8 @@ public class NDHelpMap implements Map {
 
         private static class FlatEnumeration implements Enumeration<Object> {
 
-                private ListIterator<String> e;
-                private HelpSet hs;
+                private final ListIterator<String> e;
+                private final HelpSet hs;
 
                 public FlatEnumeration(ListIterator<String> e, HelpSet hs) {
                         this.e = e;

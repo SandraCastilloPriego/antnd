@@ -70,7 +70,7 @@ public class HelpImpl {
             NDTOCView myTOC = new NDTOCView(hs, "TOC",
                     "Table Of Contents", helpMap, file);
 
-            hs.setTitle("MM");
+            hs.setTitle("ND");
             hs.addTOCView(myTOC);
 
         } catch (Exception e) {

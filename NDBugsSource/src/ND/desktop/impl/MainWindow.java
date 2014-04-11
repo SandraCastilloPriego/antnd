@@ -53,7 +53,7 @@ import org.w3c.dom.NodeList;
 public class MainWindow extends JFrame implements NDModule, Desktop,
         WindowListener {
 
-        static final String aboutHelpID = "MM/desktop/help/AboutND.html";
+        static final String aboutHelpID = "ND/desktop/help/AboutND.html";
         private JDesktopPane desktopPane;
         private JSplitPane split;
         private ItemSelector itemSelector;

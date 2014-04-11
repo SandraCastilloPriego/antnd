@@ -23,6 +23,7 @@ public enum NDModuleCategory {
         CONFIGURATION("Configuration"),
         SIMULATION("Simulation"),        
         REACTION("Reaction Utils"),
+        OPTIMIZATION("Optimization"),
 	HELPSYSTEM("Help");
 
 	private final String name;
