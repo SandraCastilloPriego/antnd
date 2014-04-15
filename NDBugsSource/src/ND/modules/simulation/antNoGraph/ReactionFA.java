@@ -27,9 +27,9 @@ import java.util.List;
  */
 public class ReactionFA {
 
-        private String id;
-        private List<String> reactants, products;
-        private HashMap<String, Double> stoichiometry;
+        private final String id;
+        private final List<String> reactants, products;
+        private final HashMap<String, Double> stoichiometry;
         private double ub = 1000;
         private double lb = -1000;
         private int pheromones = 0;
