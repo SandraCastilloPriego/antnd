@@ -19,6 +19,7 @@
 package ND.main;
 
 import ND.modules.configuration.cofactors.CofactorConfModule;
+import ND.modules.configuration.sources.SourcesConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.file.saveProject.SaveProjectModule;
@@ -34,8 +35,6 @@ import ND.modules.simulation.allPaths.AllPathsModule;
 import ND.modules.simulation.loopAnalizer.LoopAnalyzerModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
-import ND.modules.simulation.superAntFluxMax.AntFluxMaxModule;
-import ND.modules.simulation.superAntFluxMin.AntFluxMinModule;
 
 /**
  * List of modules included in MM
@@ -50,6 +49,7 @@ public class NDModulesList {
                 OpenProjectModule.class,
                 SaveProjectModule.class,
                 CofactorConfModule.class,
+                SourcesConfModule.class,
                 // AntModule.class,
                 SuperAntModule.class,
                 SuperAntAdvancedModule.class,
