@@ -55,14 +55,14 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class FluxAnalysisTask extends AbstractTask {
 
-        private SimpleBasicDataset networkDS;
-        private double finishedPercentage = 0.0f;
-        private File fluxesFile, exchangeFile;
-        private List<String> sourcesList;
+        private final SimpleBasicDataset networkDS;
+        private final double finishedPercentage = 0.0f;
+        private final File fluxesFile, exchangeFile;
+        private final List<String> sourcesList;
         private Map<String, Double> fluxes;
-        private JInternalFrame frame;
-        private JScrollPane panel;
-        private JPanel pn;
+        private final JInternalFrame frame;
+        private final JScrollPane panel;
+        private final JPanel pn;
 
         public FluxAnalysisTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;

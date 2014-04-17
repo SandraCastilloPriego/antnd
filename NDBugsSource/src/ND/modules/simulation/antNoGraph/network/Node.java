@@ -23,14 +23,19 @@ package ND.modules.simulation.antNoGraph.network;
  * @author scsandra
  */
 public class Node {
-
-        final private String id;
+        
+        private String id;
+        
         public Node(String id) {
                 this.id = id;
         } 
         
         public String getId() {
                 return id;
+        }
+        
+        public void setId(String newID){
+                this.id = newID;
         }
         
         @Override

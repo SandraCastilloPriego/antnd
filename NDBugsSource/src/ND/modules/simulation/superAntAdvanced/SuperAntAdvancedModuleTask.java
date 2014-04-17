@@ -610,8 +610,8 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
         }
 
         private boolean isCofactor(String reactant) {
-                return this.steadyState && (reactant.equals(this.NAD)
-                        || reactant.equals(this.ADP) || reactant.equals(this.NADP));
+                return this.steadyState && (reactant.equals(this.NAD)/*
+                        || reactant.equals(this.ADP) || reactant.equals(this.NADP)*/);
         }
 
         private boolean correspondentCofactor(List<String> products, String reactant) {

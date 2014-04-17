@@ -35,6 +35,7 @@ import ND.modules.simulation.loopAnalizer.LoopAnalyzerModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
 import ND.modules.simulation.superAntFluxMax.AntFluxMaxModule;
+import ND.modules.simulation.superAntFluxMin.AntFluxMinModule;
 
 /**
  * List of modules included in MM
@@ -60,8 +61,9 @@ public class NDModulesList {
                 ShowAllCompoundsModule.class,
                 AllPathsModule.class,
                 LoopAnalyzerModule.class,
-                AntFluxMaxModule.class,
+              //  AntFluxMaxModule.class,
+              //  AntFluxMinModule.class,
                 LPModule.class,
-                FluxAnalysisModule.class
+                FluxAnalysisModule.class,                
         };
 }

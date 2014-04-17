@@ -15,28 +15,29 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.otimization.LP;
+package ND.modules.simulation.superAntFluxMin;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.BooleanParameter;
 import ND.parameters.parametersType.FileNameParameter;
+import ND.parameters.parametersType.IntegerParameter;
 import ND.parameters.parametersType.StringParameter;
 
-public class LPParameters extends SimpleParameterSet {
+public class AntFluxMinParameters extends SimpleParameterSet {
 
+        public static final FileNameParameter exchangeReactions = new FileNameParameter(
+                "ExchangeReactions", "Define the exchange reactions", null);
         public static final FileNameParameter bounds = new FileNameParameter(
-                "Bounds", "Define the reaction bounds ", null);
-        public static final FileNameParameter exchange = new FileNameParameter(
-                "Source", "Define the uptaken compounds", null);
-        public static final StringParameter objective = new StringParameter(
-                "Objective", "Reaction that will be optimized", "");
-        public static final BooleanParameter maximize = new BooleanParameter(
-                "Maximize", "If this option is not selected the objective fluxes will be minimized ", true);
-         public static final BooleanParameter steadyState = new BooleanParameter(
+                "Reaction bounds", "Define the bounds of the reactions", null);
+        public static final StringParameter objectiveReaction = new StringParameter(
+                "Compound ID", "ID of the compound you want to maximize");        
+        public static final IntegerParameter numberOfIterations = new IntegerParameter(
+                "Number of Iterations", "Number of Iterations", 100);
+        public static final BooleanParameter steadyState = new BooleanParameter(
                 "Steady state", "NAD/NADH, ADP/ATP and NADP/NADPH will be balanced", true);
 
-        public LPParameters() {
-                super(new Parameter[]{bounds, exchange, objective, maximize, steadyState});
+        public AntFluxMinParameters() {
+                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, numberOfIterations, steadyState});
         }
 }

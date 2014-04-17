@@ -162,4 +162,20 @@ public class Graph {
                 }
                 return false;
         }
+
+        public List<Edge> getEdges(String n, boolean source) {
+                List<Edge> edgesN = new ArrayList<>();
+                for (Edge e : this.edges) {
+                        if (source) {
+                                if (e.getSource().getId().contains(n)) {
+                                        edgesN.add(e);
+                                }
+                        } else {
+                                if (e.getDestination().getId().contains(n)) {
+                                        edgesN.add(e);
+                                }
+                        }
+                }
+                return edgesN;
+        }
 }

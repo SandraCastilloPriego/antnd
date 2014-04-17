@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -309,7 +310,7 @@ public class AntFluxMaxTask extends AbstractTask {
                 for (String compound : compounds.keySet()) {
 
                         List<String> possibleReactions = getPossibleReactions(compound);
-
+                        Collections.shuffle(possibleReactions);
                         for (String reactionChoosen : possibleReactions) {
                                 ReactionFA rc = this.reactions.get(reactionChoosen);
                                 double bound;
@@ -342,7 +343,7 @@ public class AntFluxMaxTask extends AbstractTask {
                                                 }
 
                                         }
-                                       // spfa.addAnt(a);
+                                        // spfa.addAnt(a);
 
                                         double f = a.getFlux() / rc.getStoichiometry(spfa.getId());
                                         if (f < lastFlux) {
@@ -352,23 +353,18 @@ public class AntFluxMaxTask extends AbstractTask {
                                         combinedAnts.put(a, s);
                                 }
 
-                                for (String s : toBeRemoved) {
-                                        SpeciesFA spfa = this.compounds.get(s);
-                                        Ant a = spfa.getAnt();
-                                       // a.setFlux(lastFlux);
-                                }
-
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts, lastFlux, rc);
 
                                 if (!superAnt.isLost()) {
                                         // move the ants to the products...   
                                         for (String s : toBeAdded) {
                                                 SpeciesFA spfa = this.compounds.get(s);
-                                                for (int e = 0; e < rc.getStoichiometry(s); e++) {
-                                                        Ant newAnt = superAnt.clone();
-                                                        newAnt.setLocation(spfa.getId(), rc);
-                                                        spfa.addAnt(newAnt);
-                                                }
+                                                // for (int e = 0; e < rc.getStoichiometry(s); e++) {
+                                                Ant newAnt = superAnt.superClone();
+                                                newAnt.recalculateFluxes(sources);
+                                                newAnt.setLocation(spfa.getId(), rc);
+                                                spfa.addAnt(newAnt);
+                                                //  }
                                         }
 
                                 }
@@ -464,6 +460,20 @@ public class AntFluxMaxTask extends AbstractTask {
                         }
 
                 }
+
+                /*  if (this.sources.containsKey(sp.getId()) && !possibleReactions.isEmpty()) {
+                 String finalReaction = possibleReactions.get(0);
+                 double sto = Double.MAX_VALUE;
+                 for (String reaction : possibleReactions) {
+                 ReactionFA rc = this.reactions.get(reaction);
+                 if (rc.getStoichiometry(sp.getId()) < sto) {
+                 sto = rc.getStoichiometry(sp.getId());
+                 finalReaction = rc.getId();
+                 }
+                 }
+                 possibleReactions.clear();
+                 possibleReactions.add(finalReaction);
+                 }*/
                 return possibleReactions;
         }
 

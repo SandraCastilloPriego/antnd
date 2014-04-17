@@ -514,16 +514,16 @@ public class SuperAntModuleTask extends AbstractTask {
         }
 
         private boolean isCofactor(String reactant) {
-                return this.steadyState && (reactant.equals(this.NAD)
-                        || reactant.equals(this.ADP) || reactant.equals(this.NADP));
+                return this.steadyState && (reactant.equals(this.NAD)/*
+                        || reactant.equals(this.ADP)/* || reactant.equals(this.NADP)*/);
         }
 
         private boolean correspondentCofactor(List<String> products, String reactant) {
-                return (reactant.equals(this.NAD) && products.contains(this.NADH))
-                        || (reactant.equals(this.NADH) && products.contains(this.NAD)
-                        || (reactant.equals(this.NADP) && products.contains(this.NADPH))
-                        || (reactant.equals(this.ATP) && products.contains(this.ADP))
-                        || (reactant.equals(this.NADPH) && products.contains(this.NADP))
-                        || (reactant.equals(this.ADP) && products.contains(this.ATP)));
+                return this.steadyState && (reactant.equals(this.NAD) && products.contains(this.NADH))
+                        || this.steadyState && (reactant.equals(this.NADH) && products.contains(this.NAD)
+                        || this.steadyState && (reactant.equals(this.NADP) && products.contains(this.NADPH))
+                        || this.steadyState && (reactant.equals(this.ATP) && products.contains(this.ADP))
+                        || this.steadyState && (reactant.equals(this.NADPH) && products.contains(this.NADP))
+                        || this.steadyState && (reactant.equals(this.ADP) && products.contains(this.ATP)));
         }
 }

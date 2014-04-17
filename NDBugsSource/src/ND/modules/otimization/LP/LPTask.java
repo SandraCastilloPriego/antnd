@@ -18,7 +18,12 @@
 package ND.modules.otimization.LP;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.main.NDCore;
 import ND.modules.configuration.cofactors.CofactorConfParameters;
+import ND.modules.simulation.antNoGraph.network.Edge;
+import ND.modules.simulation.antNoGraph.network.Graph;
+import ND.modules.simulation.antNoGraph.network.Node;
+import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
@@ -27,6 +32,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +41,6 @@ import java.util.Map;
 import net.sf.javailp.Constraint;
 import net.sf.javailp.Linear;
 import net.sf.javailp.Operator;
-import net.sf.javailp.OptType;
 import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
 import net.sf.javailp.Solver;
@@ -42,6 +48,7 @@ import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryGLPK;
 import net.sf.javailp.VarType;
 import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -62,7 +69,9 @@ public class LPTask extends AbstractTask {
         private final boolean maximize;
         private final List<String> species;
         private final List<String> reactions;
+        private Map<String, Double> exchange;
         private final String NAD, NADP, ADP;
+        private final boolean steadyState;
 
         public LPTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
@@ -70,6 +79,7 @@ public class LPTask extends AbstractTask {
                 this.exchangeFile = parameters.getParameter(LPParameters.exchange).getValue();
                 this.objectiveReaction = parameters.getParameter(LPParameters.objective).getValue();
                 this.maximize = parameters.getParameter(LPParameters.maximize).getValue();
+                this.steadyState = parameters.getParameter(LPParameters.steadyState).getValue();
 
                 CofactorConfParameters conf = new CofactorConfParameters();
                 this.NAD = conf.getParameter(CofactorConfParameters.NAD).getValue();
@@ -100,26 +110,26 @@ public class LPTask extends AbstractTask {
                 try {
                         setStatus(TaskStatus.PROCESSING);
 
-                        Map<String, Double> exchange = this.readExchangeReactions();
-                        System.out.println("0");
+                        this.exchange = this.readExchangeReactions();
+                        //   System.out.println("0");
 
                         HashMap<String, String[]> bounds = readBounds();
                         SBMLDocument doc = this.networkDS.getDocument();
                         Model m = doc.getModel();
-                        System.out.println("1");
-                        double[][] A = createMatrix(m, exchange);
+                        //     System.out.println("1");
+                        double[][] A = createMatrix(m);
                         finishedPercentage = 0.2f;
-                        System.out.println("2");
-                        double[] b = createB(exchange);
+                        //    System.out.println("2");
+                        double[] b = createB();
                         finishedPercentage = 0.3f;
-                        System.out.println("3");
+                        //  System.out.println("3");
                         double[] objective = createObjective();
                         finishedPercentage = 0.4f;
-                        System.out.println("4");
-                        double[] lb = createLB(bounds, exchange);
-                        System.out.println("5");
-                        double[] ub = createUP(bounds, exchange);
-                        System.out.println("5.5");
+                        // System.out.println("4");
+                        double[] lb = createLB(bounds);
+                        // System.out.println("5");
+                        double[] ub = createUP(bounds);
+                        //System.out.println("5.5");
                         finishedPercentage = 0.5f;
                         try {
                                 Result solution = optimize(A, b, objective, lb, ub);
@@ -187,9 +197,11 @@ public class LPTask extends AbstractTask {
                                 }
                         } catch (IOException ex) {
                         }
-                        exchangeMap.put(this.NAD, 100.0);
-                        exchangeMap.put(this.NADP, 100.0);
-                        exchangeMap.put(this.ADP, 100.0);
+                        if (steadyState) {
+                                exchangeMap.put(this.NAD, 100.0);
+                                exchangeMap.put(this.NADP, 100.0);
+                                exchangeMap.put(this.ADP, 100.0);
+                        }
                         return exchangeMap;
                 } catch (FileNotFoundException ex) {
                 }
@@ -226,31 +238,35 @@ public class LPTask extends AbstractTask {
                 for (int i = 0; i < variables.size(); i++) {
                         problem.setVarLowerBound(variables.get(i), lb[i]);
                         problem.setVarUpperBound(variables.get(i), ub[i]);
-                        System.out.println(variables.get(i) + " - " + lb[i] + " - " + ub[i]);
+                        //  System.out.println(variables.get(i) + " - " + lb[i] + " - " + ub[i]);
                 }
                 for (String var : variables) {
                         problem.setVarType(var, VarType.REAL);
                 }
                 Solver solver = factory.get(); // you should use this solver only once for one problem
-                solver.setParameter("scale", 1);
-                solver.setParameter("lpsolver", 1);
                 Result result = solver.solve(problem);
 
                 //System.out.println(result.toString());
                 return result;
         }
 
-        private double[][] createMatrix(Model m, Map<String, Double> exchange) {
+        private double[][] createMatrix(Model m) {
                 for (Species s : m.getListOfSpecies()) {
                         this.species.add(s.getId());
                 }
-                int countex = 0;
-                for (String ex : exchange.keySet()) {
-                        if (species.contains(ex)) {
-                                countex++;
-                        }
-                }
-                double[][] A = new double[m.getNumReactions() + m.getNumSpecies()][m.getNumSpecies()];
+                /* for (Species s : m.getListOfSpecies()) {
+                 this.species.add(s.getId() + "out");
+                 }*/
+                /*int countex = 0;
+                 for (String ex : exchange.keySet()) {
+                 if (species.contains(ex)) {
+                 countex++;
+                 }
+                 }*/
+                double[][] A = new double[m.getNumReactions() + m.getNumSpecies()][m.getNumSpecies() /**
+                         * 2
+                         */
+                        ];
 
                 /*if (!this.species.contains(this.NAD)) {
                  this.species.add(this.NAD);
@@ -303,13 +319,13 @@ public class LPTask extends AbstractTask {
                  }
                  System.out.print("\n");
                  }
-                 for(String sp : this.species){
+                 for (String sp : this.species) {
                  System.out.println(sp);
                  }*/
                 return A;
         }
 
-        private double[] createB(Map<String, Double> exchange) {
+        private double[] createB() {
                 //for each reaction 0 is added except for the exchange reactions
                 double[] b = new double[this.species.size()];
                 for (String r : species) {
@@ -341,7 +357,7 @@ public class LPTask extends AbstractTask {
                 return objective;
         }
 
-        private double[] createLB(HashMap<String, String[]> bounds, Map<String, Double> exchange) {
+        private double[] createLB(HashMap<String, String[]> bounds) {
                 double[] lb = new double[this.reactions.size()];
                 Model m = this.networkDS.getDocument().getModel();
                 for (int index = 0; index < reactions.size(); index++) {
@@ -373,13 +389,17 @@ public class LPTask extends AbstractTask {
                 return lb;
         }
 
-        private double[] createUP(HashMap<String, String[]> bounds, Map<String, Double> exchange) {
+        private double[] createUP(HashMap<String, String[]> bounds) {
                 double[] ub = new double[this.reactions.size()];
                 Model m = this.networkDS.getDocument().getModel();
                 for (int index = 0; index < reactions.size(); index++) {
                         String r = reactions.get(index);
                         if (exchange.containsKey(r)) {
-                                ub[index] = 0;
+                                if (r.contains("C00031")) {
+                                        ub[index] = -(this.exchange.get(r)-0.001);
+                                } else {
+                                        ub[index] = 1000;
+                                }
                         } else {
                                 String[] b = bounds.get(r);
                                 if (b == null) {
@@ -406,9 +426,120 @@ public class LPTask extends AbstractTask {
 
         private void processSolution(Result solution) {
                 System.out.println("Objective: " + solution.getObjective());
-
+                System.out.println(solution);
+                Map<String, Double> solutionMap = new HashMap<>();
                 for (String reaction : this.reactions) {
-                        System.out.println(reaction + " " + solution.get(reaction));
+                        //System.out.println(reaction + " " + solution.get(reaction));
+                        solutionMap.put(reaction, (Double) solution.get(reaction));
                 }
+
+                createDataFile(solutionMap, (double) solution.getObjective());
+
         }
+
+        private void createDataFile(Map<String, Double> solution, double objective) {
+
+                SBMLDocument newDoc = this.networkDS.getDocument().clone();
+                Model m = this.networkDS.getDocument().getModel();
+                Model newModel = newDoc.getModel();
+
+                for (Reaction reaction : m.getListOfReactions()) {
+                        if (solution.containsKey(reaction.getId()) && Math.abs(solution.get(reaction.getId())) < 0.00000001) {
+                                newModel.removeReaction(reaction.getId());
+                        }
+                }
+
+                for (Species sp : m.getListOfSpecies()) {
+                        if (!this.isInReactions(newModel.getListOfReactions(), sp)) {
+                                newModel.removeSpecies(sp.getId());
+                        }
+                }
+
+                SimpleBasicDataset dataset = new SimpleBasicDataset();
+
+                dataset.setDocument(newDoc);
+                dataset.setDatasetName("LPOptimization  - " + newModel.getId() + ".sbml");
+                dataset.addInfo("LP Optimization: maximizing: " + this.maximize + "\nSteady state: " + this.steadyState + "\nOjective: " + objective + "\nSolution: " + solution + "\n---------------------------");
+                Path path = Paths.get(this.networkDS.getPath());
+                Path fileName = path.getFileName();
+                String name = fileName.toString();
+                String p = this.networkDS.getPath().replace(name, "");
+                p = p + dataset.getDatasetName();
+                dataset.setPath(p);
+
+                NDCore.getDesktop().AddNewFile(dataset);
+
+                dataset.setGraph(createGraph(solution, newModel));
+                dataset.setSources(this.networkDS.getSources());
+                dataset.setBiomass(this.networkDS.getBiomassId());
+
+        }
+
+        private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
+                for (Reaction r : listOfReactions) {
+                        if (r.hasProduct(sp) || r.hasReactant(sp)) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+
+        private Graph createGraph(Map<String, Double> solution, Model newModel) {
+                List<Node> nodes = new ArrayList<>();
+                List<Edge> edges = new ArrayList<>();
+                for (Reaction r : newModel.getListOfReactions()) {
+                        Node n = new Node(r.getId() + " - " + solution.get(r.getId()));
+                        nodes.add(n);
+                        List<SpeciesReference> reactants;
+                        List<SpeciesReference> products;
+                        if (solution.get(r.getId()) > 0) {
+                                reactants = r.getListOfReactants();
+                                products = r.getListOfProducts();
+                        } else {
+                                products = r.getListOfReactants();
+                                reactants = r.getListOfProducts();
+                        }
+
+                        for (SpeciesReference sp : reactants) {
+                                Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
+                                if (newNode == null) {
+                                        if (this.exchange.containsKey(sp.getSpeciesInstance().getId())) {
+                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId() + " - " + this.exchange.get(sp.getSpeciesInstance().getId()));
+                                        } else {
+                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId());
+                                        }
+                                }
+                                nodes.add(newNode);
+                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + "-" + uniqueId.nextId(), newNode, n);
+                                edges.add(edge);
+                        }
+
+                        for (SpeciesReference sp : products) {
+                                Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
+                                if (newNode == null) {
+                                        if (this.exchange.containsKey(sp.getSpeciesInstance().getId())) {
+                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId() + " - " + this.exchange.get(sp.getSpeciesInstance().getId()));
+                                        } else {
+                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId());
+                                        }
+                                }
+                                nodes.add(newNode);
+                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + "-" + uniqueId.nextId(), n, newNode);
+                                edges.add(edge);
+                        }
+
+                }
+
+                return new Graph(nodes, edges);
+        }
+
+        private Node getNode(List<Node> nodes, String s) {
+                for (Node n : nodes) {
+                        if (n.getId().contains(s)) {
+                                return n;
+                        }
+                }
+                return null;
+        }
+
 }
