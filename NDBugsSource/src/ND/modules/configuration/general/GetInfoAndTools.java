@@ -18,31 +18,40 @@
 package ND.modules.configuration.general;
 
 import ND.data.Dataset;
+import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.main.NDCore;
 import ND.modules.configuration.sources.SourcesConfParameters;
+import ND.modules.simulation.antNoGraph.network.Graph;
+import ND.modules.simulation.antNoGraph.network.Node;
 import com.csvreader.CsvReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.Species;
 
 /**
  *
  * @author scsandra
  */
-public class GetInfo {
+public class GetInfoAndTools {
 
         File sources, boundsFile;
 
-        public GetInfo() {
+        public GetInfoAndTools() {
                 SourcesConfParameters sourcesParameters = new SourcesConfParameters();
                 this.sources = sourcesParameters.getParameter(SourcesConfParameters.exchange).getValue();
                 this.boundsFile = sourcesParameters.getParameter(SourcesConfParameters.bounds).getValue();
@@ -67,12 +76,12 @@ public class GetInfo {
                                         }
                                 }
                         } catch (IOException ex) {
-                                Logger.getLogger(ND.modules.configuration.general.GetInfo.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
                         return exchangeMap;
                 } catch (FileNotFoundException ex) {
-                        Logger.getLogger(ND.modules.configuration.general.GetInfo.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 return exchangeMap;
         }
@@ -103,10 +112,67 @@ public class GetInfo {
                                 }
                         }
                 } catch (FileNotFoundException ex) {
-                        java.util.logging.Logger.getLogger(ND.modules.configuration.general.GetInfo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                        java.util.logging.Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                        java.util.logging.Logger.getLogger(ND.modules.configuration.general.GetInfo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                        java.util.logging.Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
                 return b;
+        }
+        
+        
+        
+        public void createDataFile(Graph graph, Dataset networkDS, String biomassID, List<String> sourcesList) {
+                if (graph != null) {
+                        SBMLDocument newDoc = networkDS.getDocument().clone();
+                        Model m = networkDS.getDocument().getModel();
+                        Model newModel = newDoc.getModel();
+
+                        for (Reaction reaction : m.getListOfReactions()) {
+                                if (!isInGraph(reaction.getId(), graph)) {
+                                        newModel.removeReaction(reaction.getId());
+                                }
+                        }
+
+                        for (Species sp : m.getListOfSpecies()) {
+                                if (!this.isInReactions(newModel.getListOfReactions(), sp)) {
+                                        newModel.removeSpecies(sp.getId());
+                                }
+                        }
+
+                        SimpleBasicDataset dataset = new SimpleBasicDataset();
+
+                        dataset.setDocument(newDoc);
+                        dataset.setDatasetName(biomassID + " - " + newModel.getId() + ".sbml");
+                        Path path = Paths.get(networkDS.getPath());
+                        Path fileName = path.getFileName();
+                        String name = fileName.toString();
+                        String p = networkDS.getPath().replace(name, "");
+                        p = p + newModel.getId();
+                        dataset.setPath(p);
+
+                        NDCore.getDesktop().AddNewFile(dataset);
+
+                        dataset.setGraph(graph);
+                        dataset.setSources(sourcesList);
+                        dataset.setBiomass(biomassID);
+                }
+        }
+
+        private boolean isInGraph(String id, Graph graph) {
+                for (Node n : graph.getNodes()) {
+                        if (n.getId().contains(id)) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+
+        private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
+                for (Reaction r : listOfReactions) {
+                        if (r.hasProduct(sp) || r.hasReactant(sp)) {
+                                return true;
+                        }
+                }
+                return false;
         }
 }

@@ -20,16 +20,11 @@ package ND.modules.simulation.allPaths;
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.BooleanParameter;
-import ND.parameters.parametersType.FileNameParameter;
 import ND.parameters.parametersType.IntegerParameter;
 import ND.parameters.parametersType.StringParameter;
 
 public class AllPathsParameters extends SimpleParameterSet {
 
-        public static final FileNameParameter exchangeReactions = new FileNameParameter(
-                "ExchangeReactions", "Define the exchange reactions", null);
-        public static final FileNameParameter bounds = new FileNameParameter(
-                "Reaction bounds", "Define the bounds of the reactions", null);
         public static final StringParameter objectiveReaction = new StringParameter(
                 "Compound ID", "ID of the compound you want to maximize");        
         public static final IntegerParameter numberOfIterations = new IntegerParameter(
@@ -38,6 +33,6 @@ public class AllPathsParameters extends SimpleParameterSet {
                 "Steady state", "NAD/NADH, ADP/ATP and NADP/NADPH will be balanced", true);
 
         public AllPathsParameters() {
-                super(new Parameter[]{exchangeReactions, bounds, objectiveReaction, numberOfIterations, steadyState});
+                super(new Parameter[]{objectiveReaction, numberOfIterations, steadyState});
         }
 }

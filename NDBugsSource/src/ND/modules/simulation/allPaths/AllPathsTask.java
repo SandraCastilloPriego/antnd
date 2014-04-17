@@ -22,18 +22,14 @@ import ND.modules.simulation.antNoGraph.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.modules.configuration.cofactors.CofactorConfParameters;
+import ND.modules.configuration.general.GetInfoAndTools;
 import ND.modules.simulation.antNoGraph.network.Edge;
 import ND.modules.simulation.antNoGraph.network.Graph;
 import ND.modules.simulation.antNoGraph.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import com.csvreader.CsvReader;
 import java.awt.Dimension;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -42,8 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -64,13 +58,12 @@ public class AllPathsTask extends AbstractTask {
 
         private final SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
-        private final File exchangeReactions, boundsFile;
         private final String biomassID;
         private final Random rand;
         private final HashMap<String, ReactionFA> reactions;
         private final HashMap<String, SpeciesFA> compounds;
         private HashMap<String, String[]> bounds;
-        private Map<String, Double> sources;
+        private Map<String, Double[]> sources;
         private final List<String> sourcesList;
         private JInternalFrame frame;
         private JScrollPane panel;
@@ -84,13 +77,12 @@ public class AllPathsTask extends AbstractTask {
         private Model m = null;
         private final boolean steadyState;
         private final String NAD, NADH, NADP, NADPH, ADP, ATP;
+        private final GetInfoAndTools tools;
 
         public AllPathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
                 this.m = this.networkDS.getDocument().getModel().clone();
-                this.exchangeReactions = parameters.getParameter(AllPathsParameters.exchangeReactions).getValue();
                 this.biomassID = parameters.getParameter(AllPathsParameters.objectiveReaction).getValue();
-                this.boundsFile = parameters.getParameter(AllPathsParameters.bounds).getValue();
                 this.iterations = parameters.getParameter(AllPathsParameters.numberOfIterations).getValue();
                 this.steadyState = parameters.getParameter(AllPathsParameters.steadyState).getValue();
 
@@ -116,6 +108,7 @@ public class AllPathsTask extends AbstractTask {
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.pn = new JPanel();
                 this.panel = new JScrollPane(pn);
+                this.tools = new GetInfoAndTools();
 
                 // Initialize the random number generator using the
                 // time from above.
@@ -147,16 +140,16 @@ public class AllPathsTask extends AbstractTask {
                                 NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
                         }
                         System.out.println("Reading sources");
-                        this.sources = this.readExchangeReactions();
+                        this.sources = tools.GetSourcesInfo();
+                        for (String key : this.sources.keySet()) {
+                                this.sourcesList.add(key);
+                        }
+
                         System.out.println("Reading bounds");
-                        this.bounds = this.readBounds();
+                        this.bounds = tools.readBounds(networkDS);
                         System.out.println("Creating world");
                         // this.createWorld();
                         System.out.println("Starting simulation");
-                        // frame.setSize(new Dimension(700, 500));
-                        //frame.add(this.panel);
-                        //  NDCore.getDesktop().addInternalFrame(frame);
-
                         this.doSimulation();
                         if (!this.graphs.isEmpty()) {
                                 Graph g = joinGraphs();
@@ -175,19 +168,12 @@ public class AllPathsTask extends AbstractTask {
                                                 System.out.println(ex.toString());
                                         }
                                 }
+                                this.tools.createDataFile(g, networkDS, biomassID, sourcesList);
 
                                 // }
-                                createDataFile(g);
                         } else {
                                 NDCore.getDesktop().displayMessage("No path was found.");
                         }
-                        /* String info = "";
-                         if (this.graph != null) {
-                         info = "Simulation\n" + this.parameters.toString() + "\nResult: " + this.graph.toString();
-                         } else {
-                         info = "Simulation\n" + this.parameters.toString() + "\nResult: No path found";
-                         }
-                         this.networkDS.setInfo(info + "\n--------------------------");*/
 
                         setStatus(TaskStatus.FINISHED);
 
@@ -195,32 +181,6 @@ public class AllPathsTask extends AbstractTask {
                         System.out.println(e.toString());
                         setStatus(TaskStatus.ERROR);
                 }
-        }
-
-        private Map<String, Double> readExchangeReactions() {
-                try {
-                        CsvReader exchange = new CsvReader(new FileReader(this.exchangeReactions), '\t');
-                        Map<String, Double> exchangeMap = new HashMap<>();
-
-                        try {
-                                while (exchange.readRecord()) {
-                                        try {
-                                                String[] exchangeRow = exchange.getValues();
-                                                exchangeMap.put(exchangeRow[0], Double.parseDouble(exchangeRow[1]));
-                                                this.sourcesList.add(exchangeRow[0]);
-                                        } catch (IOException | NumberFormatException e) {
-                                                e.printStackTrace();
-                                        }
-                                }
-                        } catch (IOException ex) {
-                                Logger.getLogger(ND.modules.simulation.antNoGraph.AntModuleTask.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-
-                        return exchangeMap;
-                } catch (FileNotFoundException ex) {
-                        Logger.getLogger(AllPathsTask.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return null;
         }
 
         private void createWorld() {
@@ -281,39 +241,6 @@ public class AllPathsTask extends AbstractTask {
 
         }
 
-        private HashMap<String, String[]> readBounds() {
-                HashMap<String, String[]> b = new HashMap<>();
-                try {
-                        SBMLDocument doc = this.networkDS.getDocument();
-                        Model m = doc.getModel();
-
-                        CsvReader reader = new CsvReader(new FileReader(this.boundsFile.getAbsolutePath()));
-
-                        while (reader.readRecord()) {
-                                String[] data = reader.getValues();
-                                String reactionName = data[0].replace("-", "");
-                                b.put(reactionName, data);
-
-                                Reaction r = m.getReaction(reactionName);
-                                if (r != null && r.getKineticLaw() == null) {
-                                        KineticLaw law = new KineticLaw();
-                                        LocalParameter lbound = new LocalParameter("LOWER_BOUND");
-                                        lbound.setValue(Double.valueOf(data[3]));
-                                        law.addLocalParameter(lbound);
-                                        LocalParameter ubound = new LocalParameter("UPPER_BOUND");
-                                        ubound.setValue(Double.valueOf(data[4]));
-                                        law.addLocalParameter(ubound);
-                                        r.setKineticLaw(law);
-                                }
-                        }
-                } catch (FileNotFoundException ex) {
-                        java.util.logging.Logger.getLogger(AllPathsParameters.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                        java.util.logging.Logger.getLogger(AllPathsParameters.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                }
-                return b;
-        }
-
         public void cicle() {
 
                 for (String compound : compounds.keySet()) {
@@ -354,16 +281,14 @@ public class AllPathsTask extends AbstractTask {
                                                 // move the ants to the products...   
                                                 for (String s : toBeAdded) {
                                                         SpeciesFA spfa = this.compounds.get(s);
-                                                        for (int e = 0; e < rc.getStoichiometry(s); e++) {
-                                                                Ant newAnt;
-                                                                try {
-                                                                        newAnt = superAnt.clone();
-                                                                } catch (CloneNotSupportedException ex) {
-                                                                        newAnt = superAnt;
-                                                                }
-                                                                newAnt.setLocation(spfa.getId());
-                                                                spfa.addAnt(newAnt);
+                                                        Ant newAnt;
+                                                        try {
+                                                                newAnt = superAnt.clone();
+                                                        } catch (CloneNotSupportedException ex) {
+                                                                newAnt = superAnt;
                                                         }
+                                                        newAnt.setLocation(spfa.getId());
+                                                        spfa.addAnt(newAnt);
                                                 }
 
                                                 // When the ants arrive to the biomass
@@ -476,61 +401,6 @@ public class AllPathsTask extends AbstractTask {
                 return false;
         }
 
-        private void createDataFile(Graph graph) {
-                if (graph != null) {
-                        SBMLDocument newDoc = this.networkDS.getDocument().clone();
-                        Model m = this.networkDS.getDocument().getModel();
-                        Model newModel = newDoc.getModel();
-
-                        for (Reaction reaction : m.getListOfReactions()) {
-                                if (!isInGraph(reaction.getId(), graph)) {
-                                        newModel.removeReaction(reaction.getId());
-                                }
-                        }
-
-                        for (Species sp : m.getListOfSpecies()) {
-                                if (!this.isInReactions(newModel.getListOfReactions(), sp)) {
-                                        newModel.removeSpecies(sp.getId());
-                                }
-                        }
-
-                        SimpleBasicDataset dataset = new SimpleBasicDataset();
-
-                        dataset.setDocument(newDoc);
-                        dataset.setDatasetName(this.biomassID + " - " + newModel.getId() + ".sbml");
-                        Path path = Paths.get(this.networkDS.getPath());
-                        Path fileName = path.getFileName();
-                        String name = fileName.toString();
-                        String p = this.networkDS.getPath().replace(name, "");
-                        p = p + newModel.getId();
-                        dataset.setPath(p);
-
-                        NDCore.getDesktop().AddNewFile(dataset);
-
-                        dataset.setGraph(graph);
-                        dataset.setSources(sourcesList);
-                        dataset.setBiomass(biomassID);
-                }
-        }
-
-        private boolean isInGraph(String id, Graph graph) {
-                for (Node n : graph.getNodes()) {
-                        if (n.getId().contains(id)) {
-                                return true;
-                        }
-                }
-                return false;
-        }
-
-        private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
-                for (Reaction r : listOfReactions) {
-                        if (r.hasProduct(sp) || r.hasReactant(sp)) {
-                                return true;
-                        }
-                }
-                return false;
-        }
-
         private Graph joinGraphs() {
                 System.out.println("joining graphs");
                 Graph g = new Graph(null, null);
@@ -598,7 +468,7 @@ public class AllPathsTask extends AbstractTask {
 
         private boolean isCofactor(String reactant) {
                 return this.steadyState && (reactant.equals(this.NAD)/*
-                        || reactant.equals(this.ADP) || reactant.equals(this.NADP)*/);
+                         || reactant.equals(this.ADP) || reactant.equals(this.NADP)*/);
         }
 
         private boolean correspondentCofactor(List<String> products, String reactant) {

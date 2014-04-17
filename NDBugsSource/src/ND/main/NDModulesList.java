@@ -48,8 +48,8 @@ public class NDModulesList {
                 OpenBasicFileModule.class,
                 OpenProjectModule.class,
                 SaveProjectModule.class,
-                CofactorConfModule.class,
                 SourcesConfModule.class,
+                CofactorConfModule.class,
                 // AntModule.class,
                 SuperAntModule.class,
                 SuperAntAdvancedModule.class,
@@ -61,9 +61,8 @@ public class NDModulesList {
                 ShowAllCompoundsModule.class,
                 AllPathsModule.class,
                 LoopAnalyzerModule.class,
-              //  AntFluxMaxModule.class,
-              //  AntFluxMinModule.class,
+                //  AntFluxMaxModule.class,
+                //  AntFluxMinModule.class,
                 LPModule.class,
-                FluxAnalysisModule.class,                
-        };
+                FluxAnalysisModule.class,};
 }

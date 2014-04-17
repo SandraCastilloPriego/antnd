@@ -17,7 +17,6 @@
  */
 package ND.modules.configuration.sources;
 
-import ND.modules.configuration.cofactors.*;
 import ND.modules.NDModuleCategory;
 import ND.modules.NDProcessingModule;
 import ND.parameters.ParameterSet;
@@ -29,7 +28,7 @@ import ND.taskcontrol.Task;
  */
 public class SourcesConfModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Sources configuration";
+        public static final String MODULE_NAME = "Sources and bounds configuration";
         private final SourcesConfParameters parameters = new SourcesConfParameters();
 
         @Override
@@ -55,7 +54,7 @@ public class SourcesConfModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/cofactor.png";
+                return "icons/confbounds.png";
         }
 
         @Override
