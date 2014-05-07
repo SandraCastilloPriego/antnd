@@ -36,10 +36,11 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class AddReactionTask extends AbstractTask {
 
-        private SimpleBasicDataset networkDS;
-        private String reactionName, compounds, stoichiometry;
-        private double finishedPercentage = 0.0f;
-        private double lb, ub;
+        private final SimpleBasicDataset networkDS;
+        private final String reactionName;
+        private String compounds, stoichiometry;
+        private final double finishedPercentage = 0.0f;
+        private final double lb, ub;
 
         public AddReactionTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
@@ -111,10 +112,10 @@ public class AddReactionTask extends AbstractTask {
 
                         KineticLaw law = new KineticLaw();
                         LocalParameter lboundP = new LocalParameter("LOWER_BOUND");
-                        lboundP.setValue(Double.valueOf(this.lb));
+                        lboundP.setValue(this.lb);
                         law.addLocalParameter(lboundP);
                         LocalParameter uboundP = new LocalParameter("UPPER_BOUND");
-                        uboundP.setValue(Double.valueOf(this.ub));
+                        uboundP.setValue(this.ub);
                         law.addLocalParameter(uboundP);
                         r.setKineticLaw(law);
 

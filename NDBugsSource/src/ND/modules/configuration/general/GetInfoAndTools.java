@@ -57,6 +57,14 @@ public class GetInfoAndTools {
                 this.boundsFile = sourcesParameters.getParameter(SourcesConfParameters.bounds).getValue();
         }
 
+        public File getBoundsFile() {
+                return this.boundsFile;
+        }
+
+        public File getSourcesFile() {
+                return this.sources;
+        }
+
         public Map<String, Double[]> GetSourcesInfo() {
 
                 Map<String, Double[]> exchangeMap = new HashMap<>();
@@ -85,7 +93,7 @@ public class GetInfoAndTools {
                 }
                 return exchangeMap;
         }
-        
+
         public HashMap<String, String[]> readBounds(Dataset networkDS) {
                 HashMap<String, String[]> b = new HashMap<>();
                 try {
@@ -118,9 +126,7 @@ public class GetInfoAndTools {
                 }
                 return b;
         }
-        
-        
-        
+
         public void createDataFile(Graph graph, Dataset networkDS, String biomassID, List<String> sourcesList) {
                 if (graph != null) {
                         SBMLDocument newDoc = networkDS.getDocument().clone();

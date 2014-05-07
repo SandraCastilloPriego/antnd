@@ -20,23 +20,20 @@ package ND.modules.otimization.LP;
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.BooleanParameter;
-import ND.parameters.parametersType.FileNameParameter;
 import ND.parameters.parametersType.StringParameter;
 
 public class LPParameters extends SimpleParameterSet {
-
-        public static final FileNameParameter bounds = new FileNameParameter(
-                "Bounds", "Define the reaction bounds ", null);
-        public static final FileNameParameter exchange = new FileNameParameter(
-                "Source", "Define the uptaken compounds", null);
+       
         public static final StringParameter objective = new StringParameter(
                 "Objective", "Reaction that will be optimized", "");
         public static final BooleanParameter maximize = new BooleanParameter(
                 "Maximize", "If this option is not selected the objective fluxes will be minimized ", true);
-         public static final BooleanParameter steadyState = new BooleanParameter(
-                "Steady state", "NAD/NADH, ADP/ATP and NADP/NADPH will be balanced", true);
-
+       /* public static final BooleanParameter sources = new BooleanParameter(
+                "Add sources", "Add sources as an exchange reaction ", true);
+        public static final BooleanParameter compounds = new BooleanParameter(
+                "Add compounds", "Add rest of compounds as an exchange reaction ", true);*/
+      
         public LPParameters() {
-                super(new Parameter[]{bounds, exchange, objective, maximize, steadyState});
+                super(new Parameter[]{objective, maximize/*, sources, compounds*/});
         }
 }
