@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.allPaths;
+package ND.modules.simulation.somePaths;
 
 import ND.desktop.impl.PrintPaths;
 import ND.modules.simulation.antNoGraph.*;
@@ -30,8 +30,6 @@ import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,11 +40,9 @@ import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.sbml.jsbml.KineticLaw;
-import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.SpeciesReference;
 
@@ -54,7 +50,7 @@ import org.sbml.jsbml.SpeciesReference;
  *
  * @author scsandra
  */
-public class AllPathsTask extends AbstractTask {
+public class SomePathsTask extends AbstractTask {
 
         private final SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
@@ -79,12 +75,12 @@ public class AllPathsTask extends AbstractTask {
         private final String NAD, NADH, NADP, NADPH, ADP, ATP;
         private final GetInfoAndTools tools;
 
-        public AllPathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+        public SomePathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
                 this.m = this.networkDS.getDocument().getModel().clone();
-                this.biomassID = parameters.getParameter(AllPathsParameters.objectiveReaction).getValue();
-                this.iterations = parameters.getParameter(AllPathsParameters.numberOfIterations).getValue();
-                this.steadyState = parameters.getParameter(AllPathsParameters.steadyState).getValue();
+                this.biomassID = parameters.getParameter(SomePathsParameters.objectiveReaction).getValue();
+                this.iterations = parameters.getParameter(SomePathsParameters.numberOfIterations).getValue();
+                this.steadyState = parameters.getParameter(SomePathsParameters.steadyState).getValue();
 
                 CofactorConfParameters conf = new CofactorConfParameters();
                 this.NAD = conf.getParameter(CofactorConfParameters.NAD).getValue();
@@ -310,7 +306,7 @@ public class AllPathsTask extends AbstractTask {
                                                                 this.graph.addEdge(edge);
                                                                 this.graphs.add(this.graph);
                                                                 a.print();
-                                                                removeReaction(a.getPath());
+                                                                removeRandomReaction(a.getPath());
                                                         }
                                                 }
                                         }
@@ -427,13 +423,13 @@ public class AllPathsTask extends AbstractTask {
                 return g;
         }
 
-        private void removeReaction(List<String> path) {
-                String r = path.get(this.rand.nextInt(path.size()));
-                r = r.split(" - ")[0];
+        private void removeRandomReaction(List<String> path) {
                 this.removedReaction = true;
+                String r = path.get(this.rand.nextInt(path.size()));
+                r = r.split(" - ")[0];                
                 m.removeReaction(r);
 
-                if (this.reactionsRemoved.size() > 2) {
+                if (this.reactionsRemoved.size() > 1) {
                         this.reactionsRemoved.add(m.getReaction(r));
                         m.addReaction(this.reactionsRemoved.get(0));
                         this.reactionsRemoved.remove(0);

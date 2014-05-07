@@ -31,7 +31,7 @@ import ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule;
 import ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
-import ND.modules.simulation.allPaths.AllPathsModule;
+import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.loopAnalizer.LoopAnalyzerModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
@@ -59,7 +59,7 @@ public class NDModulesList {
                 ShowAllReactionsModule.class,
                 ShowCompoundModule.class,
                 ShowAllCompoundsModule.class,
-                AllPathsModule.class,
+                SomePathsModule.class,
                 LoopAnalyzerModule.class,
                 //  AntFluxMaxModule.class,
                 //  AntFluxMinModule.class,

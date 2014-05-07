@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.allPaths;
+package ND.modules.simulation.somePaths;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -29,10 +29,10 @@ import ND.taskcontrol.Task;
  *
  * @author scsandra
  */
-public class AllPathsModule implements NDProcessingModule {
+public class SomePathsModule implements NDProcessingModule {
 
         public static final String MODULE_NAME = "Get Some Paths";
-        private AllPathsParameters parameters = new AllPathsParameters();
+        private SomePathsParameters parameters = new SomePathsParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -48,11 +48,11 @@ public class AllPathsModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new AllPathsTask[1];
+                Task tasks[] = new SomePathsTask[1];
                 if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
                         NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
                 } else {
-                        tasks[0] = new AllPathsTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
+                        tasks[0] = new SomePathsTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
 
                         NDCore.getTaskController().addTasks(tasks);
                 }
