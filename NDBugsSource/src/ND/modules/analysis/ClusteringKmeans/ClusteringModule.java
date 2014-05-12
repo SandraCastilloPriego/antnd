@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.Clustering;
+package ND.modules.analysis.ClusteringKmeans;
 
 
 import ND.data.impl.datasets.SimpleBasicDataset;
@@ -32,7 +32,7 @@ import ND.taskcontrol.Task;
  */
 public class ClusteringModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Cluster Graph";
+        public static final String MODULE_NAME = "Cluster Graph (k-means)";
         private final ClusteringParameters parameters = new ClusteringParameters();
 
         @Override

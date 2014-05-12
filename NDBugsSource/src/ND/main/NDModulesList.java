@@ -18,7 +18,7 @@
  */
 package ND.main;
 
-import ND.modules.analysis.Clustering.ClusteringModule;
+import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
 import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
