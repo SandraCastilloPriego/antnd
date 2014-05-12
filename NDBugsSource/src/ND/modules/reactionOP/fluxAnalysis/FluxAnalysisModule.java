@@ -30,7 +30,7 @@ import ND.taskcontrol.Task;
  */
 public class FluxAnalysisModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Analyze fluxes";
+        public static final String MODULE_NAME = "Visualize external fluxes";
         private final FluxAnalysisParameters parameters = new FluxAnalysisParameters();
 
         @Override

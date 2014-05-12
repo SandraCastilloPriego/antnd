@@ -51,7 +51,7 @@ public final class MainMenu extends JMenuBar implements ActionListener {
                 fileMenu = new JMenu("File");
                 fileMenu.setMnemonic(KeyEvent.VK_F);
                 fileMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
-                fileMenu.setIcon(new ImageIcon("icons/file.jpg"));
+                fileMenu.setIcon(new ImageIcon("icons/file.png"));
                 add(fileMenu);
 
                 configurationMenu = new JMenu("Configuration");
@@ -81,7 +81,7 @@ public final class MainMenu extends JMenuBar implements ActionListener {
                 analysisMenu = new JMenu("Analysis");
                 analysisMenu.setMnemonic(KeyEvent.VK_R);
                 analysisMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
-                analysisMenu.setIcon(new ImageIcon("icons/optimizer.png"));
+                analysisMenu.setIcon(new ImageIcon("icons/analysis.png"));
                 add(analysisMenu);
 
                 JDesktopPane mainDesktopPane = ((MainWindow) NDCore.getDesktop()).getDesktopPane();
