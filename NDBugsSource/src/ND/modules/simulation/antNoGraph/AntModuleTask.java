@@ -60,22 +60,22 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class AntModuleTask extends AbstractTask {
 
-        private SimpleBasicDataset networkDS;
+        private final SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
-        private File exchangeReactions, boundsFile;
-        private String biomassID;
-        private Random rand;
-        private HashMap<String, ReactionFA> reactions;
-        private HashMap<String, SpeciesFA> compounds;
+        private final File exchangeReactions, boundsFile;
+        private final String biomassID;
+        private final Random rand;
+        private final HashMap<String, ReactionFA> reactions;
+        private final HashMap<String, SpeciesFA> compounds;
         private HashMap<String, String[]> bounds;
         private Map<String, Double> sources;
-        private List<String> sourcesList;
-        private JInternalFrame frame;
-        private JScrollPane panel;
-        private JPanel pn;
+        private final List<String> sourcesList;
+        private final JInternalFrame frame;
+        private final JScrollPane panel;
+        private final JPanel pn;
         private int shortestPath = Integer.MAX_VALUE;
         private Graph graph;
-        private int iterations, pheromones, removePheromones;
+        private final int iterations, pheromones, removePheromones;
 
         public AntModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {    
                 this.networkDS = dataset;

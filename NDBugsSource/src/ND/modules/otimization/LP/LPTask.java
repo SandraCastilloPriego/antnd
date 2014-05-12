@@ -28,10 +28,8 @@ import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import com.csvreader.CsvReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,16 +60,16 @@ public class LPTask extends AbstractTask {
         private final SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
         private final String objectiveSpecie;
-        private final boolean maximize;//, sourcesEx, compoundsEx;
+        // private final boolean maximize, sourcesEx, compoundsEx;
         private final Map<String, Double[]> exchange;
         private final GetInfoAndTools tools;
 
         public LPTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
                 this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
-                this.maximize = parameters.getParameter(LPParameters.maximize).getValue();
-             //   this.sourcesEx = parameters.getParameter(LPParameters.sources).getValue();
-                //    this.compoundsEx = parameters.getParameter(LPParameters.compounds).getValue();            
+                //   this.maximize = parameters.getParameter(LPParameters.maximize).getValue();
+                //   this.sourcesEx = parameters.getParameter(LPParameters.sources).getValue();
+                //   this.compoundsEx = parameters.getParameter(LPParameters.compounds).getValue();            
 
                 this.tools = new GetInfoAndTools();
                 this.exchange = this.tools.GetSourcesInfo();
@@ -100,7 +98,7 @@ public class LPTask extends AbstractTask {
                         optimize();
                         finishedPercentage = 1f;
                         setStatus(TaskStatus.FINISHED);
-                } catch (Exception e) {
+                } catch (IOException e) {
                         System.out.println(e.toString());
                         setStatus(TaskStatus.ERROR);
                 }
@@ -128,7 +126,7 @@ public class LPTask extends AbstractTask {
 
                 dataset.setDocument(newDoc);
                 dataset.setDatasetName("LPOptimization  - " + this.objectiveSpecie + " - " + newModel.getId() + ".sbml");
-                dataset.addInfo("LP Optimization: maximizing: " + this.maximize + "\nOjective: " + objective + "\nSolution: " + solution + "\n---------------------------");
+                dataset.addInfo("LP Optimization:" + "\nOjective: " + objective + "\nSolution: " + solution + "\n---------------------------");
                 Path path = Paths.get(this.networkDS.getPath());
                 Path fileName = path.getFileName();
                 String name = fileName.toString();
@@ -138,10 +136,19 @@ public class LPTask extends AbstractTask {
                 finishedPercentage = 0.75f;
                 NDCore.getDesktop().AddNewFile(dataset);
 
-                dataset.setGraph(createGraph(solution, newModel));
+                dataset.setGraph(createGraph(solution, newModel, objective));
                 finishedPercentage = 0.9f;
-                dataset.setSources(this.networkDS.getSources());
-                dataset.setBiomass(this.networkDS.getBiomassId());
+
+                if (this.networkDS.getSources() != null) {
+                        dataset.setSources(this.networkDS.getSources());
+                } else {
+                        List<String> sources = new ArrayList<>();
+                        for (String s : this.exchange.keySet()) {
+                                sources.add(s);
+                        }
+                        dataset.setSources(sources);
+                }
+                dataset.setBiomass(this.objectiveSpecie);
 
         }
 
@@ -154,12 +161,15 @@ public class LPTask extends AbstractTask {
                 return false;
         }
 
-        private Graph createGraph(Map<String, Double> solution, Model newModel) {
+        private Graph createGraph(Map<String, Double> solution, Model newModel, double objective) {
                 List<Node> nodes = new ArrayList<>();
                 List<Edge> edges = new ArrayList<>();
                 for (Reaction r : newModel.getListOfReactions()) {
                         Node n = new Node(r.getId() + " - " + solution.get(r.getId()));
                         nodes.add(n);
+                }
+                for (Reaction r : newModel.getListOfReactions()) {
+                        Node n = getNode(nodes, r.getId());
                         List<SpeciesReference> reactants;
                         List<SpeciesReference> products;
                         if (solution.get(r.getId()) > 0) {
@@ -171,31 +181,83 @@ public class LPTask extends AbstractTask {
                         }
 
                         for (SpeciesReference sp : reactants) {
-                                Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
-                                if (newNode == null) {
-                                        if (this.exchange.containsKey(sp.getSpeciesInstance().getId())) {
-                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId() + " - " + this.exchange.get(sp.getSpeciesInstance().getId())[0]);
-                                        } else {
-                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId());
+                                String specie = sp.getSpeciesInstance().getId();
+                                if (this.exchange.containsKey(specie)) {
+                                        Node exchangeNode = getNode(nodes, specie);
+                                        if (exchangeNode == null) {
+                                                exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
+                                        }
+                                        nodes.add(exchangeNode);
+                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), exchangeNode, n);
+                                        if (!edgeExist(edge, edges)) {
+                                                edges.add(edge);
+                                        }
+                                } else if (specie.equals(this.objectiveSpecie)) {
+                                        Node objectiveNode = getNode(nodes, specie);
+                                        if (objectiveNode == null) {
+                                                objectiveNode = new Node(specie + " - " + objective);
+                                        }
+                                        nodes.add(objectiveNode);
+                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), objectiveNode, n);
+                                        if (!edgeExist(edge, edges)) {
+                                                edges.add(edge);
+                                        }
+                                } else {
+                                        List<String> reactions = getReactionFromProducts(sp, newModel, solution);
+                                        for (String reaction : reactions) {
+                                                if (reaction.equals(r.getId())) {
+                                                        continue;
+                                                }
+                                                Node newNode = getNode(nodes, reaction);
+                                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), newNode, n);
+                                                if (!edgeExist(edge, edges)) {
+                                                        edges.add(edge);
+                                                }
                                         }
                                 }
-                                nodes.add(newNode);
-                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + "-" + uniqueId.nextId(), newNode, n);
-                                edges.add(edge);
                         }
 
                         for (SpeciesReference sp : products) {
-                                Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
-                                if (newNode == null) {
-                                        if (this.exchange.containsKey(sp.getSpeciesInstance().getId())) {
-                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId() + " - " + this.exchange.get(sp.getSpeciesInstance().getId())[0]);
-                                        } else {
-                                                newNode = new Node("sp:" + sp.getSpeciesInstance().getId());
+                                String specie = sp.getSpeciesInstance().getId();
+                                if (this.exchange.containsKey(specie)) {
+                                        Node exchangeNode = getNode(nodes, specie);
+                                        if (exchangeNode == null) {
+                                                exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
+                                        }
+                                        nodes.add(exchangeNode);
+                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), n, exchangeNode);
+                                        if (!edgeExist(edge, edges)) {
+                                                edges.add(edge);
+                                        }
+                                } else if (specie.equals(this.objectiveSpecie)) {
+                                        Node objectiveNode = getNode(nodes, specie);
+                                        if (objectiveNode == null) {
+                                                objectiveNode = new Node(specie + " - " + objective);
+                                        }
+                                        nodes.add(objectiveNode);
+                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), n, objectiveNode);
+                                        if (!edgeExist(edge, edges)) {
+                                                edges.add(edge);
+                                        }
+                                } else {
+                                        List<String> reactions = getReactionFromReactants(sp, newModel, solution);
+                                        if (r.getId().contains("r0229YCM606")) {
+                                                for (String reaction : reactions) {
+                                                        System.out.println(reaction);
+                                                }
+                                        }
+                                        for (String reaction : reactions) {
+                                                if (reaction.equals(r.getId())) {
+                                                        continue;
+                                                }
+                                                Node newNode = getNode(nodes, reaction);
+                                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), n, newNode);
+                                                if (!edgeExist(edge, edges)) {
+                                                        edges.add(edge);
+                                                }
                                         }
                                 }
-                                nodes.add(newNode);
-                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + "-" + uniqueId.nextId(), n, newNode);
-                                edges.add(edge);
+
                         }
 
                 }
@@ -266,6 +328,62 @@ public class LPTask extends AbstractTask {
                         createDataFile(solutionMap, v);
                         tempFile.delete();
                 }
+        }
+
+        private boolean edgeExist(Edge edge, List<Edge> edges) {
+                for (Edge e : edges) {
+                        try {
+                                if (e.getSource().getId().contains(edge.getSource().getId())
+                                        && e.getDestination().getId().contains(edge.getDestination().getId())) {
+                                        return true;
+                                }
+                        } catch (NullPointerException ex) {
+                                return false;
+                        }
+                }
+                return false;
+        }      
+
+        private List<String> getReactionFromProducts(SpeciesReference sp, Model model, Map<String, Double> solution) {
+                List<String> reactions = new ArrayList<>();
+                for (Reaction r : model.getListOfReactions()) {
+                        List<SpeciesReference> products;
+                        if (solution.get(r.getId()) > 0) {
+                                products = r.getListOfProducts();
+                        } else {
+                                products = r.getListOfReactants();
+                        }
+                        if (compoundExists(products, sp)) {
+                                reactions.add(r.getId());
+                        }
+                }
+                return reactions;
+        }
+
+        private List<String> getReactionFromReactants(SpeciesReference sp, Model model, Map<String, Double> solution) {
+                List<String> reactions = new ArrayList<>();               
+                for (Reaction r : model.getListOfReactions()) {
+                        List<SpeciesReference> reactants;
+                        if (solution.get(r.getId()) > 0) {
+                                reactants = r.getListOfReactants();
+                        } else {
+                                reactants = r.getListOfProducts();
+                        }
+
+                        if (compoundExists(reactants, sp)) {                               
+                                reactions.add(r.getId());
+                        }
+                }
+                return reactions;
+        }
+        
+        private boolean compoundExists(List<SpeciesReference> reactants, SpeciesReference sp){
+                for(SpeciesReference reactant: reactants){
+                        if(reactant.getSpeciesInstance().getId().contains(sp.getSpeciesInstance().getId())){
+                                return true;
+                        }
+                }
+                return false;
         }
 
 }

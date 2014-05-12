@@ -127,7 +127,7 @@ public class GetInfoAndTools {
                 return b;
         }
 
-        public void createDataFile(Graph graph, Dataset networkDS, String biomassID, List<String> sourcesList) {
+        public void createDataFile(Graph graph, Dataset networkDS, String biomassID, List<String> sourcesList, boolean isCluster) {
                 if (graph != null) {
                         SBMLDocument newDoc = networkDS.getDocument().clone();
                         Model m = networkDS.getDocument().getModel();
@@ -149,6 +149,7 @@ public class GetInfoAndTools {
 
                         dataset.setDocument(newDoc);
                         dataset.setDatasetName(biomassID + " - " + newModel.getId() + ".sbml");
+                        dataset.SetCluster(isCluster);
                         Path path = Paths.get(networkDS.getPath());
                         Path fileName = path.getFileName();
                         String name = fileName.toString();

@@ -136,4 +136,8 @@ public interface Dataset {
         public void setGraph(Graph graph);
         
         public Graph getGraph();
+        
+        public void SetCluster(boolean isCluster);
+        
+        public boolean isCluster();
 }

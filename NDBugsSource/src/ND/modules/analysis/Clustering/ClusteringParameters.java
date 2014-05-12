@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2012 
+ * Copyright 2013-2014 VTT Biotechnology
  * This file is part of AntND.
  *
  * AntND is free software; you can redistribute it and/or modify it under the
@@ -15,9 +15,21 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.desktop;
+package ND.modules.analysis.Clustering;
 
-public enum NDMenu {
 
-        FILE, SIMULATION, CONFIGURATION, OPTIMIZATION, ANALYSIS, HELPSYSTEM,
-};
+import ND.parameters.Parameter;
+import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.IntegerParameter;
+
+public class ClusteringParameters extends SimpleParameterSet {     
+   
+
+        public static final IntegerParameter numberOfClusters = new IntegerParameter(
+                "Number of clusters", "Number of clusters", 2);
+       
+
+        public ClusteringParameters() {
+                super(new Parameter[]{numberOfClusters});
+        }
+}

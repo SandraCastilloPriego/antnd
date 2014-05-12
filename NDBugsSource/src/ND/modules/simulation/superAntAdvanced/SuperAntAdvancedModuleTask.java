@@ -168,7 +168,7 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
                                 NDCore.getDesktop().displayMessage("No path was found.");
                         }
 
-                        this.tools.createDataFile(graph, networkDS, biomassID, sourcesList);
+                        this.tools.createDataFile(graph, networkDS, biomassID, sourcesList,false);
 
                         setStatus(TaskStatus.FINISHED);
 

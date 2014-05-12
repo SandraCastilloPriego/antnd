@@ -42,13 +42,13 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class ShowReactionTask extends AbstractTask {
         
-        private SimpleBasicDataset networkDS;
-        private String reactionName;
+        private final SimpleBasicDataset networkDS;
+        private final String reactionName;
         private double finishedPercentage = 0.0f;
-        private JInternalFrame frame;
-        private JScrollPane panel;
-        private JTextArea tf;
-        private StringBuffer info;
+        private final JInternalFrame frame;
+        private final JScrollPane panel;
+        private final JTextArea tf;
+        private final StringBuffer info;
         
         public ShowReactionTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
@@ -88,7 +88,7 @@ public class ShowReactionTask extends AbstractTask {
                         Model m = doc.getModel();
                         List<Reaction> possibleReactions = new ArrayList<>();
                         for (Reaction r : m.getListOfReactions()) {
-                                if (r.getId().contains(this.reactionName)) {
+                                if (r.getId().contains(this.reactionName) || r.getName().contains(this.reactionName)) {
                                         possibleReactions.add(r);
                                 }
                         }
@@ -102,7 +102,7 @@ public class ShowReactionTask extends AbstractTask {
                                 frame.add(this.panel);
                                 NDCore.getDesktop().addInternalFrame(frame);
                         }
-                        
+                        finishedPercentage = 1.0f;
                         setStatus(TaskStatus.FINISHED);
                 } catch (Exception e) {
                         setStatus(TaskStatus.ERROR);
@@ -118,7 +118,7 @@ public class ShowReactionTask extends AbstractTask {
                         if (law != null) {
                                 LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
                                 LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                                info.append(r.getId()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
+                                info.append(r.getId()).append(" - ").append(r.getName()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
                         } else {
                                 info.append(r.getId()).append(":\n");
                         }

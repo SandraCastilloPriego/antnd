@@ -123,7 +123,6 @@ public class ItemSelector extends JPanel implements ActionListener,
                 if (command.equals("COMBINE")) {
                         combine();
                 }
-                
 
         }
 
@@ -135,8 +134,6 @@ public class ItemSelector extends JPanel implements ActionListener,
                         }
                 }
         }
-
-       
 
         private void removeData() {
                 Dataset[] selectedFiles = getSelectedDatasets();
@@ -235,7 +232,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                         if (dataset.getDatasetName().matches(DatasetNamesModel.getElementAt(i).toString())) {
                                 String name = dataset.getDatasetName();
                                 name = name.split("\\.")[0];
-                                dataset.setDatasetName(name + "_" + ++copies +".sbml");
+                                dataset.setDatasetName(name + "_" + ++copies + ".sbml");
                         }
                 }
                 this.DatasetFilesModel.add(dataset);
@@ -302,7 +299,11 @@ public class ItemSelector extends JPanel implements ActionListener,
 
                         PrintPaths print = new PrintPaths(file.getSources(), file.getBiomassId(), file.getDocument().getModel());
                         try {
-                                pn.add(print.printPathwayInFrame(file.getGraph()));
+                                if (file.isCluster()) {
+                                        pn.add(print.printClusteredPathwayInFrame(file.getGraph()));
+                                } else {
+                                        pn.add(print.printPathwayInFrame(file.getGraph()));
+                                }
                         } catch (NullPointerException ex) {
                                 System.out.println(ex.toString());
                         }
@@ -324,7 +325,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                         final JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);
                         JPanel pn = new JPanel();
                         final JTextArea area = selectedFile[0].getInfo();
-                        
+
                         JButton accept = new JButton("Accept");
                         JButton cancel = new JButton("Cancel");
                         JPanel buttonPanel = new JPanel();

@@ -45,6 +45,7 @@ public class SimpleBasicDataset implements Dataset {
         private List<String> sources;
         private Graph graph;
         private String biomassId;
+        private boolean isCluster = false;
 
         /**
          *
@@ -200,5 +201,15 @@ public class SimpleBasicDataset implements Dataset {
         public void setInfo(String info) {
                 this.infoDataset.delete(0, this.infoDataset.length());
                 this.infoDataset.append(info);
+        }
+
+        @Override
+        public void SetCluster(boolean isCluster) {
+                this.isCluster = isCluster;
+        }
+
+        @Override
+        public boolean isCluster() {
+                return this.isCluster;
         }
 }

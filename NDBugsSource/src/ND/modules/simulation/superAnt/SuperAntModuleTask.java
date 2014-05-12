@@ -163,7 +163,7 @@ public class SuperAntModuleTask extends AbstractTask {
                                 NDCore.getDesktop().displayMessage("No path was found.");
                         }
 
-                        this.tools.createDataFile(graph, networkDS, biomassID, sourcesList);
+                        this.tools.createDataFile(graph, networkDS, biomassID, sourcesList, false);
                         
                         setStatus(TaskStatus.FINISHED);
 
@@ -267,7 +267,7 @@ public class SuperAntModuleTask extends AbstractTask {
 
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
 
-                                if (!superAnt.isLost()) {
+                                //if (!superAnt.isLost()) {
                                         // move the ants to the products...   
                                         for (String s : toBeAdded) {
                                                 SpeciesFA spfa = this.compounds.get(s);
@@ -281,7 +281,7 @@ public class SuperAntModuleTask extends AbstractTask {
                                                 spfa.addAnt(newAnt);
                                         }
 
-                                }
+                              // }
                                 // When the ants arrive to the biomass
                                 if (toBeAdded.contains(this.biomassID)) {
                                         //System.out.println("Biomass produced!: " + rc.getId());
@@ -380,7 +380,8 @@ public class SuperAntModuleTask extends AbstractTask {
                 SpeciesFA s = this.compounds.get(species);
                 Ant ant = s.getAnt();
                 if (ant != null) {
-                        return !ant.contains(reaction);
+                        //return !ant.contains(reaction);
+                        return true;
                 }
                 return false;
         }       

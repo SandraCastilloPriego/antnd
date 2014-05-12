@@ -18,6 +18,7 @@
  */
 package ND.main;
 
+import ND.modules.analysis.Clustering.ClusteringModule;
 import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
@@ -31,8 +32,8 @@ import ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule;
 import ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
-import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.loopAnalizer.LoopAnalyzerModule;
+import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
 
@@ -64,5 +65,6 @@ public class NDModulesList {
                 //  AntFluxMaxModule.class,
                 //  AntFluxMinModule.class,
                 LPModule.class,
-                FluxAnalysisModule.class,};
+                FluxAnalysisModule.class,
+                ClusteringModule.class};
 }

@@ -164,7 +164,7 @@ public class SomePathsTask extends AbstractTask {
                                                 System.out.println(ex.toString());
                                         }
                                 }
-                                this.tools.createDataFile(g, networkDS, biomassID, sourcesList);
+                                this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false);
 
                                 // }
                         } else {
@@ -265,15 +265,12 @@ public class SomePathsTask extends AbstractTask {
                                                 Ant a = spfa.getAnt();
                                                 if (a != null) {
                                                         combinedAnts.put(a, s);
-                                                }/* else {
-                                                 System.out.println("why??");
-                                                 }*/
-
+                                                }
                                         }
 
                                         superAnt.joinGraphs(reactionChoosen, combinedAnts);
 
-                                        if (!superAnt.isLost()) {
+                                        //if (!superAnt.isLost()) {
                                                 // move the ants to the products...   
                                                 for (String s : toBeAdded) {
                                                         SpeciesFA spfa = this.compounds.get(s);
@@ -309,7 +306,7 @@ public class SomePathsTask extends AbstractTask {
                                                                 removeRandomReaction(a.getPath());
                                                         }
                                                 }
-                                        }
+                                       // }
                                 }
                         }
                 }

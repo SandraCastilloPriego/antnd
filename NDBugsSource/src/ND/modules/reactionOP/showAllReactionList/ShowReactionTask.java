@@ -22,7 +22,6 @@ import ND.main.NDCore;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
@@ -41,12 +40,12 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class ShowReactionTask extends AbstractTask {
 
-        private SimpleBasicDataset networkDS;
+        private final SimpleBasicDataset networkDS;
         private double finishedPercentage = 0.0f;
-        private JInternalFrame frame;
-        private JScrollPane panel;
-        private JTextArea tf;
-        private StringBuffer info;
+        private final JInternalFrame frame;
+        private final JScrollPane panel;
+        private final JTextArea tf;
+        private final StringBuffer info;
 
         public ShowReactionTask(SimpleBasicDataset dataset) {
                 networkDS = dataset;
@@ -90,7 +89,7 @@ public class ShowReactionTask extends AbstractTask {
                         this.showReactions(m.getListOfReactions());
 
                         for (Reaction r : m.getListOfReactions()) {
-                                info.append(r.getId()).append("\n");
+                                info.append(r.getId()).append(" - ").append(r.getName()).append("\n");
                         }
 
                         this.tf.setText(info.toString());
@@ -114,7 +113,7 @@ public class ShowReactionTask extends AbstractTask {
                         if (law != null) {
                                 LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
                                 LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                                info.append(r.getId()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
+                                info.append(r.getId()).append(" - ").append(r.getName()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
                         } else {
                                 info.append(r.getId()).append(":\n");
                         }

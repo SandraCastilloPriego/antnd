@@ -24,6 +24,7 @@ public enum NDModuleCategory {
         SIMULATION("Simulation"),        
         REACTION("Reaction Utils"),
         OPTIMIZATION("Optimization"),
+        ANALYSIS("Graph Analysis"),
 	HELPSYSTEM("Help");
 
 	private final String name;
