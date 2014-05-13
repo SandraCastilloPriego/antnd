@@ -68,7 +68,7 @@ public class KNeighborhoodModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/clustering.png";
+                return "icons/kneighborhood.png";
         }
 
         @Override

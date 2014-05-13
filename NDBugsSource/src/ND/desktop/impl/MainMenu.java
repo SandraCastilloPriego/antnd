@@ -91,7 +91,7 @@ public final class MainMenu extends JMenuBar implements ActionListener {
                 windowsMenu.setWindowPositioner(positioner);
                 windowsMenu.setMnemonic(KeyEvent.VK_W);
                 windowsMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
-                windowsMenu.setIcon(new ImageIcon("icons/window.png"));
+                windowsMenu.setIcon(new ImageIcon("icons/windows.png"));
                 this.add(windowsMenu);
 
 
