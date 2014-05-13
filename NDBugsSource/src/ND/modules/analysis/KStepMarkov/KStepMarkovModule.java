@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.kNeighborhood;
+package ND.modules.analysis.KStepMarkov;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -29,10 +29,10 @@ import ND.taskcontrol.Task;
  *
  * @author scsandra
  */
-public class KNeighborhoodModule implements NDProcessingModule {
+public class KStepMarkovModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "KNeighborhood Filter";
-        private final KNeighborhoodParameters parameters = new KNeighborhoodParameters();
+        public static final String MODULE_NAME = "KStepMarkov Ranking";
+        private final KStepMarkovParameters parameters = new KStepMarkovParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -48,13 +48,13 @@ public class KNeighborhoodModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new KNeighborhoodTask[1];
+                Task tasks[] = new KStepMarkovTask[1];
                 SimpleBasicDataset dataset = null;
                 try {
                         dataset = (SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0];
                 } catch (Exception e) {
                 }
-                tasks[0] = new KNeighborhoodTask(dataset, (SimpleParameterSet) parameters);
+                tasks[0] = new KStepMarkovTask(dataset, (SimpleParameterSet) parameters);
 
                 NDCore.getTaskController().addTasks(tasks);
 

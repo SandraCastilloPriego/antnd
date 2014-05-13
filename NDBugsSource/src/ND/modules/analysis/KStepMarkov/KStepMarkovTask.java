@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.kNeighborhood;
+package ND.modules.analysis.KStepMarkov;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -26,11 +26,12 @@ import ND.modules.simulation.antNoGraph.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import edu.uci.ics.jung.algorithms.filters.KNeighborhoodFilter;
+import edu.uci.ics.jung.algorithms.importance.KStepMarkov;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -38,17 +39,15 @@ import java.util.Map;
  *
  * @author scsandra
  */
-public class KNeighborhoodTask extends AbstractTask {
+public class KStepMarkovTask extends AbstractTask {
 
         private final SimpleBasicDataset networkDS;
-        private final int radiusk;
-        private final String rootNode;
+        private final int K;      
         private double finishedPercentage = 0.0f;
 
-        public KNeighborhoodTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+        public KStepMarkovTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
-                this.radiusk = parameters.getParameter(KNeighborhoodParameters.radiusK).getValue();
-                this.rootNode = parameters.getParameter(KNeighborhoodParameters.rootNode).getValue();
+                this.K = parameters.getParameter(KStepMarkovParameters.K).getValue();               
         }
 
         @Override
@@ -82,11 +81,9 @@ public class KNeighborhoodTask extends AbstractTask {
                         Graph graph = this.networkDS.getGraph();
 
                         edu.uci.ics.jung.graph.Graph<String, String> g = this.getGraphForClustering(graph);
-                        String root = findTheRoot(this.rootNode, g);
-                        KNeighborhoodFilter filter = new KNeighborhoodFilter(root, this.radiusk, KNeighborhoodFilter.EdgeType.OUT);
-                        edu.uci.ics.jung.graph.Graph<String, String> g2 = filter.transform(g);
-
-                        createDataSet(g2);
+                        KStepMarkov ranker = new KStepMarkov((DirectedSparseMultigraph) g, new HashSet<>(this.networkDS.getSources()), this.K, null);
+                        ranker.evaluate();
+                        ranker.printRankings(true, true);
 
                         finishedPercentage = 1.0f;
                         setStatus(TaskStatus.FINISHED);

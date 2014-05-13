@@ -19,8 +19,8 @@
 package ND.main;
 
 import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
-import ND.modules.analysis.ClusteringBicomponent.ClusteringBicomponentModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
+import ND.modules.analysis.KStepMarkov.KStepMarkovModule;
 import ND.modules.analysis.kNeighborhood.KNeighborhoodModule;
 import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
@@ -71,5 +71,6 @@ public class NDModulesList {
                 FluxAnalysisModule.class,
                 ClusteringModule.class,
                 ClusteringBetweennessModule.class,
-                KNeighborhoodModule.class};
+                KNeighborhoodModule.class,
+                KStepMarkovModule.class};
 }
