@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.ClusteringKmeans;
+package ND.modules.analysis.ClusteringBicomponent;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -26,7 +26,7 @@ import ND.modules.simulation.antNoGraph.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import edu.uci.ics.jung.algorithms.cluster.VoltageClusterer;
+import edu.uci.ics.jung.algorithms.cluster.WeakComponentClusterer;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import java.awt.Dimension;
@@ -41,19 +41,17 @@ import javax.swing.JTextArea;
  *
  * @author scsandra
  */
-public class ClusteringTask extends AbstractTask {
+public class ClusteringBicomponentTask extends AbstractTask {
 
         private final SimpleBasicDataset networkDS;
-        private final int numberOfClusters;
         private double finishedPercentage = 0.0f;
         private final JInternalFrame frame;
         private final JScrollPane panel;
         private final JTextArea tf;
         private final StringBuffer info;
 
-        public ClusteringTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+        public ClusteringBicomponentTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
-                this.numberOfClusters = parameters.getParameter(ClusteringParameters.numberOfClusters).getValue();
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.tf = new JTextArea();
                 this.panel = new JScrollPane(this.tf);
@@ -91,8 +89,8 @@ public class ClusteringTask extends AbstractTask {
                         Graph graph = this.networkDS.getGraph();
 
                         edu.uci.ics.jung.graph.Graph<String, String> g = this.getGraphForClustering(graph);
-                        VoltageClusterer cluster = new VoltageClusterer(g, this.numberOfClusters);
-                        Collection<Set<String>> result = cluster.cluster(numberOfClusters);
+                        WeakComponentClusterer  cluster = new WeakComponentClusterer();
+                        Set<Set<String>> result = cluster.transform( g);
                         int i = 1;
                         for (Set<String> clust : result) {
                                 info.append("Cluster ").append(i++).append(":\n");
@@ -137,7 +135,7 @@ public class ClusteringTask extends AbstractTask {
 
         }
 
-        private void createDataSet(Collection<Set<String>> result) {
+        private void createDataSet(Set<Set<String>> result) {
                 Graph graph = this.networkDS.getGraph().clone();
                 List<Node> nodes = graph.getNodes();
 

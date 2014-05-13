@@ -127,7 +127,7 @@ public class GetInfoAndTools {
                 return b;
         }
 
-        public void createDataFile(Graph graph, Dataset networkDS, String biomassID, List<String> sourcesList, boolean isCluster) {
+        public SimpleBasicDataset createDataFile(Graph graph, Dataset networkDS, String biomassID, List<String> sourcesList, boolean isCluster) {
                 if (graph != null) {
                         SBMLDocument newDoc = networkDS.getDocument().clone();
                         Model m = networkDS.getDocument().getModel();
@@ -162,7 +162,9 @@ public class GetInfoAndTools {
                         dataset.setGraph(graph);
                         dataset.setSources(sourcesList);
                         dataset.setBiomass(biomassID);
+                        return dataset;
                 }
+                return null;
         }
 
         private boolean isInGraph(String id, Graph graph) {

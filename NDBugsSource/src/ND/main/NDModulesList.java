@@ -18,7 +18,10 @@
  */
 package ND.main;
 
+import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
+import ND.modules.analysis.ClusteringBicomponent.ClusteringBicomponentModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
+import ND.modules.analysis.kNeighborhood.KNeighborhoodModule;
 import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
@@ -66,5 +69,7 @@ public class NDModulesList {
                 //  AntFluxMinModule.class,
                 LPModule.class,
                 FluxAnalysisModule.class,
-                ClusteringModule.class};
+                ClusteringModule.class,
+                ClusteringBetweennessModule.class,
+                KNeighborhoodModule.class};
 }

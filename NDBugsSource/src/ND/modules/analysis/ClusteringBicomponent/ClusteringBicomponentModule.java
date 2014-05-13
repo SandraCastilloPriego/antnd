@@ -15,7 +15,8 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.otimization.LP;
+package ND.modules.analysis.ClusteringBicomponent;
+
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -29,14 +30,13 @@ import ND.taskcontrol.Task;
  *
  * @author scsandra
  */
-public class LPModule implements NDProcessingModule {
+public class ClusteringBicomponentModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Optimize fluxes";
-        private final LPParameters parameters = new LPParameters();
+        public static final String MODULE_NAME = "Cluster Graph (Bicomponent)";
 
         @Override
         public ParameterSet getParameterSet() {
-                return parameters;
+                return null;
         }
 
         @Override
@@ -48,27 +48,27 @@ public class LPModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new LPTask[1];
-                if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
-                        NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
-                } else {
-
-                        tasks[0] = new LPTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
-
-                        NDCore.getTaskController().addTasks(tasks);
+                Task tasks[] = new ClusteringBicomponentTask[1];
+                SimpleBasicDataset dataset = null;
+                try {
+                        dataset = (SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0];
+                } catch (Exception e) {
                 }
+                tasks[0] = new ClusteringBicomponentTask(dataset, (SimpleParameterSet) parameters);
+
+                NDCore.getTaskController().addTasks(tasks);
 
                 return tasks;
         }
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.OPTIMIZATION;
+                return NDModuleCategory.ANALYSIS;
         }
 
         @Override
         public String getIcon() {
-                return "icons/lpoptimize.png";
+                return "icons/clustering.png";
         }
 
         @Override

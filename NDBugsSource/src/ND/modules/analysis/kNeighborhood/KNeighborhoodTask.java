@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.ClusteringKmeans;
+package ND.modules.analysis.kNeighborhood;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -26,12 +26,17 @@ import ND.modules.simulation.antNoGraph.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import edu.uci.ics.jung.algorithms.cluster.VoltageClusterer;
+import edu.uci.ics.jung.algorithms.cluster.EdgeBetweennessClusterer;
+import edu.uci.ics.jung.algorithms.filters.KNeighborhoodFilter;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
@@ -41,23 +46,17 @@ import javax.swing.JTextArea;
  *
  * @author scsandra
  */
-public class ClusteringTask extends AbstractTask {
+public class KNeighborhoodTask extends AbstractTask {
 
         private final SimpleBasicDataset networkDS;
-        private final int numberOfClusters;
+        private final int radiusk;
+        private final String rootNode;
         private double finishedPercentage = 0.0f;
-        private final JInternalFrame frame;
-        private final JScrollPane panel;
-        private final JTextArea tf;
-        private final StringBuffer info;
 
-        public ClusteringTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+        public KNeighborhoodTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
-                this.numberOfClusters = parameters.getParameter(ClusteringParameters.numberOfClusters).getValue();
-                this.frame = new JInternalFrame("Result", true, true, true, true);
-                this.tf = new JTextArea();
-                this.panel = new JScrollPane(this.tf);
-                this.info = new StringBuffer();
+                this.radiusk = parameters.getParameter(KNeighborhoodParameters.radiusK).getValue();
+                this.rootNode = parameters.getParameter(KNeighborhoodParameters.rootNode).getValue();
         }
 
         @Override
@@ -91,21 +90,11 @@ public class ClusteringTask extends AbstractTask {
                         Graph graph = this.networkDS.getGraph();
 
                         edu.uci.ics.jung.graph.Graph<String, String> g = this.getGraphForClustering(graph);
-                        VoltageClusterer cluster = new VoltageClusterer(g, this.numberOfClusters);
-                        Collection<Set<String>> result = cluster.cluster(numberOfClusters);
-                        int i = 1;
-                        for (Set<String> clust : result) {
-                                info.append("Cluster ").append(i++).append(":\n");
-                                for (String nodes : clust) {
-                                        info.append(nodes).append("\n");
-                                }
-                        }
-                        this.tf.setText(info.toString());
-                        frame.setSize(new Dimension(700, 500));
-                        frame.add(this.panel);
-                        NDCore.getDesktop().addInternalFrame(frame);
+                        String root = findTheRoot(this.rootNode, g);
+                        KNeighborhoodFilter filter = new KNeighborhoodFilter(root, this.radiusk, KNeighborhoodFilter.EdgeType.OUT);
+                        edu.uci.ics.jung.graph.Graph<String, String> g2 = filter.transform(g);
 
-                        createDataSet(result);
+                        createDataSet(g2);
 
                         finishedPercentage = 1.0f;
                         setStatus(TaskStatus.FINISHED);
@@ -116,7 +105,7 @@ public class ClusteringTask extends AbstractTask {
         }
 
         public edu.uci.ics.jung.graph.Graph<String, String> getGraphForClustering(Graph graph) {
-                edu.uci.ics.jung.graph.Graph<String, String> g = new SparseMultigraph<>();
+                edu.uci.ics.jung.graph.Graph<String, String> g = new DirectedSparseMultigraph<>();
 
                 List<Node> nodes = graph.getNodes();
                 List<Edge> edges = graph.getEdges();
@@ -137,27 +126,32 @@ public class ClusteringTask extends AbstractTask {
 
         }
 
-        private void createDataSet(Collection<Set<String>> result) {
-                Graph graph = this.networkDS.getGraph().clone();
-                List<Node> nodes = graph.getNodes();
-
-                for (Node n : nodes) {
-                        int cluster = getClusterNumber(n.getId(), result);
-                        n.setId(n.getId() + " - " + cluster);
+        private void createDataSet(edu.uci.ics.jung.graph.Graph<String, String> g) {
+                Map<String, Node> nodesMap = new HashMap<>();
+                List<Node> nodes = new ArrayList<>();
+                for (String n : g.getVertices()) {
+                        Node node = new Node(n);
+                        nodes.add(node);
+                        nodesMap.put(n, node);
                 }
+                List<Edge> edges = new ArrayList<>();
+                for (String n : g.getEdges()) {
+                        // System.out.println(g.toString());
+                        System.out.println(n + " - " + g.getSource(n) + " - " + g.getDest(n));
+                        Edge e = new Edge(n, nodesMap.get(g.getSource(n)), nodesMap.get(g.getDest(n)));
+                        edges.add(e);
+                }
+                Graph graph = new Graph(nodes, edges);
+                new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), false);
 
-                SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), true);
-                dataset.addInfo(this.info.toString());
         }
 
-        private int getClusterNumber(String id, Collection<Set<String>> result) {
-                int i = 0;
-                for (Set<String> set : result) {
-                        if (set.contains(id)) {
-                                return i;
+        private String findTheRoot(String rootNode, edu.uci.ics.jung.graph.Graph<String, String> g) {
+                for (String s : g.getVertices()) {
+                        if (s.contains(rootNode)) {
+                                return s;
                         }
-                        i++;
                 }
-                return -1;
+                return rootNode;
         }
 }

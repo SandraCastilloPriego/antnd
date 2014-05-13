@@ -46,7 +46,7 @@ public final class MainMenu extends JMenuBar implements ActionListener {
         private final Map<JMenuItem, NDProcessingModule> moduleMenuItems = new HashMap<>();
 
         MainMenu() {
-                this.setBackground(Color.WHITE);
+             //   this.setBackground(Color.WHITE);
 
                 fileMenu = new JMenu("File");
                 fileMenu.setMnemonic(KeyEvent.VK_F);
