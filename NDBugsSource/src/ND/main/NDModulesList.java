@@ -20,6 +20,8 @@ package ND.main;
 
 import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
+import ND.modules.analysis.ClycleDetector.CycleDetectorModule;
+import ND.modules.analysis.CompareModels.CompareModule;
 import ND.modules.analysis.KStepMarkov.KStepMarkovModule;
 import ND.modules.analysis.kNeighborhood.KNeighborhoodModule;
 import ND.modules.configuration.cofactors.CofactorConfModule;
@@ -72,5 +74,7 @@ public class NDModulesList {
                 ClusteringModule.class,
                 ClusteringBetweennessModule.class,
                 KNeighborhoodModule.class,
-                KStepMarkovModule.class};
+                KStepMarkovModule.class,
+                CycleDetectorModule.class,
+                CompareModule.class};
 }

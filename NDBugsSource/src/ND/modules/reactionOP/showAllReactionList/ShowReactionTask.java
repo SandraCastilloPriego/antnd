@@ -97,7 +97,6 @@ public class ShowReactionTask extends AbstractTask {
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
 
-
                         setStatus(TaskStatus.FINISHED);
                 } catch (Exception e) {
                         setStatus(TaskStatus.ERROR);
@@ -108,28 +107,35 @@ public class ShowReactionTask extends AbstractTask {
         private void showReactions(List<Reaction> possibleReactions) {
                 float count = 0;
                 for (Reaction r : possibleReactions) {
-
-                        KineticLaw law = r.getKineticLaw();
-                        if (law != null) {
-                                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
-                                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                                info.append(r.getId()).append(" - ").append(r.getName()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
-                        } else {
-                                info.append(r.getId()).append(":\n");
+                        try {
+                                try {
+                                        KineticLaw law = r.getKineticLaw();
+                                        if (law != null) {
+                                                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                                                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                                                info.append(r.getId()).append(" - ").append(r.getName()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
+                                        } else {
+                                                info.append(r.getId()).append(":\n");
+                                        }
+                                } catch (Exception n) {
+                                }
+                                info.append("Reactants: \n");
+                                for (SpeciesReference sr : r.getListOfReactants()) {
+                                        Species sp = sr.getSpeciesInstance();
+                                        info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append("\n");
+                                }
+                                info.append("Products: \n");
+                                for (SpeciesReference sr : r.getListOfProducts()) {
+                                        Species sp = sr.getSpeciesInstance();
+                                        info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append(" \n");
+                                }
+                                info.append("----------------------------------- \n");
+                                this.finishedPercentage = count / possibleReactions.size();
+                                count++;
+                        } catch (Exception e) {
+                                System.out.println(e.toString());
+                                System.out.println(r.getId());
                         }
-                        info.append("Reactants: \n");
-                        for (SpeciesReference sr : r.getListOfReactants()) {
-                                Species sp = sr.getSpeciesInstance();
-                                info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append("\n");
-                        }
-                        info.append("Products: \n");
-                        for (SpeciesReference sr : r.getListOfProducts()) {
-                                Species sp = sr.getSpeciesInstance();
-                                info.append(sr.getStoichiometry()).append(" ").append(sp.getId()).append(" - ").append(sp.getName()).append(" \n");
-                        }
-                        info.append("----------------------------------- \n");
-                        this.finishedPercentage = count / possibleReactions.size();
-                        count++;
                 }
         }
 }

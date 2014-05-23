@@ -101,6 +101,8 @@ public class PrintPaths implements KeyListener {
                         public Paint transform(String id) {
                                 if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
                                         return new Color(29, 140, 243);
+                                } else if (id.contains("Ex_")) {
+                                        return new Color(29, 140, 243);
                                 } else if (finalId != null && id.split("-")[0].contains(finalId)) {
                                         return new Color(255, 0, 0);
                                 } else if (id.contains("sp:")) {
@@ -269,7 +271,7 @@ public class PrintPaths implements KeyListener {
                                 } else if (finalId != null && id.split("-")[0].contains(finalId)) {
                                         return new Color(255, 0, 0);
                                 } else {
-                                        
+
                                         Random rand = new Random();
                                         String cluster = id.split(" - ")[2];
                                         if (cluster != null) {

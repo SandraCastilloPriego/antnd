@@ -15,16 +15,14 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.showCompound;
+package ND.modules.analysis.CompareModels;
 
-import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.data.Dataset;
 import ND.main.NDCore;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -32,7 +30,6 @@ import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.SpeciesReference;
 
@@ -40,29 +37,26 @@ import org.sbml.jsbml.SpeciesReference;
  *
  * @author scsandra
  */
-public class ShowCompoundTask extends AbstractTask {
+public class CompareTask extends AbstractTask {
 
-        private final SimpleBasicDataset networkDS;
-        private final String compoundName;
+        private final Dataset[] networkDS;
         private double finishedPercentage = 0.0f;
         private final JInternalFrame frame;
         private final JScrollPane panel;
         private final JTextArea tf;
         private final StringBuffer info;
 
-        public ShowCompoundTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
-                networkDS = dataset;
-                this.compoundName = parameters.getParameter(ShowCompoundParameters.compoundName).getValue();
+        public CompareTask(Dataset[] datasets, SimpleParameterSet parameters) {
+                networkDS = datasets;
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.tf = new JTextArea();
                 this.panel = new JScrollPane(this.tf);
-
                 this.info = new StringBuffer();
         }
 
         @Override
         public String getTaskDescription() {
-                return "Showing compound... ";
+                return "Comparing... ";
         }
 
         @Override
@@ -81,27 +75,30 @@ public class ShowCompoundTask extends AbstractTask {
                         setStatus(TaskStatus.PROCESSING);
                         if (this.networkDS == null) {
                                 setStatus(TaskStatus.ERROR);
-                                NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
+                                NDCore.getDesktop().displayErrorMessage("You need to select two metabolic models.");
                         }
 
-                        SBMLDocument doc = this.networkDS.getDocument();
-                        Model m = doc.getModel();
-                        List<Species> possibleReactions = new ArrayList<>();
-                        for (Species sp : m.getListOfSpecies()) {
-                                if (sp.getId().contains(this.compoundName) || sp.getName().contains(this.compoundName)) {
-                                        possibleReactions.add(sp);
+                        Model model1 = this.networkDS[0].getDocument().getModel();
+                        Model model2 = this.networkDS[1].getDocument().getModel();
+                        this.info.append("Reactions present in only in ").append(this.networkDS[0].getDatasetName()).append(":\n");
+                        for (Reaction r : model1.getListOfReactions()) {
+                                if (model2.getReaction(r.getId()) == null) {
+                                        showReactions(r);
                                 }
                         }
 
-                        if (possibleReactions.isEmpty()) {
-                                // this.networkDS.setInfo("The compound" + compoundName + " doesn't exist in this model.");
-                                NDCore.getDesktop().displayMessage("The compound " + compoundName + " doesn't exist in this model.");
-                        } else {
-                                this.showReactions(possibleReactions, m);
-                                frame.setSize(new Dimension(700, 500));
-                                frame.add(this.panel);
-                                NDCore.getDesktop().addInternalFrame(frame);
+                        this.info.append("Reactions present in only in ").append(this.networkDS[1].getDatasetName()).append(":\n");
+                        for (Reaction r : model2.getListOfReactions()) {
+                                if (model1.getReaction(r.getId()) == null) {
+                                        showReactions(r);
+                                }
                         }
+
+                        // this.networkDS.setInfo(info.toString());
+                        this.tf.setText(info.toString());
+                        frame.setSize(new Dimension(700, 500));
+                        frame.add(this.panel);
+                        NDCore.getDesktop().addInternalFrame(frame);
                         finishedPercentage = 1.0f;
                         setStatus(TaskStatus.FINISHED);
                 } catch (Exception e) {
@@ -110,23 +107,6 @@ public class ShowCompoundTask extends AbstractTask {
                 }
         }
 
-        private void showReactions(List<Species> possibleReactions, Model m) {
-
-                for (Species sp : possibleReactions) {
-                        info.append(sp.getId()).append(" - ").append(sp.getName());
-                        info.append("\nPresent in: ");
-                        for (Reaction r : m.getListOfReactions()) {
-                                if (r.hasReactant(sp) || r.hasProduct(sp)) {
-                                        //info.append(r.getId()).append(", ");
-                                        showReactions(r);
-                                }
-                        }
-                        info.append("\n----------------------------------- \n");
-                }
-                //this.networkDS.setInfo(info.toString());
-                this.tf.setText(info.toString());
-        }
-        
         private void showReactions(Reaction reaction) {
                 KineticLaw law = reaction.getKineticLaw();
                 if (law != null) {

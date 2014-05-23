@@ -31,7 +31,7 @@ import ND.taskcontrol.Task;
  */
 public class SuperAntModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Start Super Ant flux";
+        public static final String MODULE_NAME = "Get Shortest Path";
         private final SuperAntModuleParameters parameters = new SuperAntModuleParameters();
 
         @Override

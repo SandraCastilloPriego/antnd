@@ -31,7 +31,7 @@ import ND.taskcontrol.Task;
  */
 public class SuperAntAdvancedModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Start Super Ant Advanced";
+        public static final String MODULE_NAME = "Get Specific Path";
         private SuperAntModuleAdvancedParameters parameters = new SuperAntModuleAdvancedParameters();
 
         @Override

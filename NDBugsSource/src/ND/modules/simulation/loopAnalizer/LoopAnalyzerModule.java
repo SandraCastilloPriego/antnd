@@ -31,7 +31,7 @@ import ND.taskcontrol.Task;
  */
 public class LoopAnalyzerModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Start Loop Analyzer";
+        public static final String MODULE_NAME = "Loop Analyzer";
         private LoopAnalyzerParameters parameters = new LoopAnalyzerParameters();
 
         @Override

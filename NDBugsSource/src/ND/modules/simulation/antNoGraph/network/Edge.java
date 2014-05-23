@@ -17,12 +17,14 @@
  */
 package ND.modules.simulation.antNoGraph.network;
 
+import org.jgrapht.graph.DefaultEdge;
+
 
 /**
  *
  * @author scsandra
  */
-public class Edge {
+public class Edge extends DefaultEdge{
 
         private String id;
         private Node source;

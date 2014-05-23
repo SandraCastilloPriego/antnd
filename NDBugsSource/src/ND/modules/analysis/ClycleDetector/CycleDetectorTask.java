@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.ClusteringBetweenness;
+package ND.modules.analysis.ClycleDetector;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -26,34 +26,37 @@ import ND.modules.simulation.antNoGraph.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import edu.uci.ics.jung.algorithms.cluster.EdgeBetweennessClusterer;
-import edu.uci.ics.jung.graph.SparseMultigraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
 import java.awt.Dimension;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.alg.CycleDetector;
+import org.jgrapht.graph.ClassBasedEdgeFactory;
+import org.jgrapht.graph.DirectedMultigraph;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.SpeciesReference;
 
 /**
  *
  * @author scsandra
  */
-public class ClusteringBetweennessTask extends AbstractTask {
+public class CycleDetectorTask extends AbstractTask {
 
         private final SimpleBasicDataset networkDS;
-        private final int numberOfEdges;
         private double finishedPercentage = 0.0f;
         private final JInternalFrame frame;
         private final JScrollPane panel;
         private final JTextArea tf;
         private final StringBuffer info;
 
-        public ClusteringBetweennessTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+        public CycleDetectorTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
-                this.numberOfEdges = parameters.getParameter(ClusteringBetweennessParameters.numberOfEdges).getValue();
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.tf = new JTextArea();
                 this.panel = new JScrollPane(this.tf);
@@ -89,23 +92,23 @@ public class ClusteringBetweennessTask extends AbstractTask {
                                 NDCore.getDesktop().displayErrorMessage("This data set doesn't contain a valid graph.");
                         }
                         Graph graph = this.networkDS.getGraph();
-
-                        edu.uci.ics.jung.graph.Graph<String, String> g = this.getGraphForClustering(graph);
-                        EdgeBetweennessClusterer cluster = new EdgeBetweennessClusterer(this.numberOfEdges);
-                        Set<Set<String>> result = cluster.transform(g);
-                        int i = 1;
-                        for (Set<String> clust : result) {
-                                info.append("Cluster ").append(i++).append(":\n");
-                                for (String nodes : clust) {
-                                        info.append(nodes).append("\n");
-                                }
+                        DirectedGraph g = null;
+                        if (graph == null) {
+                                g = this.getGraphForClustering(this.networkDS.getDocument().getModel());
+                        } else {
+                                g = this.getGraphForClustering(graph);
                         }
+                        CycleDetector cyclesDetector = new CycleDetector(g);
+                        Set<Node> cycles = cyclesDetector.findCycles();
+
+                        for (Node n : cycles) {
+                                info.append(n.getId()).append("\n");
+                        }
+
                         this.tf.setText(info.toString());
                         frame.setSize(new Dimension(700, 500));
                         frame.add(this.panel);
                         NDCore.getDesktop().addInternalFrame(frame);
-
-                        createDataSet(result);
 
                         finishedPercentage = 1.0f;
                         setStatus(TaskStatus.FINISHED);
@@ -115,8 +118,9 @@ public class ClusteringBetweennessTask extends AbstractTask {
                 }
         }
 
-        public edu.uci.ics.jung.graph.Graph<String, String> getGraphForClustering(Graph graph) {
-                edu.uci.ics.jung.graph.Graph<String, String> g = new SparseMultigraph<>();
+        public DirectedGraph getGraphForClustering(Graph graph) {
+
+                DirectedGraph<Node, Edge> jgraph = new DirectedMultigraph<>(new ClassBasedEdgeFactory<Node, Edge>(Edge.class));
 
                 List<Node> nodes = graph.getNodes();
                 List<Edge> edges = graph.getEdges();
@@ -124,39 +128,37 @@ public class ClusteringBetweennessTask extends AbstractTask {
 
                 for (Node node : nodes) {
                         if (node != null) {
-                                g.addVertex(node.getId());
+                                jgraph.addVertex(node);
                         }
                 }
 
                 for (Edge edge : edges) {
                         if (edge != null) {
-                                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                                jgraph.addEdge(edge.getSource(), edge.getDestination());
                         }
                 }
-                return g;
-
+                return jgraph;
         }
 
-        private void createDataSet(Set<Set<String>> result) {
-                Graph graph = this.networkDS.getGraph().clone();
-                List<Node> nodes = graph.getNodes();
+        public DirectedGraph getGraphForClustering(Model model) {
 
-                for (Node n : nodes) {
-                        int cluster = getClusterNumber(n.getId(), result);
-                        n.setId(n.getId() + " - " + cluster);
-                }              
-                SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), true);
-                dataset.addInfo(this.info.toString());
-        }
+                DirectedGraph<String, Edge> jgraph = new DirectedMultigraph<>(new ClassBasedEdgeFactory<String, Edge>(Edge.class));
 
-        private int getClusterNumber(String id, Collection<Set<String>> result) {
-                int i = 0;
-                for (Set<String> set : result) {
-                        if (set.contains(id)) {
-                                return i;
-                        }
-                        i++;
+                for (Species sp : model.getListOfSpecies()) {
+                        jgraph.addVertex(sp.getId());
                 }
-                return -1;
+                
+                HashMap<String, String[]> bounds = new GetInfoAndTools().readBounds(this.networkDS);
+                
+                for (Reaction r : model.getListOfReactions()) {
+                      String[] boundR = bounds.get(r.getId());
+                      if(Double.valueOf(boundR[3]) < 0){
+                              List<SpeciesReference> products = r.getListOfReactants();
+                              
+                      }
+                }
+                return jgraph;
         }
+        
+
 }

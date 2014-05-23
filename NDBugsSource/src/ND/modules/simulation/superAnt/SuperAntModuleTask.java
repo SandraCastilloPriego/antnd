@@ -93,12 +93,13 @@ public class SuperAntModuleTask extends AbstractTask {
                 this.reactions = new HashMap<>();
                 this.compounds = new HashMap<>();
                 this.bounds = new HashMap<>();
+                this.sources = new HashMap<>();
                 this.sourcesList = new ArrayList<>();
 
                 this.frame = new JInternalFrame("Result", true, true, true, true);
                 this.pn = new JPanel();
                 this.panel = new JScrollPane(pn);
-                
+
                 this.tools = new GetInfoAndTools();
 
                 // Initialize the random number generator using the
@@ -129,9 +130,12 @@ public class SuperAntModuleTask extends AbstractTask {
                         if (this.networkDS == null) {
                                 setStatus(TaskStatus.ERROR);
                                 NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
-                        }                        
+                        }
                         System.out.println("Reading sources");
-                        this.sources = tools.GetSourcesInfo();
+                        System.out.println(this.sources.size());
+                        this.sources = tools.GetSourcesInfo();                    
+                         
+                        containsExchange(this.networkDS.getDocument().getModel());
                         for (String key : this.sources.keySet()) {
                                 this.sourcesList.add(key);
                         }
@@ -164,7 +168,7 @@ public class SuperAntModuleTask extends AbstractTask {
                         }
 
                         this.tools.createDataFile(graph, networkDS, biomassID, sourcesList, false);
-                        
+
                         setStatus(TaskStatus.FINISHED);
 
                 } catch (Exception e) {
@@ -176,11 +180,13 @@ public class SuperAntModuleTask extends AbstractTask {
         private void createWorld() {
                 SBMLDocument doc = this.networkDS.getDocument();
                 Model m = doc.getModel();
+
                 for (Species s : m.getListOfSpecies()) {
                         SpeciesFA specie = new SpeciesFA(s.getId());
                         //add the number of initial ants using the sources.. and add them
                         // in the list of nodes with ants
                         if (this.sources.containsKey(s.getId())) {
+                                System.out.println(s.getId());
                                 double antAmount = 50;
                                 for (int i = 0; i < antAmount; i++) {
                                         Ant ant = new Ant(specie.getId());
@@ -188,11 +194,11 @@ public class SuperAntModuleTask extends AbstractTask {
                                         specie.addAnt(ant);
                                 }
                         }
+
                         this.compounds.put(s.getId(), specie);
                 }
 
                 for (Reaction r : m.getListOfReactions()) {
-
                         ReactionFA reaction = new ReactionFA(r.getId());
                         String[] b = this.bounds.get(r.getId());
                         if (b != null) {
@@ -229,6 +235,7 @@ public class SuperAntModuleTask extends AbstractTask {
                                 }
                         }
                         this.reactions.put(r.getId(), reaction);
+
                 }
 
         }
@@ -268,20 +275,20 @@ public class SuperAntModuleTask extends AbstractTask {
                                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
 
                                 //if (!superAnt.isLost()) {
-                                        // move the ants to the products...   
-                                        for (String s : toBeAdded) {
-                                                SpeciesFA spfa = this.compounds.get(s);
-                                                Ant newAnt;
-                                                try {
-                                                        newAnt = superAnt.clone();
-                                                } catch (CloneNotSupportedException ex) {
-                                                        newAnt = superAnt;
-                                                }
-                                                newAnt.setLocation(spfa.getId());
-                                                spfa.addAnt(newAnt);
+                                // move the ants to the products...   
+                                for (String s : toBeAdded) {
+                                        SpeciesFA spfa = this.compounds.get(s);
+                                        Ant newAnt;
+                                        try {
+                                                newAnt = superAnt.clone();
+                                        } catch (CloneNotSupportedException ex) {
+                                                newAnt = superAnt;
                                         }
+                                        newAnt.setLocation(spfa.getId());
+                                        spfa.addAnt(newAnt);
+                                }
 
-                              // }
+                                // }
                                 // When the ants arrive to the biomass
                                 if (toBeAdded.contains(this.biomassID)) {
                                         //System.out.println("Biomass produced!: " + rc.getId());
@@ -384,7 +391,7 @@ public class SuperAntModuleTask extends AbstractTask {
                         return true;
                 }
                 return false;
-        }       
+        }
 
         private boolean isCofactor(String reactant) {
                 return this.steadyState && (reactant.equals(this.NAD)/*
@@ -398,5 +405,47 @@ public class SuperAntModuleTask extends AbstractTask {
                         || this.steadyState && (reactant.equals(this.ATP) && products.contains(this.ADP))
                         || this.steadyState && (reactant.equals(this.NADPH) && products.contains(this.NADP))
                         || this.steadyState && (reactant.equals(this.ADP) && products.contains(this.ATP)));
+        }
+
+        private void containsExchange(Model m) {
+               // this.sources.clear();
+                for (Reaction r : m.getListOfReactions()) {
+                        if (r.getId().contains("Ex_")) {                               
+                                String[] b = this.bounds.get(r.getId());
+                                double lb = -1000;
+                                double ub = -1000;
+                                if (b == null) {
+                                        try {
+                                                KineticLaw law = r.getKineticLaw();
+                                                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                                                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                                                lb = lbound.getValue();
+                                                ub = ubound.getValue();
+                                        } catch (Exception ex) {
+
+                                        }
+                                } else {
+                                        lb = Double.valueOf(b[3]);
+                                        ub = Double.valueOf(b[4]);
+                                }
+
+                                if(r.getId().contains("Ex_C00031")){
+                                        System.out.println("Ex_C00031 - " + lb + " - " + ub);
+                                }
+                                if (lb < 0) {
+                                        for (SpeciesReference sp : r.getListOfReactants()) {
+                                                Species species = sp.getSpeciesInstance();
+                                                Double[] bnds = new Double[2];
+                                                bnds[0] = lb;
+                                                bnds[1] = ub;
+                                                if(!this.sources.containsKey(species.getId())){
+                                                        this.sources.put(species.getId(), bnds);
+                                                }
+                                        }
+                                }
+
+                        }
+                }
+                System.out.println(this.sources.size());
         }
 }

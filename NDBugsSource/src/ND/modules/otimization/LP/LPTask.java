@@ -301,9 +301,9 @@ public class LPTask extends AbstractTask {
                                 Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
-                        System.out.println("solution <- FBA(\"" + tempFile.getAbsolutePath() + "\", \"" + this.tools.getBoundsFile().getAbsolutePath() + "\", \"" + this.tools.getSourcesFile().getAbsolutePath() + "\" , \"" + this.objectiveSpecie + "\")");
+                        System.out.println("solution <- FBA(\"" + tempFile.getAbsolutePath() + "\", \"" + this.networkDS.getDatasetName()+ "\", \"" + this.tools.getBoundsFile().getAbsolutePath() + "\", \"" + this.tools.getSourcesFile().getAbsolutePath() + "\" , \"" + this.objectiveSpecie + "\")");
 
-                        rEngine.eval("solution <- FBA(\"" + tempFile.getAbsolutePath() + "\", \"" + this.tools.getBoundsFile().getAbsolutePath() + "\", \"" + this.tools.getSourcesFile().getAbsolutePath() + "\" , \"" + this.objectiveSpecie + "\")");
+                        rEngine.eval("solution <- FBA(\"" + tempFile.getAbsolutePath() + "\", \"" + this.networkDS.getDatasetName()+ "\", \"" + this.tools.getBoundsFile().getAbsolutePath() + "\", \"" + this.tools.getSourcesFile().getAbsolutePath() + "\" , \"" + this.objectiveSpecie + "\")");
 
                         this.finishedPercentage = 0.4f;
 
@@ -347,6 +347,7 @@ public class LPTask extends AbstractTask {
         private List<String> getReactionFromProducts(SpeciesReference sp, Model model, Map<String, Double> solution) {
                 List<String> reactions = new ArrayList<>();
                 for (Reaction r : model.getListOfReactions()) {
+                        try{
                         List<SpeciesReference> products;
                         if (solution.get(r.getId()) > 0) {
                                 products = r.getListOfProducts();
@@ -356,6 +357,9 @@ public class LPTask extends AbstractTask {
                         if (compoundExists(products, sp)) {
                                 reactions.add(r.getId());
                         }
+                        }catch(Exception e){
+                                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
+                        }
                 }
                 return reactions;
         }
@@ -363,6 +367,7 @@ public class LPTask extends AbstractTask {
         private List<String> getReactionFromReactants(SpeciesReference sp, Model model, Map<String, Double> solution) {
                 List<String> reactions = new ArrayList<>();               
                 for (Reaction r : model.getListOfReactions()) {
+                         try{
                         List<SpeciesReference> reactants;
                         if (solution.get(r.getId()) > 0) {
                                 reactants = r.getListOfReactants();
@@ -372,6 +377,9 @@ public class LPTask extends AbstractTask {
 
                         if (compoundExists(reactants, sp)) {                               
                                 reactions.add(r.getId());
+                        }
+                        }catch(Exception e){
+                                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
                         }
                 }
                 return reactions;
