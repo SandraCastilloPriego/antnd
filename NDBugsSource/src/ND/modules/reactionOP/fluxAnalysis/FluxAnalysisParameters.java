@@ -19,16 +19,17 @@ package ND.modules.reactionOP.fluxAnalysis;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.DoubleParameter;
 import ND.parameters.parametersType.FileNameParameter;
 
 public class FluxAnalysisParameters extends SimpleParameterSet {
 
         public static final FileNameParameter fluxes = new FileNameParameter(
                 "Fluxes", "Define the fluxes ", null);
-        public static final FileNameParameter exchange = new FileNameParameter(
-                "Source", "Define the uptaken compounds", null);
+        public static final DoubleParameter threshold = new DoubleParameter(
+                "Flux threshold", "Define the threshold in which a flux value is taken into account", new Double(0.000001));        
 
         public FluxAnalysisParameters() {
-                super(new Parameter[]{fluxes, exchange});
+                super(new Parameter[]{fluxes, threshold});
         }
 }

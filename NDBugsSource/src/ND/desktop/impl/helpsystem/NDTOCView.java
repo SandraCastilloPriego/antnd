@@ -32,9 +32,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class NDTOCView extends TOCView {
 
-        private NDHelpMap hm;
-        private HelpSet hs;
-        private File file;
+        private final NDHelpMap hm;
+        private final HelpSet hs;
+        private final File file;
 
         public NDTOCView(HelpSet hs, String name, String label, NDHelpMap hm, File file) {
                 super(hs, name, label, null);
@@ -46,6 +46,7 @@ public class NDTOCView extends TOCView {
         /**
          * Public method that gets a DefaultMutableTreeNode representing the
          * information in this view instance.
+         * @return 
          */
         @Override
         public DefaultMutableTreeNode getDataAsTree() {
@@ -87,17 +88,7 @@ public class NDTOCView extends TOCView {
         /**
          * Create an TOCItem with the given data.
          *
-         * @param tagName
-         *            The TOC type to create. Valid types are "tocitem". Null or
-         *            invalid types will throw an IllegalArgumentException
-         * @param atts
-         *            Attributes of the Item. Valid attributes are "target",
-         *            "image", and "text". A null atts is valid and means no
-         *            attributes
-         * @param hs
-         *            HelpSet this item was created under.
-         * @param locale
-         *            Locale of this item. A null locale is valid.
+         * @param target
          * @returns A fully constructed TreeItem.
          * @throws IllegalArgumentExcetpion
          *             if tagname is null or invalid.

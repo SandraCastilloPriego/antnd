@@ -9,13 +9,13 @@ dt { font-style: italic; }
 dd { margin-bottom: 10px; }
 img { margin-left: 30px; margin-top: 20px; margin-bottom: 20px; }
 
-table.sample {
+table {
     border-width: 0 0 1px 1px;
     border-style: solid;
     border-color: gray;
     background-color: rgb(255, 255, 240);
 }
-table.sample td {
+table td {
     border-width: 1px 1px 0 0;
     padding: 1px;
     border-style: solid;

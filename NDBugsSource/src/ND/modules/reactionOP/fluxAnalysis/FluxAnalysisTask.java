@@ -19,6 +19,7 @@ package ND.modules.reactionOP.fluxAnalysis;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
+import ND.modules.configuration.general.GetInfoAndTools;
 import ND.modules.simulation.antNoGraph.network.Edge;
 import ND.modules.simulation.antNoGraph.network.Graph;
 import ND.modules.simulation.antNoGraph.network.Node;
@@ -37,11 +38,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JInternalFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -57,27 +53,23 @@ public class FluxAnalysisTask extends AbstractTask {
 
         private final SimpleBasicDataset networkDS;
         private final double finishedPercentage = 0.0f;
-        private final File fluxesFile, exchangeFile;
-        private final List<String> sourcesList;
+        private final File fluxesFile;
+        private final Map<String, Double[]> exchange;
+        private final double threshold;
         private Map<String, Double> fluxes;
-        private final JInternalFrame frame;
-        private final JScrollPane panel;
-        private final JPanel pn;
+        private final GetInfoAndTools tools;
 
         public FluxAnalysisTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
                 this.fluxesFile = parameters.getParameter(FluxAnalysisParameters.fluxes).getValue();
-                this.exchangeFile = parameters.getParameter(FluxAnalysisParameters.exchange).getValue();
-
-                this.frame = new JInternalFrame("Result", true, true, true, true);
-                this.pn = new JPanel();
-                this.panel = new JScrollPane(pn);
-                this.sourcesList = new ArrayList<>();
+                this.threshold = parameters.getParameter(FluxAnalysisParameters.threshold).getValue();
+                this.tools = new GetInfoAndTools();
+                this.exchange = this.tools.GetSourcesInfo();
         }
 
         @Override
         public String getTaskDescription() {
-                return "Starting Ant Simulation... ";
+                return "Starting Fluxes visualization... ";
         }
 
         @Override
@@ -93,9 +85,8 @@ public class FluxAnalysisTask extends AbstractTask {
         @Override
         public void run() {
                 try {
-                        setStatus(TaskStatus.PROCESSING);
-                        
-                        this.readExchangeReactions();
+                        setStatus(TaskStatus.PROCESSING);                        
+                      
                         this.fluxes = this.readFluxes();
                         System.out.println(this.fluxes.size());
 
@@ -136,44 +127,14 @@ public class FluxAnalysisTask extends AbstractTask {
 
                         NDCore.getDesktop().AddNewFile(dataset);
 
-                        dataset.setGraph(this.createGraph(newModel));
-                        dataset.setSources(sourcesList);
-
-                        /*frame.setSize(new Dimension(700, 500));
-                         frame.add(this.panel);
-                         NDCore.getDesktop().addInternalFrame(frame);
-                         PrintPaths print = new PrintPaths(this.sourcesList, null, newModel);
-                         this.pn.add(print.printPathwayInFrame(this.createGraph(newModel)));
-                         */
+                        dataset.setGraph(this.createGraph(fluxes,newModel));
+                        dataset.setSources(this.networkDS.getSources());
+                       
                         setStatus(TaskStatus.FINISHED);
 
                 } catch (Exception e) {
                         System.out.println(e.toString());
                         setStatus(TaskStatus.ERROR);
-                }
-        }
-
-        private void readExchangeReactions() {
-                try {
-                        CsvReader exchange = new CsvReader(new FileReader(this.exchangeFile), '\t');
-
-                        try {
-                                while (exchange.readRecord()) {
-                                        try {
-                                                String[] exchangeRow = exchange.getValues();
-                                                this.sourcesList.add(exchangeRow[0]);
-
-                                        } catch (IOException | NumberFormatException e) {
-                                                e.printStackTrace();
-                                        }
-                                }
-                        } catch (IOException ex) {
-                                Logger.getLogger(ND.modules.reactionOP.fluxAnalysis.FluxAnalysisTask.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-
-
-                } catch (FileNotFoundException ex) {
-                        Logger.getLogger(ND.modules.reactionOP.fluxAnalysis.FluxAnalysisTask.class.getName()).log(Level.SEVERE, null, ex);
                 }
         }
 
@@ -184,9 +145,8 @@ public class FluxAnalysisTask extends AbstractTask {
                         reader.readHeaders();
                         while (reader.readRecord()) {
                                 String[] data = reader.getValues();
-                                String reactionName = data[2].replace("-", "");
-                                if (Math.abs(Double.valueOf(data[1])) > 0.000001) {
-                                        f.put(reactionName, Double.valueOf(data[1]));
+                                if (Math.abs(Double.valueOf(data[1])) > this.threshold) {
+                                        f.put(data[0], Double.valueOf(data[1]));
                                 }
                         }
                 } catch (FileNotFoundException ex) {
@@ -195,15 +155,18 @@ public class FluxAnalysisTask extends AbstractTask {
                 return f;
         }
 
-        private Graph createGraph(Model newModel) {
+       private Graph createGraph(Map<String, Double> solution, Model newModel) {
                 List<Node> nodes = new ArrayList<>();
                 List<Edge> edges = new ArrayList<>();
                 for (Reaction r : newModel.getListOfReactions()) {
-                        Node n = new Node(r.getId() + " / " + this.fluxes.get(r.getId()));
+                        Node n = new Node(r.getId() + " - " + solution.get(r.getId()));
                         nodes.add(n);
+                }
+                for (Reaction r : newModel.getListOfReactions()) {
+                        Node n = getNode(nodes, r.getId());
                         List<SpeciesReference> reactants;
                         List<SpeciesReference> products;
-                        if (this.fluxes.get(r.getId()) > 0) {
+                        if (solution.get(r.getId()) > 0) {
                                 reactants = r.getListOfReactants();
                                 products = r.getListOfProducts();
                         } else {
@@ -212,25 +175,59 @@ public class FluxAnalysisTask extends AbstractTask {
                         }
 
                         for (SpeciesReference sp : reactants) {
-                                Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
-                                if (newNode == null) {
-                                        newNode = new Node("sp:" + sp.getSpeciesInstance().getId());
+                                String specie = sp.getSpeciesInstance().getId();
+                                if (this.exchange.containsKey(specie)) {
+                                        Node exchangeNode = getNode(nodes, specie);
+                                        if (exchangeNode == null) {
+                                                exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
+                                        }
+                                        nodes.add(exchangeNode);
+                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), exchangeNode, n);
+                                        if (!edgeExist(edge, edges)) {
+                                                edges.add(edge);
+                                        }
+                                } else {
+                                        List<String> reactions = getReactionFromProducts(sp, newModel, solution);
+                                        for (String reaction : reactions) {
+                                                if (reaction.equals(r.getId())) {
+                                                        continue;
+                                                }
+                                                Node newNode = getNode(nodes, reaction);
+                                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), newNode, n);
+                                                if (!edgeExist(edge, edges)) {
+                                                        edges.add(edge);
+                                                }
+                                        }
                                 }
-                                nodes.add(newNode);
-                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + "-" + uniqueId.nextId(), newNode, n);
-                                edges.add(edge);
                         }
 
                         for (SpeciesReference sp : products) {
-                                Node newNode = this.getNode(nodes, sp.getSpeciesInstance().getId());
-                                if (newNode == null) {
-                                        newNode = new Node("sp:" + sp.getSpeciesInstance().getId());
+                                String specie = sp.getSpeciesInstance().getId();
+                                if (this.exchange.containsKey(specie)) {
+                                        Node exchangeNode = getNode(nodes, specie);
+                                        if (exchangeNode == null) {
+                                                exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
+                                        }
+                                        nodes.add(exchangeNode);
+                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), n, exchangeNode);
+                                        if (!edgeExist(edge, edges)) {
+                                                edges.add(edge);
+                                        }
+                                } else {
+                                        List<String> reactions = getReactionFromReactants(sp, newModel, solution);                                       
+                                        for (String reaction : reactions) {
+                                                if (reaction.equals(r.getId())) {
+                                                        continue;
+                                                }
+                                                Node newNode = getNode(nodes, reaction);
+                                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), n, newNode);
+                                                if (!edgeExist(edge, edges)) {
+                                                        edges.add(edge);
+                                                }
+                                        }
                                 }
-                                nodes.add(newNode);
-                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + "-" + uniqueId.nextId(), n, newNode);
-                                edges.add(edge);
-                        }
 
+                        }
 
                 }
 
@@ -245,10 +242,75 @@ public class FluxAnalysisTask extends AbstractTask {
                 }
                 return null;
         }
-
+        
         private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
                 for (Reaction r : listOfReactions) {
                         if (r.hasProduct(sp) || r.hasReactant(sp)) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+        
+        
+        private boolean edgeExist(Edge edge, List<Edge> edges) {
+                for (Edge e : edges) {
+                        try {
+                                if (e.getSource().getId().contains(edge.getSource().getId())
+                                        && e.getDestination().getId().contains(edge.getDestination().getId())) {
+                                        return true;
+                                }
+                        } catch (NullPointerException ex) {
+                                return false;
+                        }
+                }
+                return false;
+        }  
+        
+        private List<String> getReactionFromProducts(SpeciesReference sp, Model model, Map<String, Double> solution) {
+                List<String> reactions = new ArrayList<>();
+                for (Reaction r : model.getListOfReactions()) {
+                        try{
+                        List<SpeciesReference> products;
+                        if (solution.get(r.getId()) > 0) {
+                                products = r.getListOfProducts();
+                        } else {
+                                products = r.getListOfReactants();
+                        }
+                        if (compoundExists(products, sp)) {
+                                reactions.add(r.getId());
+                        }
+                        }catch(Exception e){
+                                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
+                        }
+                }
+                return reactions;
+        }
+
+        private List<String> getReactionFromReactants(SpeciesReference sp, Model model, Map<String, Double> solution) {
+                List<String> reactions = new ArrayList<>();               
+                for (Reaction r : model.getListOfReactions()) {
+                         try{
+                        List<SpeciesReference> reactants;
+                        if (solution.get(r.getId()) > 0) {
+                                reactants = r.getListOfReactants();
+                        } else {
+                                reactants = r.getListOfProducts();
+                        }
+
+                        if (compoundExists(reactants, sp)) {                               
+                                reactions.add(r.getId());
+                        }
+                        }catch(Exception e){
+                                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
+                        }
+                }
+                return reactions;
+        }
+        
+        private boolean compoundExists(List<SpeciesReference> reactants, SpeciesReference sp){
+                for(SpeciesReference reactant: reactants){
+                        if(reactant.getSpeciesInstance().getId().contains(sp.getSpeciesInstance().getId())){
                                 return true;
                         }
                 }

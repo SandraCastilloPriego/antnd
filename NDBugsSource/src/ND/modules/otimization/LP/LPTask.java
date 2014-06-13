@@ -240,12 +240,7 @@ public class LPTask extends AbstractTask {
                                                 edges.add(edge);
                                         }
                                 } else {
-                                        List<String> reactions = getReactionFromReactants(sp, newModel, solution);
-                                        if (r.getId().contains("r0229YCM606")) {
-                                                for (String reaction : reactions) {
-                                                        System.out.println(reaction);
-                                                }
-                                        }
+                                        List<String> reactions = getReactionFromReactants(sp, newModel, solution);                                       
                                         for (String reaction : reactions) {
                                                 if (reaction.equals(r.getId())) {
                                                         continue;
