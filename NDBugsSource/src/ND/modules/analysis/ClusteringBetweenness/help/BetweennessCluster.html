@@ -1,0 +1,47 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+    <head>
+        <title>Analysis - Cluster Graph (Edge Betweenness)</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="/ND/desktop/impl/helpsystem/HelpStyles.css">
+    </head>
+    <body>
+        <h1>Cluster Graph (Edge Betweenness) module</h1>
+        <h2>Description</h2>
+        <p>
+            This module clusters the reactions of a network obtained with this program (it doesn't work on SBML models directly, but it will be implemented
+            in the next version of the program). The output is a file containing the information about the clusters and the visualization of the
+            clusters in the network with the nodes in different colors.           
+
+        </p>
+
+        <p>
+            An algorithm for computing clusters (community structure) in graphs based on edge betweenness. 
+            The betweenness of an edge is defined as the extent to which that edge lies along shortest paths between all pairs of nodes.
+            This algorithm works by iteratively following the 2 step process: 
+        </p>
+
+
+
+        <ul><li>   Compute edge betweenness for all edges in current graph                 
+            <li>   Remove edge with highest betweenness                
+        </ul>
+        <p>
+            Running time is: O(kmn) where k is the number of edges to remove, m is the total number of edges, and n is the total number of vertices.
+            For very sparse graphs the running time is closer to O(kn^2) and for graphs with strong community structure, the complexity is even lower.
+
+            This algorithm is a slight modification of the algorithm discussed below in that the number of edges to be removed is parameterized. 
+        </p>
+        <p>
+            See Also:
+            "Community structure in social and biological networks by Michelle Girvan and Mark Newman"
+        </p>
+
+        <h4>Method parameters</h4>
+        <dl>
+            <dt>Number of edges to remove</dt>
+            <dd>Number of edges with highest betweenness to be removed during the algorithm iterations.</dd>
+        </dl>
+    </body>
+</html>
+

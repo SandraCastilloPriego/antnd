@@ -24,13 +24,13 @@ import ND.parameters.parametersType.StringParameter;
 public class CofactorConfParameters extends SimpleParameterSet {
 
         public static final StringParameter NAD = new StringParameter("NAD+ id", "The corresponding id of NAD+ in the model", "C00003");
-        public static final StringParameter NADH = new StringParameter("NADH id", "The corresponding id of NADH in the model", "C00004");
-        public static final StringParameter NADP = new StringParameter("NADP+ id", "The corresponding id of NADP+ in the model", "C00006");
-        public static final StringParameter NADPH = new StringParameter("NADPH id", "The corresponding id of NADPH in the model", "C00005");
-        public static final StringParameter ADP = new StringParameter("ADP id", "The corresponding id of ADP in the model", "C00008");
-        public static final StringParameter ATP = new StringParameter("ATP id", "The corresponding id of ATP in the model", "C00002");
+        //public static final StringParameter NADH = new StringParameter("NADH id", "The corresponding id of NADH in the model", "C00004");
+       //public static final StringParameter NADP = new StringParameter("NADP+ id", "The corresponding id of NADP+ in the model", "C00006");
+        //public static final StringParameter NADPH = new StringParameter("NADPH id", "The corresponding id of NADPH in the model", "C00005");
+        //public static final StringParameter ADP = new StringParameter("ADP id", "The corresponding id of ADP in the model", "C00008");
+        //public static final StringParameter ATP = new StringParameter("ATP id", "The corresponding id of ATP in the model", "C00002");
 
         public CofactorConfParameters() {
-                super(new Parameter[]{NAD, NADH, NADP, NADPH, ADP, ATP});
+                super(new Parameter[]{NAD/*, NADH, NADP, NADPH, ADP, ATP*/});
         }
 }

@@ -34,7 +34,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
-
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -96,7 +95,7 @@ public class ParameterSetupDialog extends JDialog implements ActionListener,
 		this.autoValues = autoValues;
 		this.helpID = GUIUtils.generateHelpID(parameters);
 
-		parametersAndComponents = new Hashtable<String, JComponent>();
+		parametersAndComponents = new Hashtable<>();
 
 		addDialogComponents();
 

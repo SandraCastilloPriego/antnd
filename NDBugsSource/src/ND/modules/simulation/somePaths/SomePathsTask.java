@@ -72,7 +72,7 @@ public class SomePathsTask extends AbstractTask {
         private boolean removedReaction = false;
         private Model m = null;
         private final boolean steadyState;
-        private final String NAD, NADH, NADP, NADPH, ADP, ATP;
+        private final String NAD/*, NADH, NADP, NADPH, ADP, ATP*/;
         private final GetInfoAndTools tools;
 
         public SomePathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
@@ -84,11 +84,11 @@ public class SomePathsTask extends AbstractTask {
 
                 CofactorConfParameters conf = new CofactorConfParameters();
                 this.NAD = conf.getParameter(CofactorConfParameters.NAD).getValue();
-                this.NADH = conf.getParameter(CofactorConfParameters.NADH).getValue();
+                /*this.NADH = conf.getParameter(CofactorConfParameters.NADH).getValue();
                 this.NADP = conf.getParameter(CofactorConfParameters.NADP).getValue();
                 this.NADPH = conf.getParameter(CofactorConfParameters.NADPH).getValue();
                 this.ADP = conf.getParameter(CofactorConfParameters.ADP).getValue();
-                this.ATP = conf.getParameter(CofactorConfParameters.ATP).getValue();
+                this.ATP = conf.getParameter(CofactorConfParameters.ATP).getValue();*/
 
                 this.rand = new Random();
                 Date date = new Date();
@@ -136,7 +136,9 @@ public class SomePathsTask extends AbstractTask {
                                 NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
                         }
                         System.out.println("Reading sources");
+                        
                         this.sources = tools.GetSourcesInfo();
+                        containsExchange(this.networkDS.getDocument().getModel());
                         for (String key : this.sources.keySet()) {
                                 this.sourcesList.add(key);
                         }
@@ -465,11 +467,50 @@ public class SomePathsTask extends AbstractTask {
         }
 
         private boolean correspondentCofactor(List<String> products, String reactant) {
-                return (reactant.equals(this.NAD) && products.contains(this.NADH))
+                return (reactant.equals(this.NAD)/* && products.contains(this.NADH))
                         || (reactant.equals(this.NADH) && products.contains(this.NAD)
                         || (reactant.equals(this.NADP) && products.contains(this.NADPH))
                         || (reactant.equals(this.ATP) && products.contains(this.ADP))
                         || (reactant.equals(this.NADPH) && products.contains(this.NADP))
-                        || (reactant.equals(this.ADP) && products.contains(this.ATP)));
+                        || (reactant.equals(this.ADP) && products.contains(this.ATP))*/);
+        }
+        
+        private void containsExchange(Model m) {
+                // this.sources.clear();
+                for (Reaction r : m.getListOfReactions()) {
+                        if (r.getId().contains("Ex_")) {
+                                String[] b = this.bounds.get(r.getId());
+                                double lb = -1000;
+                                double ub = -1000;
+                                if (b == null) {
+                                        try {
+                                                KineticLaw law = r.getKineticLaw();
+                                                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                                                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                                                lb = lbound.getValue();
+                                                ub = ubound.getValue();
+                                        } catch (Exception ex) {
+
+                                        }
+                                } else {
+                                        lb = Double.valueOf(b[3]);
+                                        ub = Double.valueOf(b[4]);
+                                }
+
+                                if (lb < 0) {
+                                        for (SpeciesReference sp : r.getListOfReactants()) {
+                                                Species species = sp.getSpeciesInstance();
+                                                Double[] bnds = new Double[2];
+                                                bnds[0] = lb;
+                                                bnds[1] = ub;
+                                                if (!this.sources.containsKey(species.getId())) {
+                                                        this.sources.put(species.getId(), bnds);
+                                                }
+                                        }
+                                }
+
+                        }
+                }
+                System.out.println(this.sources.size());
         }
 }

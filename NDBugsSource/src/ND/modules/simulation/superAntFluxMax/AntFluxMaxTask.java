@@ -80,7 +80,7 @@ public class AntFluxMaxTask extends AbstractTask {
         private Graph graph;
         private final int iterations;
         private final boolean steadyState;
-        private final String NAD, NADH, NADP, NADPH, ADP, ATP;
+        private final String NAD/*, NADH, NADP, NADPH, ADP, ATP*/;
 
         public AntFluxMaxTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 this.networkDS = dataset;
@@ -92,11 +92,11 @@ public class AntFluxMaxTask extends AbstractTask {
 
                 CofactorConfParameters conf = new CofactorConfParameters();
                 this.NAD = conf.getParameter(CofactorConfParameters.NAD).getValue();
-                this.NADH = conf.getParameter(CofactorConfParameters.NADH).getValue();
+               /* this.NADH = conf.getParameter(CofactorConfParameters.NADH).getValue();
                 this.NADP = conf.getParameter(CofactorConfParameters.NADP).getValue();
                 this.NADPH = conf.getParameter(CofactorConfParameters.NADPH).getValue();
                 this.ADP = conf.getParameter(CofactorConfParameters.ADP).getValue();
-                this.ATP = conf.getParameter(CofactorConfParameters.ATP).getValue();
+                this.ATP = conf.getParameter(CofactorConfParameters.ATP).getValue();*/
 
                 this.rand = new Random();
                 Date date = new Date();
@@ -542,16 +542,16 @@ public class AntFluxMaxTask extends AbstractTask {
         }
 
         private boolean isCofactor(String reactant) {
-                return this.steadyState && (reactant.equals(this.NAD)
-                        || reactant.equals(this.ADP) || reactant.equals(this.NADP));
+                return this.steadyState && (reactant.equals(this.NAD)/*
+                        || reactant.equals(this.ADP) || reactant.equals(this.NADP)*/);
         }
 
         private boolean correspondentCofactor(List<String> products, String reactant) {
-                return (reactant.equals(this.NAD) && products.contains(this.NADH))
+                return (reactant.equals(this.NAD) /*&& products.contains(this.NADH))
                         || (reactant.equals(this.NADH) && products.contains(this.NAD)
                         || (reactant.equals(this.NADP) && products.contains(this.NADPH))
                         || (reactant.equals(this.ATP) && products.contains(this.ADP))
                         || (reactant.equals(this.NADPH) && products.contains(this.NADP))
-                        || (reactant.equals(this.ADP) && products.contains(this.ATP)));
+                        || (reactant.equals(this.ADP) && products.contains(this.ATP))*/);
         }
 }

@@ -25,7 +25,6 @@ import ND.parameters.ParameterSet;
 import ND.util.dialogs.ExitCode;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
 import ca.guydavis.swing.desktop.JWindowsMenu;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

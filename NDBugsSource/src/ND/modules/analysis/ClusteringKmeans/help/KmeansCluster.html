@@ -1,0 +1,64 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+    <head>
+        <title>Analysis - Cluster Graph (K-means)</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="/ND/desktop/impl/helpsystem/HelpStyles.css">
+    </head>
+    <body>
+        <h1>Cluster Graph (K-means) module</h1>
+        <h2>Description</h2>
+        <p>
+            This module clusters the reactions of a network obtained with this program (it doesn't work on SBML models directly, but it will be implemented
+            in the next version of the program). The output is a file containing the information about the clusters and the visualization of the
+            clusters in the network with the nodes in different colors.           
+            
+        </p>
+        
+        <p>
+            This module clusters vertices of a Graph based on their ranks as calculated by VoltageScorer.
+            This algorithm is based on, but not identical with, the method described in the paper below. 
+            The primary difference is that Wu and Huberman assume a priori that the clusters are of approximately 
+            the same size, and therefore use a more complex method than k-means (which is used here) for determining 
+            cluster membership based on co-occurrence data.
+        </p> 
+
+        <p>
+            VoltageScorer assigns scores to vertices according to their 'voltage' in an approximate solution to the Kirchoff equations. 
+            This is accomplished by tying "source" vertices to specified positive voltages, "sink" vertices to 0 V,
+            and iteratively updating the voltage of each other vertex to the (weighted) average of the voltages of its neighbors.  
+        </p>
+        <p>
+            The algorithm proceeds as follows:
+
+        <ul><li>   first, generate a set of candidate clusters as follows:
+                <ul>
+                    <li> pick (widely separated) vertex pair, run VoltageScorer
+                    <li>group the vertices in two clusters according to their voltages
+                    <li>store resulting candidate clusters 
+                </ul>
+
+            <li>   second, generate k-1 clusters as follows:
+                <ul>
+                    <li>pick a vertex v as a cluster 'seed'
+                        (Wu/Huberman: most frequent vertex in candidate clusters)
+                    <li> calculate co-occurrence over all candidate clusters of v with each other vertex
+                    <li>separate co-occurrence counts into high/low; high vertices constitute a cluster
+                    <li>remove v's vertices from candidate clusters; continue 
+                </ul>
+            <li>   finally, remaining unassigned vertices are assigned to the kth ("garbage") cluster. 
+        </ul>
+    </p>
+    <p>
+        See Also:
+        "'Finding communities in linear time: a physics approach', Fang Wu and Bernardo Huberman, http://www.hpl.hp.com/research/idl/papers/linear/"
+    </p>
+    
+    <h4>Method parameters</h4>
+                <dl>
+                        <dt>Number of clusters</dt>
+                        <dd>Number of clusters to be returned.</dd>
+                </dl>
+</body>
+</html>
+

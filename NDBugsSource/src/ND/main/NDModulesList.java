@@ -20,9 +20,7 @@ package ND.main;
 
 import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
-import ND.modules.analysis.ClycleDetector.CycleDetectorModule;
 import ND.modules.analysis.CompareModels.CompareModule;
-import ND.modules.analysis.KStepMarkov.KStepMarkovModule;
 import ND.modules.analysis.kNeighborhood.KNeighborhoodModule;
 import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
@@ -37,7 +35,6 @@ import ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule;
 import ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
-import ND.modules.simulation.loopAnalizer.LoopAnalyzerModule;
 import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
@@ -66,7 +63,7 @@ public class NDModulesList {
                 ShowCompoundModule.class,
                 ShowAllCompoundsModule.class,
                 SomePathsModule.class,
-                LoopAnalyzerModule.class,
+                // LoopAnalyzerModule.class,
                 //  AntFluxMaxModule.class,
                 //  AntFluxMinModule.class,
                 LPModule.class,
@@ -74,7 +71,7 @@ public class NDModulesList {
                 ClusteringModule.class,
                 ClusteringBetweennessModule.class,
                 KNeighborhoodModule.class,
-                KStepMarkovModule.class,
-                CycleDetectorModule.class,
+                //KStepMarkovModule.class,
+                //CycleDetectorModule.class,
                 CompareModule.class};
 }

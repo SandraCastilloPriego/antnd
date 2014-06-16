@@ -1,0 +1,37 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+    <head>
+        <title>Optimization - Optimize fluxes</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="/ND/desktop/impl/helpsystem/HelpStyles.css">
+    </head>
+    <body>
+        <h1>Optimize fluxes module</h1>
+        <h2>Description</h2>
+        <p>
+            This module is using the R package sybil (<a href="http://cran.r-project.org/web/packages/sybil/sybil.pdf">http://cran.r-project.org/web/packages/sybil/sybil.pdf</a>)
+            to perform the FBA (Flux Balance Analysis) on the selected model. The R function is written in the folder "conf" of this 
+            program. The name of the file is "FBA.R" and can be edited by the user. Only the arguments of the function and the returning variables must be 
+            respected. The fluxes are minimized in the same R function.
+        </p>        
+        <p>
+            Check the instructions about how to integrated R with this program in the main help page.
+        </p> 
+        <p>   
+            The output is a SBML file containing the reactions that have fluxes different than zero. A flux threshold will be added in the next version of the 
+            program to decide what reactions must be included in the resulting model.        
+        </p>
+        
+        <p>
+            It will also create the visualization part of the network containing the fluxes information for each reaction. It can be open by selecting
+            the resulting model and select the option "Visualize" that appears after pressing the right button of the mouse.
+        </p>
+        
+        <h4>Method parameters</h4>
+                <dl>
+                        <dt>Objective</dt>
+                        <dd>ID of the compound that has to be optimized.</dd>                        
+                </dl>
+    </body>
+</html>
+
