@@ -117,7 +117,7 @@ public class FluxAnalysisTask extends AbstractTask {
                         SimpleBasicDataset dataset = new SimpleBasicDataset();
 
                         dataset.setDocument(newDoc);
-                        dataset.setDatasetName(newModel.getId());
+                        dataset.setDatasetName("Fluxes - " + this.networkDS.getDatasetName());
                         Path path = Paths.get(this.networkDS.getPath());
                         Path fileName = path.getFileName();
                         String name = fileName.toString();
