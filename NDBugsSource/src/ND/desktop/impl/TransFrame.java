@@ -22,7 +22,8 @@ public class TransFrame extends JInternalFrame {
 
         StringBuffer info;
 
-        public TransFrame(Model m, String name) {
+        public TransFrame(String name) {
+                Model m = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
                 Reaction reaction = m.getReaction(name);
                 this.info = new StringBuffer();
                 if (reaction != null) {
@@ -77,6 +78,6 @@ public class TransFrame extends JInternalFrame {
 
                 this.pack();
                 NDCore.getDesktop().addInternalFrame(this);
-                
+
         }
 }

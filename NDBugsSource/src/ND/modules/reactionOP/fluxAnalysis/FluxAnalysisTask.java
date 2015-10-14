@@ -18,16 +18,17 @@
 package ND.modules.reactionOP.fluxAnalysis;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.data.network.Edge;
+import ND.data.network.Graph;
+import ND.data.network.Node;
 import ND.main.NDCore;
 import ND.modules.configuration.general.GetInfoAndTools;
-import ND.modules.simulation.antNoGraph.network.Edge;
-import ND.modules.simulation.antNoGraph.network.Graph;
-import ND.modules.simulation.antNoGraph.network.Node;
 import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import com.csvreader.CsvReader;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -56,7 +57,8 @@ public class FluxAnalysisTask extends AbstractTask {
         private final File fluxesFile;
         private final Map<String, Double[]> exchange;
         private final double threshold;
-        private Map<String, Double> fluxes;
+        private final Map<String, Double> fluxes;
+        private final Map<String, Color> color;
         private final GetInfoAndTools tools;
 
         public FluxAnalysisTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
@@ -65,6 +67,8 @@ public class FluxAnalysisTask extends AbstractTask {
                 this.threshold = parameters.getParameter(FluxAnalysisParameters.threshold).getValue();
                 this.tools = new GetInfoAndTools();
                 this.exchange = this.tools.GetSourcesInfo();
+                this.color = new HashMap<>();
+                this.fluxes = new HashMap<>();
         }
 
         @Override
@@ -85,14 +89,14 @@ public class FluxAnalysisTask extends AbstractTask {
         @Override
         public void run() {
                 try {
-                        setStatus(TaskStatus.PROCESSING);                        
-                      
-                        this.fluxes = this.readFluxes();
+                        setStatus(TaskStatus.PROCESSING);
+
+                        this.readFluxes();
+
                         System.out.println(this.fluxes.size());
 
                         SBMLDocument doc = this.networkDS.getDocument();
                         Model m = doc.getModel();
-
 
                         SBMLDocument newDoc = doc.clone();
                         Model newModel = newDoc.getModel();
@@ -127,9 +131,9 @@ public class FluxAnalysisTask extends AbstractTask {
 
                         NDCore.getDesktop().AddNewFile(dataset);
 
-                        dataset.setGraph(this.createGraph(fluxes,newModel));
+                        dataset.setGraph(this.createGraph(fluxes, newModel));
                         dataset.setSources(this.networkDS.getSources());
-                       
+
                         setStatus(TaskStatus.FINISHED);
 
                 } catch (Exception e) {
@@ -138,24 +142,38 @@ public class FluxAnalysisTask extends AbstractTask {
                 }
         }
 
-        private HashMap<String, Double> readFluxes() {
-                HashMap<String, Double> f = new HashMap<>();
+        private void readFluxes() {
+
                 try {
                         CsvReader reader = new CsvReader(new FileReader(this.fluxesFile.getAbsolutePath()));
                         reader.readHeaders();
                         while (reader.readRecord()) {
                                 String[] data = reader.getValues();
                                 if (Math.abs(Double.valueOf(data[1])) > this.threshold) {
-                                        f.put(data[0], Double.valueOf(data[1]));
+                                        fluxes.put(data[0], Double.valueOf(data[1]));
+                                        try {
+                                                color.put(data[0], getColor(data[2]));
+                                        } catch (NullPointerException ee) {
+                                        } catch (ArrayIndexOutOfBoundsException eo) {
+                                        }
                                 }
                         }
                 } catch (FileNotFoundException ex) {
                 } catch (IOException ex) {
                 }
-                return f;
+
         }
 
-       private Graph createGraph(Map<String, Double> solution, Model newModel) {
+        private Color getColor(String color) {
+                String[] bgr = color.split(",");
+                try {
+                        return new Color(Integer.parseInt(bgr[0]), Integer.parseInt(bgr[1]), Integer.parseInt(bgr[1]));
+                } catch (Exception e) {
+                        return Color.white;
+                }
+        }
+
+        private Graph createGraph(Map<String, Double> solution, Model newModel) {
                 List<Node> nodes = new ArrayList<>();
                 List<Edge> edges = new ArrayList<>();
                 for (Reaction r : newModel.getListOfReactions()) {
@@ -214,7 +232,7 @@ public class FluxAnalysisTask extends AbstractTask {
                                                 edges.add(edge);
                                         }
                                 } else {
-                                        List<String> reactions = getReactionFromReactants(sp, newModel, solution);                                       
+                                        List<String> reactions = getReactionFromReactants(sp, newModel, solution);
                                         for (String reaction : reactions) {
                                                 if (reaction.equals(r.getId())) {
                                                         continue;
@@ -231,7 +249,7 @@ public class FluxAnalysisTask extends AbstractTask {
 
                 }
 
-                return new Graph(nodes, edges);
+                return new Graph(nodes, edges, color);
         }
 
         private Node getNode(List<Node> nodes, String s) {
@@ -242,7 +260,7 @@ public class FluxAnalysisTask extends AbstractTask {
                 }
                 return null;
         }
-        
+
         private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
                 for (Reaction r : listOfReactions) {
                         if (r.hasProduct(sp) || r.hasReactant(sp)) {
@@ -251,8 +269,7 @@ public class FluxAnalysisTask extends AbstractTask {
                 }
                 return false;
         }
-        
-        
+
         private boolean edgeExist(Edge edge, List<Edge> edges) {
                 for (Edge e : edges) {
                         try {
@@ -265,22 +282,22 @@ public class FluxAnalysisTask extends AbstractTask {
                         }
                 }
                 return false;
-        }  
-        
+        }
+
         private List<String> getReactionFromProducts(SpeciesReference sp, Model model, Map<String, Double> solution) {
                 List<String> reactions = new ArrayList<>();
                 for (Reaction r : model.getListOfReactions()) {
-                        try{
-                        List<SpeciesReference> products;
-                        if (solution.get(r.getId()) > 0) {
-                                products = r.getListOfProducts();
-                        } else {
-                                products = r.getListOfReactants();
-                        }
-                        if (compoundExists(products, sp)) {
-                                reactions.add(r.getId());
-                        }
-                        }catch(Exception e){
+                        try {
+                                List<SpeciesReference> products;
+                                if (solution.get(r.getId()) > 0) {
+                                        products = r.getListOfProducts();
+                                } else {
+                                        products = r.getListOfReactants();
+                                }
+                                if (compoundExists(products, sp)) {
+                                        reactions.add(r.getId());
+                                }
+                        } catch (Exception e) {
                                 System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
                         }
                 }
@@ -288,29 +305,29 @@ public class FluxAnalysisTask extends AbstractTask {
         }
 
         private List<String> getReactionFromReactants(SpeciesReference sp, Model model, Map<String, Double> solution) {
-                List<String> reactions = new ArrayList<>();               
+                List<String> reactions = new ArrayList<>();
                 for (Reaction r : model.getListOfReactions()) {
-                         try{
-                        List<SpeciesReference> reactants;
-                        if (solution.get(r.getId()) > 0) {
-                                reactants = r.getListOfReactants();
-                        } else {
-                                reactants = r.getListOfProducts();
-                        }
+                        try {
+                                List<SpeciesReference> reactants;
+                                if (solution.get(r.getId()) > 0) {
+                                        reactants = r.getListOfReactants();
+                                } else {
+                                        reactants = r.getListOfProducts();
+                                }
 
-                        if (compoundExists(reactants, sp)) {                               
-                                reactions.add(r.getId());
-                        }
-                        }catch(Exception e){
+                                if (compoundExists(reactants, sp)) {
+                                        reactions.add(r.getId());
+                                }
+                        } catch (Exception e) {
                                 System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
                         }
                 }
                 return reactions;
         }
-        
-        private boolean compoundExists(List<SpeciesReference> reactants, SpeciesReference sp){
-                for(SpeciesReference reactant: reactants){
-                        if(reactant.getSpeciesInstance().getId().contains(sp.getSpeciesInstance().getId())){
+
+        private boolean compoundExists(List<SpeciesReference> reactants, SpeciesReference sp) {
+                for (SpeciesReference reactant : reactants) {
+                        if (reactant.getSpeciesInstance().getId().contains(sp.getSpeciesInstance().getId())) {
                                 return true;
                         }
                 }

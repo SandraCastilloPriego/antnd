@@ -18,9 +18,9 @@
 package ND.modules.simulation.superAntFluxMax;
 
 import ND.modules.simulation.antNoGraph.ReactionFA;
-import ND.modules.simulation.antNoGraph.network.Edge;
-import ND.modules.simulation.antNoGraph.network.Graph;
-import ND.modules.simulation.antNoGraph.network.Node;
+import ND.data.network.Edge;
+import ND.data.network.Graph;
+import ND.data.network.Node;
 import ND.modules.simulation.antNoGraph.uniqueId;
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -19,9 +19,9 @@ package ND.data.impl.datasets;
 
 import ND.data.Dataset;
 import ND.data.DatasetType;
-import ND.modules.simulation.antNoGraph.network.Edge;
-import ND.modules.simulation.antNoGraph.network.Graph;
-import ND.modules.simulation.antNoGraph.network.Node;
+import ND.data.network.Edge;
+import ND.data.network.Graph;
+import ND.data.network.Node;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JTextArea;

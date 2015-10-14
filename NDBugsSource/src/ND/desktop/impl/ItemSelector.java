@@ -302,6 +302,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                                 if (file.isCluster()) {
                                         pn.add(print.printClusteredPathwayInFrame(file.getGraph()));
                                 } else {
+                                        System.out.println("Visualize");
                                         pn.add(print.printPathwayInFrame(file.getGraph()));
                                 }
                         } catch (NullPointerException ex) {

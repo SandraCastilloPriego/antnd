@@ -17,9 +17,9 @@
  */
 package ND.modules.simulation.antNoGraph;
 
-import ND.modules.simulation.antNoGraph.network.Edge;
-import ND.modules.simulation.antNoGraph.network.Graph;
-import ND.modules.simulation.antNoGraph.network.Node;
+import ND.data.network.Edge;
+import ND.data.network.Graph;
+import ND.data.network.Node;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +43,8 @@ public class Ant {
         }
 
         public void initAnt() {
-                Node initNode = new Node(location + " - " + uniqueId.nextId());
+                //Node initNode = new Node(location + " - " + uniqueId.nextId());
+                Node initNode = new Node(location);
                 g.addNode(initNode);
                 this.path.add(location + " - " + uniqueId.nextId());
         }

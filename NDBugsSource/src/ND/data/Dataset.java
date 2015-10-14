@@ -17,9 +17,9 @@
  */
 package ND.data;
 
-import ND.modules.simulation.antNoGraph.network.Edge;
-import ND.modules.simulation.antNoGraph.network.Graph;
-import ND.modules.simulation.antNoGraph.network.Node;
+import ND.data.network.Edge;
+import ND.data.network.Graph;
+import ND.data.network.Node;
 import java.util.List;
 import javax.swing.JTextArea;
 import org.sbml.jsbml.SBMLDocument;
@@ -135,6 +135,10 @@ public interface Dataset {
         
         public void setGraph(Graph graph);
         
+        /**
+         *
+         * @return
+         */
         public Graph getGraph();
         
         public void SetCluster(boolean isCluster);

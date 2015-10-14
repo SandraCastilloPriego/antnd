@@ -21,8 +21,8 @@ import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.modules.configuration.sources.SourcesConfParameters;
-import ND.modules.simulation.antNoGraph.network.Graph;
-import ND.modules.simulation.antNoGraph.network.Node;
+import ND.data.network.Graph;
+import ND.data.network.Node;
 import com.csvreader.CsvReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -120,7 +120,7 @@ public class GetInfoAndTools {
                                 }
                         }
                 } catch (FileNotFoundException ex) {
-                        java.util.logging.Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                        System.out.println("No bounds added to the reactions");
                 } catch (IOException ex) {
                         java.util.logging.Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }

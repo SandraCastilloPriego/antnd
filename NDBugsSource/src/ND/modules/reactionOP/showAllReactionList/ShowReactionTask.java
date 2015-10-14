@@ -89,7 +89,7 @@ public class ShowReactionTask extends AbstractTask {
                         this.showReactions(m.getListOfReactions());
 
                         for (Reaction r : m.getListOfReactions()) {
-                                info.append(r.getId()).append(" - ").append(r.getName()).append("\n");
+                                info.append(r.getId()).append(" ; ").append(r.getName()).append("\n");
                         }
 
                         this.tf.setText(info.toString());

@@ -17,9 +17,11 @@
  */
 package ND.desktop.impl;
 
-import ND.modules.simulation.antNoGraph.network.Edge;
-import ND.modules.simulation.antNoGraph.network.Graph;
-import ND.modules.simulation.antNoGraph.network.Node;
+import ND.data.network.Edge;
+import ND.data.network.Graph;
+import ND.data.network.Node;
+import ND.main.NDCore;
+import ND.modules.simulation.antNoGraph.uniqueId;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
@@ -41,6 +43,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +52,12 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
+import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.SpeciesReference;
 
 /**
  *
@@ -65,6 +73,8 @@ public class PrintPaths implements KeyListener {
         private edu.uci.ics.jung.graph.Graph<String, String> g;
         Map<String, Color> clusters;
         private boolean showInfo = false;
+        private Graph graph;
+        private JPanel pn;
 
         public PrintPaths(List<String> initialIds, String finalId, Model m) {
                 this.m = m;
@@ -75,13 +85,14 @@ public class PrintPaths implements KeyListener {
 
         public VisualizationViewer printPathwayInFrame(Graph graph) {
                 g = new SparseMultigraph<>();
-
+                this.graph = graph;
                 List<Node> nodes = graph.getNodes();
                 List<Edge> edges = graph.getEdges();
-                System.out.println("Number of nodes: " + nodes.size() + " - " + edges.size());
+                final Map<String, Color> colors = graph.getColors();
 
                 for (Node node : nodes) {
                         if (node != null) {
+
                                 g.addVertex(node.getId());
                         }
                 }
@@ -99,17 +110,23 @@ public class PrintPaths implements KeyListener {
                 Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
                         @Override
                         public Paint transform(String id) {
-                                if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
+
+                                String name = id.split(" - ")[0];
+
+                                if (id.contains("Ex_")) {
                                         return new Color(29, 140, 243);
-                                } else if (id.contains("Ex_")) {
+                                } else if (colors.containsKey(name)) {
+                                        return colors.get(name);
+                                } else if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
                                         return new Color(29, 140, 243);
                                 } else if (finalId != null && id.split("-")[0].contains(finalId)) {
                                         return new Color(255, 0, 0);
                                 } else if (id.contains("sp:")) {
                                         return Color.RED;
-                                } else {
-                                        return new Color(156, 244, 125);
                                 }
+
+                                return new Color(156, 244, 125);
+
                         }
                 };
 
@@ -129,7 +146,7 @@ public class PrintPaths implements KeyListener {
                                                         if (vertex.contains(" / ")) {
                                                                 vertex = vertex.split(" / ")[0];
                                                         }
-                                                        transFrame = new TransFrame(m, vertex.replace("sp:", "").split(" - ")[0]);
+                                                        transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
                                                 } else {
                                                         System.out.println("Vertex " + vertex
                                                                 + " is now selected");
@@ -159,7 +176,7 @@ public class PrintPaths implements KeyListener {
                                         if (pickedEdgeState.isPicked(edge)) {
                                                 selectedEdge = edge;
                                                 if (m != null && showInfo) {
-                                                        transFrame = new TransFrame(m, edge.replace("sp:", "").split(" - ")[0]);
+                                                        transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                                                 } else {
                                                         System.out.println("Edge " + edge
                                                                 + " is now selected");
@@ -308,7 +325,7 @@ public class PrintPaths implements KeyListener {
                                                         if (vertex.contains(" / ")) {
                                                                 vertex = vertex.split(" / ")[0];
                                                         }
-                                                        transFrame = new TransFrame(m, vertex.replace("sp:", "").split(" - ")[0]);
+                                                        transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
                                                 } else {
                                                         System.out.println("Vertex " + vertex
                                                                 + " is now selected");
@@ -338,7 +355,7 @@ public class PrintPaths implements KeyListener {
                                         if (pickedEdgeState.isPicked(edge)) {
                                                 selectedEdge = edge;
                                                 if (m != null && showInfo) {
-                                                        transFrame = new TransFrame(m, edge.replace("sp:", "").split(" - ")[0]);
+                                                        transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                                                 } else {
                                                         System.out.println("Edge " + edge
                                                                 + " is now selected");
@@ -426,13 +443,116 @@ public class PrintPaths implements KeyListener {
                                 g.removeVertex(this.selectedEdge);
                         }
                 }
+                if (e.getKeyChar() == 'e') {
+                        showReactions(this.selectedEdge);
+                }
         }
 
         @Override
         public void keyPressed(KeyEvent e) {
+                if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
+                        if (this.selectedEdge != null) {
+                                g.removeVertex(this.selectedEdge);
+                        }
+                }
+
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
         }
+
+        private void showReactions(String node) {
+                Model mInit = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
+                String spID = node.split(" - ")[0];
+
+                Species sp = mInit.getSpecies(spID);
+                if (sp == null) {
+                        return;
+                }
+                Collection<String> Edges = g.getNeighbors(node);
+
+                for (Reaction r : mInit.getListOfReactions()) {
+
+                        if (r.hasReactant(sp) || r.hasProduct(sp)) {
+                                double lb = Double.NEGATIVE_INFINITY, ub = Double.POSITIVE_INFINITY;
+                                // read bounds to know the direction of the edges
+                                if (r.getKineticLaw() != null) {
+                                        KineticLaw law = r.getKineticLaw();
+                                        LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                                        lb = lbound.getValue();
+                                        LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                                        ub = ubound.getValue();
+                                }
+
+                                // adds the new reaction node with and edge from the extended node
+                                String reactionName = r.getId() + " - " + uniqueId.nextId();
+                                String initSPName = sp.getId() + " - " + uniqueId.nextId();
+                                boolean isThere = false;
+                                for (String readyEdges : Edges) {
+                                        if (readyEdges.contains(r.getId())) {
+                                                isThere = true;
+                                                break;
+                                        }
+                                }
+
+                                // adds the rest of the compounds in the reaction, the direction of the edges 
+                                // should depend on the boundaries of the reaction
+                                if (!isThere) {
+                                        g.addVertex(reactionName);
+
+                                        EdgeType eType = EdgeType.UNDIRECTED;
+                                        for (SpeciesReference sr : r.getListOfReactants()) {
+                                                Species sps = sr.getSpeciesInstance();
+                                                String spName = sps.getId();
+                                                if (lb == 0) {
+                                                        eType = EdgeType.DIRECTED;
+                                                }
+                                                if (!spName.equals(spID)) {
+                                                        String eName = spName + " - " + uniqueId.nextId();
+                                                        String vName = eName + " - " + sps.getName();
+                                                        g.addVertex(vName);
+                                                        if (lb == 0) {
+                                                                g.addEdge(eName, vName, reactionName, eType);
+                                                        } else {
+                                                                g.addEdge(eName, reactionName, vName, eType);
+                                                        }
+                                                } else {
+                                                        if (lb == 0) {
+                                                                g.addEdge(initSPName, node, reactionName, eType);
+                                                        } else {
+                                                                g.addEdge(initSPName, reactionName, node, eType);
+                                                        }
+                                                }
+
+                                        }
+
+                                        for (SpeciesReference sr : r.getListOfProducts()) {
+                                                Species sps = sr.getSpeciesInstance();
+                                                String spName = sps.getId();
+                                                if (!spName.equals(spID)) {
+                                                        String eName = spName + " - " + uniqueId.nextId();
+                                                        String vName = eName + " - " + sps.getName();
+                                                        g.addVertex(vName);
+                                                        if (lb == 0) {
+                                                                g.addEdge(eName, reactionName, vName, EdgeType.DIRECTED);
+                                                        } else {
+                                                                g.addEdge(eName, vName, reactionName, EdgeType.DIRECTED);
+                                                        }
+                                                } else {
+                                                        if (lb == 0) {
+                                                                g.addEdge(initSPName, reactionName, node, eType);
+
+                                                        } else {
+                                                                g.addEdge(initSPName, node, reactionName, eType);
+                                                        }
+                                                }
+
+                                        }
+                                }
+                        }
+                }
+
+        }
+
 }

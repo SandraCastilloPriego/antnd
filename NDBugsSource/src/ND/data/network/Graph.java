@@ -15,10 +15,13 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.antNoGraph.network;
+package ND.data.network;
 
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -27,6 +30,7 @@ import java.util.List;
 public class Graph {
 
         private final List<Node> nodes;
+        private final Map<String,Color> colors;
         private final List<Edge> edges;
 
         public Graph(List<Node> nodes, List<Edge> edges) {
@@ -41,6 +45,29 @@ public class Graph {
                 } else {
                         this.edges = edges;
                 }
+
+                this.colors = new HashMap<>();
+        }
+
+        public Graph(List<Node> nodes, List<Edge> edges, Map<String,Color> colors) {
+                if (nodes == null) {
+                        this.nodes = new ArrayList<>();
+                } else {
+                        this.nodes = nodes;
+                }
+
+                if (edges == null) {
+                        this.edges = new ArrayList<>();
+                } else {
+                        this.edges = edges;
+                }
+
+                this.colors = colors;
+
+        }
+        
+        public Map<String,Color> getColors(){
+                return colors;
         }
 
         public List<Node> getNodes() {
