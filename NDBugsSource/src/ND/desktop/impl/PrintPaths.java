@@ -440,22 +440,15 @@ public class PrintPaths implements KeyListener {
         public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
                         if (this.selectedNode != null) {
-                                g.removeVertex(this.selectedNode);
-                                vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
-                        vv.repaint();
+                                g.removeVertex(this.selectedNode);                              
                         }
                 }
                 if (e.getKeyChar() == 'e') {
-                        showReactions(this.selectedNode);                      
-                        vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
-                        vv.repaint();
-
+                        showReactions(this.selectedNode);     
                 }
 
                 if (e.getKeyChar() == 'c') {
                         removeCofactors();
-                        vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
-                        vv.repaint();
                 }
         }
 
@@ -569,6 +562,8 @@ public class PrintPaths implements KeyListener {
                         if (node.contains("H+") || node.contains("H2O") || node.contains(" - phosphate ") || node.contains(" - ADP")
                                 || node.contains(" - ATP") || node.contains(" - NAD")) {
                                 g.removeVertex(node);
+                                this.removeCofactors();
+                                break;
                         }
                 }
 
