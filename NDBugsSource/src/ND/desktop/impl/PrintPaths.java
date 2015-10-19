@@ -69,18 +69,20 @@ public class PrintPaths implements KeyListener {
         private final String finalId;
         private final Model m;
         private TransFrame transFrame = null;
-        private String selectedEdge;
+        private String selectedNode;
         private edu.uci.ics.jung.graph.Graph<String, String> g;
         Map<String, Color> clusters;
         private boolean showInfo = false;
         private Graph graph;
         private JPanel pn;
+        private VisualizationViewer<String, String> vv;
 
         public PrintPaths(List<String> initialIds, String finalId, Model m) {
                 this.m = m;
                 this.initialIds = initialIds;
                 this.finalId = finalId;
                 this.clusters = new HashMap<>();
+
         }
 
         public VisualizationViewer printPathwayInFrame(Graph graph) {
@@ -130,8 +132,6 @@ public class PrintPaths implements KeyListener {
                         }
                 };
 
-                vv.addKeyListener(this);
-
                 final PickedState<String> pickedState = vv.getPickedVertexState();
                 pickedState.addItemListener(new ItemListener() {
                         @Override
@@ -141,7 +141,7 @@ public class PrintPaths implements KeyListener {
                                         String vertex = (String) subject;
 
                                         if (pickedState.isPicked(vertex)) {
-                                                selectedEdge = vertex;
+                                                selectedNode = vertex;
                                                 if (m != null && showInfo) {
                                                         if (vertex.contains(" / ")) {
                                                                 vertex = vertex.split(" / ")[0];
@@ -152,7 +152,7 @@ public class PrintPaths implements KeyListener {
                                                                 + " is now selected");
                                                 }
                                         } else {
-                                                selectedEdge = null;
+                                                selectedNode = null;
                                                 if (transFrame != null && showInfo) {
                                                         transFrame.setVisible(false);
                                                         transFrame.dispose();
@@ -174,7 +174,7 @@ public class PrintPaths implements KeyListener {
                                         String edge = (String) subject;
 
                                         if (pickedEdgeState.isPicked(edge)) {
-                                                selectedEdge = edge;
+                                                selectedNode = edge;
                                                 if (m != null && showInfo) {
                                                         transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                                                 } else {
@@ -182,7 +182,7 @@ public class PrintPaths implements KeyListener {
                                                                 + " is now selected");
                                                 }
                                         } else {
-                                                selectedEdge = null;
+                                                selectedNode = null;
                                                 if (transFrame != null && showInfo) {
                                                         transFrame.setVisible(false);
                                                         transFrame.dispose();
@@ -191,6 +191,7 @@ public class PrintPaths implements KeyListener {
                                                                 + " no longer selected");
                                                 }
                                         }
+
                                 }
                         }
                 });
@@ -232,7 +233,8 @@ public class PrintPaths implements KeyListener {
                 DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
                 gm.setMode(ModalGraphMouse.Mode.PICKING);
                 vv.setGraphMouse(gm);
-                vv.addKeyListener(gm.getModeKeyListener());
+
+                vv.addKeyListener(this);
 
                 JPanel panel = new JPanel();
                 final JButton button = new JButton("Show Node Info");
@@ -278,7 +280,7 @@ public class PrintPaths implements KeyListener {
 
                 Layout<String, String> layout = new KKLayout(g);
                 layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
-                VisualizationViewer<String, String> vv = new VisualizationViewer<>(layout);
+                vv = new VisualizationViewer<>(layout);
                 vv.setPreferredSize(new Dimension(1400, 1000));
                 Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
                         @Override
@@ -309,8 +311,6 @@ public class PrintPaths implements KeyListener {
                         }
                 };
 
-                vv.addKeyListener(this);
-
                 final PickedState<String> pickedState = vv.getPickedVertexState();
                 pickedState.addItemListener(new ItemListener() {
                         @Override
@@ -320,7 +320,7 @@ public class PrintPaths implements KeyListener {
                                         String vertex = (String) subject;
 
                                         if (pickedState.isPicked(vertex)) {
-                                                selectedEdge = vertex;
+                                                selectedNode = vertex;
                                                 if (m != null && showInfo) {
                                                         if (vertex.contains(" / ")) {
                                                                 vertex = vertex.split(" / ")[0];
@@ -331,7 +331,7 @@ public class PrintPaths implements KeyListener {
                                                                 + " is now selected");
                                                 }
                                         } else {
-                                                selectedEdge = null;
+                                                selectedNode = null;
                                                 if (transFrame != null && showInfo) {
                                                         transFrame.setVisible(false);
                                                         transFrame.dispose();
@@ -353,7 +353,7 @@ public class PrintPaths implements KeyListener {
                                         String edge = (String) subject;
 
                                         if (pickedEdgeState.isPicked(edge)) {
-                                                selectedEdge = edge;
+                                                selectedNode = edge;
                                                 if (m != null && showInfo) {
                                                         transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                                                 } else {
@@ -361,7 +361,7 @@ public class PrintPaths implements KeyListener {
                                                                 + " is now selected");
                                                 }
                                         } else {
-                                                selectedEdge = null;
+                                                selectedNode = null;
                                                 if (transFrame != null && showInfo) {
                                                         transFrame.setVisible(false);
                                                         transFrame.dispose();
@@ -411,7 +411,7 @@ public class PrintPaths implements KeyListener {
                 DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
                 gm.setMode(ModalGraphMouse.Mode.PICKING);
                 vv.setGraphMouse(gm);
-                vv.addKeyListener(gm.getModeKeyListener());
+                vv.addKeyListener(this);
 
                 JPanel panel = new JPanel();
                 final JButton button = new JButton("Show Node Info");
@@ -439,27 +439,34 @@ public class PrintPaths implements KeyListener {
         @Override
         public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
-                        if (this.selectedEdge != null) {
-                                g.removeVertex(this.selectedEdge);
+                        if (this.selectedNode != null) {
+                                g.removeVertex(this.selectedNode);
+                                vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+                        vv.repaint();
                         }
                 }
                 if (e.getKeyChar() == 'e') {
-                        showReactions(this.selectedEdge);
+                        showReactions(this.selectedNode);                      
+                        vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+                        vv.repaint();
+
+                }
+
+                if (e.getKeyChar() == 'c') {
+                        removeCofactors();
+                        vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+                        vv.repaint();
                 }
         }
 
         @Override
         public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
-                        if (this.selectedEdge != null) {
-                                g.removeVertex(this.selectedEdge);
-                        }
-                }
 
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
+
         }
 
         private void showReactions(String node) {
@@ -555,4 +562,15 @@ public class PrintPaths implements KeyListener {
 
         }
 
+        private void removeCofactors() {
+
+                Collection<String> Vertices = g.getVertices();
+                for (String node : Vertices) {
+                        if (node.contains("H+") || node.contains("H2O") || node.contains(" - phosphate ") || node.contains(" - ADP")
+                                || node.contains(" - ATP") || node.contains(" - NAD")) {
+                                g.removeVertex(node);
+                        }
+                }
+
+        }
 }
