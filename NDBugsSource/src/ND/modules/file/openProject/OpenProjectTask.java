@@ -91,7 +91,7 @@ public class OpenProjectTask extends AbstractTask {
         private void loadSBMLFiles(ZipFile zipFile) throws IOException {
                 Enumeration zipEntries = zipFile.entries();
                 Pattern filePattern = Pattern
-                        .compile("(.*)\\.sbml$");
+                        .compile("(.*)\\.sbml$|(.*)\\.xml$");
                 while (zipEntries.hasMoreElements()) {
                         if (isCanceled()) {
                                 return;
