@@ -440,11 +440,11 @@ public class PrintPaths implements KeyListener {
         public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
                         if (this.selectedNode != null) {
-                                g.removeVertex(this.selectedNode);                              
+                                g.removeVertex(this.selectedNode);
                         }
                 }
                 if (e.getKeyChar() == 'e') {
-                        showReactions(this.selectedNode);     
+                        showReactions(this.selectedNode);
                 }
 
                 if (e.getKeyChar() == 'c') {
@@ -464,7 +464,10 @@ public class PrintPaths implements KeyListener {
 
         private void showReactions(String node) {
                 Model mInit = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
-                String spID = node.split(" - ")[0];
+                String spID = node;
+                if (node.contains(" - ")) {
+                        spID = node.split(" - ")[0];
+                }
 
                 Species sp = mInit.getSpecies(spID);
                 if (sp == null) {
