@@ -28,6 +28,7 @@ import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.file.saveProject.SaveProjectModule;
 import ND.modules.otimization.LP.LPModule;
+import ND.modules.reactionOP.AddInfo.AddInfoModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
@@ -64,6 +65,7 @@ public class NDModulesList {
                 ShowAllReactionsModule.class,
                 ShowCompoundModule.class,
                 ShowAllCompoundsModule.class,
+                AddInfoModule.class, 
                 SomePathsModule.class,
                 // LoopAnalyzerModule.class,
                 //  AntFluxMaxModule.class,
