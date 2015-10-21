@@ -1,0 +1,2 @@
+REM installs not-public-available dependencies in local maven repository
+call %m2_home%\bin\mvn install:install-file -DgroupId=seventytwomiles -DartifactId=architecture-rules -Dversion=3.0.0-M1 -Dpackaging=jar -Dfile=architecture-rules-3.0.0-M1.jar -DpomFile=architecture-rules-3.0.0-M1.pom
