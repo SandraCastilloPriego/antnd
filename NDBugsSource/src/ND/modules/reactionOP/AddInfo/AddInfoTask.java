@@ -88,27 +88,26 @@ public class AddInfoTask extends AbstractTask {
                         SBMLDocument doc = this.networkDS.getDocument();
                         Model m = doc.getModel();
 
-                        CsvReader lines;
+                        //CsvReader lines;
 
-                        lines = new CsvReader(new FileReader(this.fileName.getAbsolutePath()), ',');
-                        lines.readRecord();
-                        String[] headers = lines.getValues();
+                      //  lines = new CsvReader(new FileReader(this.fileName.getAbsolutePath()), ';');
+                      //  lines.readRecord();
+                       // String[] headers = lines.getValues();
                         float count = 0;
-                        while (lines.readRecord()) {
-                                String[] line = lines.getValues();
-                                this.ReadPathways(line);
+                      //  while (lines.readRecord()) {
+                              //  String[] line = lines.getValues();
+                              //  this.ReadPathways(line);
                                 // processLine(line, m, headers);
-
-                        }
+//   }
                         this.createdb(m);
 
                         setStatus(TaskStatus.FINISHED);
-                } catch (FileNotFoundException ex) {
+             /*   } catch (FileNotFoundException ex) {
                         setStatus(TaskStatus.ERROR);
                         errorMessage = ex.toString();
                 } catch (IOException ex) {
                         setStatus(TaskStatus.ERROR);
-                        errorMessage = ex.toString();
+                        errorMessage = ex.toString();*/
                 } catch (Exception ex) {
                         setStatus(TaskStatus.ERROR);
                         errorMessage = ex.toString();
@@ -131,6 +130,7 @@ public class AddInfoTask extends AbstractTask {
 
                // registerShutdownHook(graphDb);
 Javacyc cyc = new Javacyc("META");
+
                         ArrayList<String> reactionsMeta = cyc.allRxns();
                         //Add Metacyc reactions
                         for (String r : reactionsMeta) {
