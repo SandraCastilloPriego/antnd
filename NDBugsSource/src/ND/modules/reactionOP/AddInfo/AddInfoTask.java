@@ -24,15 +24,19 @@ import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import com.csvreader.CsvReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -54,11 +58,13 @@ public class AddInfoTask extends AbstractTask {
         private final File fileName, databaseDir;
         private double finishedPercentage = 0.0f;
         private ArrayList<String> pathways;
+        Map<String, Node> nodes;
 
         public AddInfoTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
                 networkDS = dataset;
                 this.fileName = parameters.getParameter(AddInfoParameters.fileName).getValue();
                 this.databaseDir = parameters.getParameter(AddInfoParameters.dirName).getValue();
+                this.nodes = new HashMap<>();
         }
 
         @Override
@@ -89,25 +95,24 @@ public class AddInfoTask extends AbstractTask {
                         Model m = doc.getModel();
 
                         //CsvReader lines;
-
-                      //  lines = new CsvReader(new FileReader(this.fileName.getAbsolutePath()), ';');
-                      //  lines.readRecord();
-                       // String[] headers = lines.getValues();
+                        //  lines = new CsvReader(new FileReader(this.fileName.getAbsolutePath()), ';');
+                        //  lines.readRecord();
+                        // String[] headers = lines.getValues();
                         float count = 0;
-                      //  while (lines.readRecord()) {
-                              //  String[] line = lines.getValues();
-                              //  this.ReadPathways(line);
-                                // processLine(line, m, headers);
+                        //  while (lines.readRecord()) {
+                        //  String[] line = lines.getValues();
+                        //  this.ReadPathways(line);
+                        // processLine(line, m, headers);
 //   }
                         this.createdb(m);
 
                         setStatus(TaskStatus.FINISHED);
-             /*   } catch (FileNotFoundException ex) {
-                        setStatus(TaskStatus.ERROR);
-                        errorMessage = ex.toString();
-                } catch (IOException ex) {
-                        setStatus(TaskStatus.ERROR);
-                        errorMessage = ex.toString();*/
+                        /*   } catch (FileNotFoundException ex) {
+                         setStatus(TaskStatus.ERROR);
+                         errorMessage = ex.toString();
+                         } catch (IOException ex) {
+                         setStatus(TaskStatus.ERROR);
+                         errorMessage = ex.toString();*/
                 } catch (Exception ex) {
                         setStatus(TaskStatus.ERROR);
                         errorMessage = ex.toString();
@@ -126,112 +131,165 @@ public class AddInfoTask extends AbstractTask {
         }
 
         private void createdb(Model m) {
-              //  GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(this.databaseDir.getAbsolutePath());
+                GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(this.databaseDir);
 
-               // registerShutdownHook(graphDb);
-Javacyc cyc = new Javacyc("META");
+                registerShutdownHook(graphDb);
+                Javacyc cyc = new Javacyc("META");
+                Map<String, ArrayList<ArrayList>> reactionsMeta = cyc.allRxns();
 
-                        ArrayList<String> reactionsMeta = cyc.allRxns();
-                        //Add Metacyc reactions
-                        for (String r : reactionsMeta) {
-                                System.out.println(r);
+                try (Transaction tx = graphDb.beginTx()) {
+                        //Add organismNode 
+                        Node orgNode = graphDb.createNode();
+                        orgNode.setProperty("Id", "Metacyc");
+                        orgNode.setProperty("Type", "Organism");
+
+                        for (Map.Entry<String, ArrayList<ArrayList>> entry : reactionsMeta.entrySet()) {
+                                String r = entry.getKey();
+                                System.out.println("Metacyc reaction:" + r);
+                                Node node = graphDb.createNode();
+                                node.setProperty("Id", r);
+                                node.setProperty("Type", "Reaction");
+                                this.nodes.put(r, node);
+                                orgNode.createRelationshipTo(node, RelTypes.HASREACTION);
+
+                                ArrayList<String> left = entry.getValue().get(0);
+                                for (String l : left) {
+                                        System.out.println("Metacyc reaction reactant:" + l);
+                                        Node lnode;
+                                        if (this.nodes.containsKey(l)) {
+                                                lnode = this.nodes.get(l);
+                                        } else {
+                                                lnode = graphDb.createNode();
+                                                lnode.setProperty("Id", l);
+                                                lnode.setProperty("Type", "Species");
+                                        }
+
+                                        node.createRelationshipTo(lnode, RelTypes.ISREACTAN);
+                                }
+                                ArrayList<String> right = entry.getValue().get(1);
+                                for (String l : right) {
+                                        System.out.println("Metacyc reaction product:" + l);
+                                        Node lnode;
+                                        if (this.nodes.containsKey(l)) {
+                                                lnode = this.nodes.get(l);
+                                        } else {
+                                                lnode = graphDb.createNode();
+                                                lnode.setProperty("Id", l);
+                                                lnode.setProperty("Type", "Species");
+                                        }
+                                        node.createRelationshipTo(lnode, RelTypes.ISPRODUCT);
+                                       
+                                }
+
                         }
-                        
-              //  addModel(graphDb, m);
 
+                        //Add Pathways
+                        Map<String, ArrayList<String>> pathways = cyc.allPathways();
+
+                        for (Map.Entry<String, ArrayList<String>> entry : pathways.entrySet()) {
+                                String pathwayName = entry.getKey();
+                                System.out.println(pathwayName);
+                                Node pathway = graphDb.createNode();
+                                pathway.setProperty("Id", pathwayName);
+                                pathway.setProperty("Type", "Pathway");
+                                this.nodes.put(pathwayName, pathway);
+
+                                for (String reaction : entry.getValue()) {
+                                        Node reactionNode = this.nodes.get(reaction);
+                                        pathway.createRelationshipTo(reactionNode, RelTypes.BELONGTOPATHWAY);
+                                }
+                        }
+
+                        addModel(graphDb, m);
+                        tx.success();
+                }
+                graphDb.shutdown();
         }
 
         private void addModel(GraphDatabaseService graphDb, Model m) {
-                Map<String, Node> nodes = new HashMap<>();
-                Transaction tx = graphDb.beginTx();
-                try {
 
-                        //Add organismNode 
-                        Node orgNode = graphDb.createNode();
-                        orgNode.setProperty("Id", m.getId());
-                        orgNode.setProperty("Type", "Organism");
+                //Add organismNode 
+                Node orgNode = graphDb.createNode();
+                orgNode.setProperty("Id", m.getId());
+                orgNode.setProperty("Type", "Organism");
 
-                        //Add Metacyc
-                        Node metaNode = graphDb.createNode();
-                        metaNode.setProperty("Id", "Metacyc");
-                        metaNode.setProperty("Type", "Organism");
+                //Add Metacyc
+                Node metaNode = graphDb.createNode();
+                metaNode.setProperty("Id", "Metacyc");
+                metaNode.setProperty("Type", "Organism");
 
-                        //Add compartments
-                        for (Compartment c : m.getListOfCompartments()) {
-                                Node n = graphDb.createNode();
-                                n.setProperty("Id", c.getId());
-                                n.setProperty("Name", c.getName());
-                                n.setProperty("Type", "Compartment");
-                                nodes.put(c.getId(), n);
-                                orgNode.createRelationshipTo(n, RelTypes.HASCOMPARTMENT);
-
-                        }
-                        Javacyc cyc = new Javacyc("META");
-                        ArrayList<String> reactionsMeta = cyc.allRxns();
-                        //Add Metacyc reactions
-                        for (String r : reactionsMeta) {
-                                Node n = graphDb.createNode();
-                                n.setProperty("Id", r);
-                                n.setProperty("Name", r);
-                                n.setProperty("Type", "Reaction");
-                                nodes.put(r, n);
-                                metaNode.createRelationshipTo(n, RelTypes.HASREACTION);
-                        }
-                        
-                        
-                        //Add pathways
-                        ArrayList<String> pathwaysMeta = cyc.allPathways();
-                        for (String pathway : pathwaysMeta) {
-                                Node n = graphDb.createNode();
-                                n.setProperty("Id", pathway);
-
-                              //  cyc.n.setProperty("Name",);
-                        }
-
-                        //Add Species
-                        for (Species s : m.getListOfSpecies()) {
-                                Node n = graphDb.createNode();
-                                n.setProperty("Id", s.getId());
-                                n.setProperty("Name", s.getName());
-                                n.setProperty("Type", "Species");
-                                nodes.put(s.getId(), n);
-
-                        }
-
-                        for (Reaction r : m.getListOfReactions()) {
-                                Node n = graphDb.createNode();
-                                n.setProperty("Id", r.getId());
-                                n.setProperty("Name", r.getName());
-                                n.setProperty("Type", "Reaction");
-                                nodes.put(r.getId(), n);
-                                orgNode.createRelationshipTo(n, RelTypes.HASREACTION);
-                        }
-
-                        for (Reaction r : m.getListOfReactions()) {
-                                if (nodes.containsKey(r.getId())) {
-                                        Node rNode = nodes.get(r.getId());
-                                        for (SpeciesReference s : r.getListOfReactants()) {
-                                                if (nodes.containsKey(s.getSpecies())) {
-                                                        Node sNode = nodes.get(s.getSpecies());
-                                                        sNode.createRelationshipTo(rNode, RelTypes.ISREACTAN);
-                                                }
-                                        }
-
-                                        for (SpeciesReference s : r.getListOfProducts()) {
-                                                if (nodes.containsKey(s.getSpecies())) {
-                                                        Node sNode = nodes.get(s.getSpecies());
-                                                        rNode.createRelationshipTo(sNode, RelTypes.ISPRODUCT);
-                                                }
-                                        }
-
-                                }
-                        }
-                        // Database operations go here
-                        tx.success();
-                } finally {
-                        tx.finish();
+                //Add compartments
+                for (Compartment c : m.getListOfCompartments()) {
+                        System.out.println("Compartment: " + c.getId());
+                        Node n = graphDb.createNode();
+                        n.setProperty("Id", c.getId());
+                        n.setProperty("Name", c.getName());
+                        n.setProperty("Type", "Compartment");
+                        nodes.put(c.getId(), n);
+                        orgNode.createRelationshipTo(n, RelTypes.HASCOMPARTMENT);
 
                 }
+
+                //Add Species
+                for (Species s : m.getListOfSpecies()) {
+                        System.out.println("Species: " + s.getId());
+                        Node n = graphDb.createNode();
+                        n.setProperty("Id", s.getId());
+                        n.setProperty("Name", s.getName());
+                        n.setProperty("Type", "Species");
+                        nodes.put(s.getId(), n);
+
+                }
+
+                for (Reaction r : m.getListOfReactions()) {
+                        Node n = graphDb.createNode();
+                        System.out.println("Reactions: " + r.getId());
+                        n.setProperty("Id", r.getId());
+                        n.setProperty("Name", r.getName());
+                        n.setProperty("Type", "Reaction");
+                        nodes.put(r.getId(), n);
+                        orgNode.createRelationshipTo(n, RelTypes.HASREACTION);
+                }
+
+                for (Reaction r : m.getListOfReactions()) {
+                        if (nodes.containsKey(r.getId())) {
+                                Node rNode = nodes.get(r.getId());
+                                for (SpeciesReference s : r.getListOfReactants()) {
+                                        if (nodes.containsKey(s.getSpecies())) {
+                                                Node sNode = nodes.get(s.getSpecies());
+                                                sNode.createRelationshipTo(rNode, RelTypes.ISREACTAN);
+                                        }
+                                }
+
+                                for (SpeciesReference s : r.getListOfProducts()) {
+                                        if (nodes.containsKey(s.getSpecies())) {
+                                                Node sNode = nodes.get(s.getSpecies());
+                                                rNode.createRelationshipTo(sNode, RelTypes.ISPRODUCT);
+                                        }
+                                }
+
+                        }
+                }
+
+                //Add pathways
+                Map<String, ArrayList<String>> pathways = getPathways();
+                for (Map.Entry<String, ArrayList<String>> entry : pathways.entrySet()) {
+                        String reactionName = entry.getKey();
+                        // System.out.println("pathway assigment: " + reactionName);
+
+                        Node reaction = this.nodes.get(reactionName);
+                        ArrayList<String> paths = entry.getValue();
+                        for (String path : paths) {
+                                Node p = this.nodes.get(path);
+                                if (p != null) {
+                                        p.createRelationshipTo(reaction, RelTypes.BELONGTOPATHWAY);
+                                } else {
+                                        System.out.println("missing pathways: " + path);
+                                }
+                        }
+
+                }
+
         }
 
         private static void registerShutdownHook(final GraphDatabaseService graphDb) {
@@ -244,6 +302,40 @@ Javacyc cyc = new Javacyc("META");
                                 graphDb.shutdown();
                         }
                 });
+        }
+
+        private Map<String, ArrayList<String>> getPathways() {
+                Map<String, ArrayList<String>> pathways = new HashMap();
+                CsvReader lines;
+                try {
+                        lines = new CsvReader(new FileReader("/home/scsandra/Documents/CellFactory2015/retropath/mappings/experiment.csv"), ',');
+                        lines.getHeaders();
+                        while (lines.readRecord()) {
+
+                                String[] reaction = lines.getValues();
+                                String reactionName = reaction[0];
+                                if (reaction[3] != null && !reaction[3].equals("NA") && !reaction[3].isEmpty()) {
+                                        ArrayList<String> pathsArray = new ArrayList<>();
+                                        String[] paths = reaction[3].split(";");
+                                        // System.out.println("pathway comprete:" + reaction[3]);
+                                        for (String p : paths) {
+                                                //    System.out.println("pathway:" + p);
+                                                if (p != null) {
+                                                        pathsArray.add(p);
+                                                }
+                                        }
+                                        if (!pathsArray.isEmpty()) {
+                                                pathways.put(reactionName, pathsArray);
+                                        }
+                                }
+
+                        }
+
+                } catch (IOException e) {
+                        e.printStackTrace();
+                }
+                return pathways;
+
         }
 
         private static enum RelTypes implements RelationshipType {
