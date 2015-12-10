@@ -24,17 +24,22 @@ import ND.main.NDCore;
 import ND.modules.simulation.antNoGraph.uniqueId;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
+import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.layout.PersistentLayoutImpl;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.LayoutManager;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -43,6 +48,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -65,510 +71,517 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class PrintPaths implements KeyListener {
 
-        private final List<String> initialIds;
-        private final String finalId;
-        private final Model m;
-        private TransFrame transFrame = null;
-        private String selectedNode;
-        private edu.uci.ics.jung.graph.Graph<String, String> g;
-        Map<String, Color> clusters;
-        private boolean showInfo = false;
-        private Graph graph;
-        private JPanel pn;
-        private VisualizationViewer<String, String> vv;
+    private final List<String> initialIds;
+    private final String finalId;
+    private final Model m;
+    private TransFrame transFrame = null;
+    private String selectedNode;
+    private edu.uci.ics.jung.graph.Graph<String, String> g;
+    Map<String, Color> clusters;
+    private boolean showInfo = false;
+    private Graph graph;
+    private JPanel pn;
+    private VisualizationViewer<String, String> vv;
 
-        public PrintPaths(List<String> initialIds, String finalId, Model m) {
-                this.m = m;
-                this.initialIds = initialIds;
-                this.finalId = finalId;
-                this.clusters = new HashMap<>();
+    public PrintPaths(List<String> initialIds, String finalId, Model m) {
+        this.m = m;
+        this.initialIds = initialIds;
+        this.finalId = finalId;
+        this.clusters = new HashMap<>();
 
+    }
+
+    public VisualizationViewer printPathwayInFrame(Graph graph) {
+        g = new SparseMultigraph<>();
+        this.graph = graph;
+        List<Node> nodes = graph.getNodes();
+        List<Edge> edges = graph.getEdges();
+        final Map<String, Color> colors = graph.getColors();
+
+        for (Node node : nodes) {
+            if (node != null) {
+
+                g.addVertex(node.getId());
+            }
         }
 
-        public VisualizationViewer printPathwayInFrame(Graph graph) {
-                g = new SparseMultigraph<>();
-                this.graph = graph;
-                List<Node> nodes = graph.getNodes();
-                List<Edge> edges = graph.getEdges();
-                final Map<String, Color> colors = graph.getColors();
-
-                for (Node node : nodes) {
-                        if (node != null) {
-
-                                g.addVertex(node.getId());
-                        }
-                }
-
-                for (Edge edge : edges) {
-                        if (edge != null) {
-                                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
-                        }
-                }
-
-                Layout<String, String> layout = new KKLayout(g);
-                layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
-                VisualizationViewer<String, String> vv = new VisualizationViewer<>(layout);
-                vv.setPreferredSize(new Dimension(1400, 1000));
-                Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
-                        @Override
-                        public Paint transform(String id) {
-
-                                String name = id.split(" - ")[0];
-
-                                if (id.contains("Ex_")) {
-                                        return new Color(29, 140, 243);
-                                } else if (colors.containsKey(name)) {
-                                        return colors.get(name);
-                                } else if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
-                                        return new Color(29, 140, 243);
-                                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
-                                        return new Color(255, 0, 0);
-                                } else if (id.contains("sp:")) {
-                                        return Color.RED;
-                                }
-
-                                return new Color(156, 244, 125);
-
-                        }
-                };
-
-                final PickedState<String> pickedState = vv.getPickedVertexState();
-                pickedState.addItemListener(new ItemListener() {
-                        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                                Object subject = e.getItem();
-                                if (subject instanceof String) {
-                                        String vertex = (String) subject;
-
-                                        if (pickedState.isPicked(vertex)) {
-                                                selectedNode = vertex;
-                                                if (m != null && showInfo) {
-                                                        if (vertex.contains(" / ")) {
-                                                                vertex = vertex.split(" / ")[0];
-                                                        }
-                                                        transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
-                                                } else {
-                                                        System.out.println("Vertex " + vertex
-                                                                + " is now selected");
-                                                }
-                                        } else {
-                                                selectedNode = null;
-                                                if (transFrame != null && showInfo) {
-                                                        transFrame.setVisible(false);
-                                                        transFrame.dispose();
-                                                } else {
-                                                        System.out.println("Vertex " + vertex
-                                                                + " no longer selected");
-                                                }
-                                        }
-                                }
-                        }
-                });
-
-                final PickedState<String> pickedEdgeState = vv.getPickedEdgeState();
-                pickedEdgeState.addItemListener(new ItemListener() {
-                        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                                Object subject = e.getItem();
-                                if (subject instanceof String) {
-                                        String edge = (String) subject;
-
-                                        if (pickedEdgeState.isPicked(edge)) {
-                                                selectedNode = edge;
-                                                if (m != null && showInfo) {
-                                                        transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
-                                                } else {
-                                                        System.out.println("Edge " + edge
-                                                                + " is now selected");
-                                                }
-                                        } else {
-                                                selectedNode = null;
-                                                if (transFrame != null && showInfo) {
-                                                        transFrame.setVisible(false);
-                                                        transFrame.dispose();
-                                                } else {
-                                                        System.out.println("Edge " + edge
-                                                                + " no longer selected");
-                                                }
-                                        }
-
-                                }
-                        }
-                });
-
-                float dash[] = {1.0f};
-                final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
-                        BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
-                Transformer<String, Stroke> edgeStrokeTransformer
-                        = new Transformer<String, Stroke>() {
-                                @Override
-                                public Stroke transform(String s) {
-                                        return edgeStroke;
-                                }
-                        };
-
-                Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
-                        new ToStringLabeller<>(),
-                        new Transformer<String, String>() {
-                                @Override
-                                public String transform(String input) {
-                                        return "<html><b><font color=\"red\">" + input;
-                                }
-                        }});
-                Transformer labelTransformer2 = new ChainedTransformer<>(new Transformer[]{
-                        new ToStringLabeller<>(),
-                        new Transformer<String, String>() {
-                                @Override
-                                public String transform(String input) {
-                                        return "<html><b><font color=\"black\">" + input;
-                                }
-                        }});
-
-                vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
-                vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
-                vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
-                vv.getRenderContext().getEdgeLabelRenderer().setRotateEdgeLabels(false);
-                vv.getRenderContext().setEdgeLabelTransformer(labelTransformer);
-                vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
-                DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
-                gm.setMode(ModalGraphMouse.Mode.PICKING);
-                vv.setGraphMouse(gm);
-
-                vv.addKeyListener(this);
-
-                JPanel panel = new JPanel();
-                final JButton button = new JButton("Show Node Info");
-                button.addActionListener(new ActionListener() {
-
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                                if (showInfo == false) {
-                                        showInfo = true;
-                                        button.setText("Hide Node Info");
-                                } else {
-                                        showInfo = false;
-                                        button.setText("Show Node Info");
-                                }
-                        }
-                });
-                panel.add(button);
-                panel.setPreferredSize(new Dimension(150, 40));
-                panel.setBackground(Color.WHITE);
-                vv.add(panel);
-                vv.setBackground(Color.WHITE);
-                return vv;
+        for (Edge edge : edges) {
+            if (edge != null) {
+                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+            }
         }
 
-        public VisualizationViewer printClusteredPathwayInFrame(Graph graph) {
-                g = new SparseMultigraph<>();
+        SpringLayout<String, String> layout = new SpringLayout<>(g);
+        //layout = new KKLayout(g);       
+        layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
+        vv = new VisualizationViewer<>(layout);
+        
+        vv.setPreferredSize(new Dimension(1400, 1000));
+        Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
+            @Override
+            public Paint transform(String id) {
 
-                List<Node> nodes = graph.getNodes();
-                List<Edge> edges = graph.getEdges();
-                System.out.println("Number of nodes: " + nodes.size() + " - " + edges.size());
+                String name = id.split(" - ")[0];
 
-                for (Node node : nodes) {
-                        if (node != null) {
-                                g.addVertex(node.getId());
-                        }
+                if (id.contains("Ex_")) {
+                    return new Color(29, 140, 243);
+                } else if (colors.containsKey(name)) {
+                    return colors.get(name);
+                } else if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
+                    return new Color(29, 140, 243);
+                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
+                    return new Color(255, 0, 0);
+                } else if (id.contains("sp:")) {
+                    return Color.RED;
                 }
 
-                for (Edge edge : edges) {
-                        if (edge != null) {
-                                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                return new Color(156, 244, 125);
+
+            }
+        };
+
+        final PickedState<String> pickedState = vv.getPickedVertexState();
+        pickedState.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Object subject = e.getItem();
+                if (subject instanceof String) {
+                    String vertex = (String) subject;
+
+                    if (pickedState.isPicked(vertex)) {
+                        selectedNode = vertex;
+                        if (m != null && showInfo) {
+                            if (vertex.contains(" / ")) {
+                                vertex = vertex.split(" / ")[0];
+                            }
+                            transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
+                        } else {
+                            System.out.println("Vertex " + vertex
+                                + " is now selected");
                         }
+                    } else {
+                        selectedNode = null;
+                        if (transFrame != null && showInfo) {
+                            transFrame.setVisible(false);
+                            transFrame.dispose();
+                        } else {
+                            System.out.println("Vertex " + vertex
+                                + " no longer selected");
+                        }
+                    }
                 }
+            }
+        });
 
-                Layout<String, String> layout = new KKLayout(g);
-                layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
-                vv = new VisualizationViewer<>(layout);
-                vv.setPreferredSize(new Dimension(1400, 1000));
-                Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
-                        @Override
-                        public Paint transform(String id) {
-                                if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
-                                        return new Color(29, 140, 243);
-                                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
-                                        return new Color(255, 0, 0);
-                                } else {
+        final PickedState<String> pickedEdgeState = vv.getPickedEdgeState();
+        pickedEdgeState.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Object subject = e.getItem();
+                if (subject instanceof String) {
+                    String edge = (String) subject;
 
-                                        Random rand = new Random();
-                                        String cluster = id.split(" - ")[2];
-                                        if (cluster != null) {
-                                                if (clusters.containsKey(cluster)) {
-                                                        return clusters.get(cluster);
-                                                } else {
-                                                        float r = rand.nextFloat();
-                                                        float g = rand.nextFloat();
-                                                        float b = rand.nextFloat();
-                                                        Color randomColor = new Color(r, g, b);
-                                                        clusters.put(cluster, randomColor);
-                                                        return randomColor;
-                                                }
-                                        }
-
-                                }
-                                return new Color(255, 255, 255);
+                    if (pickedEdgeState.isPicked(edge)) {
+                        selectedNode = edge;
+                        if (m != null && showInfo) {
+                            transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
+                        } else {
+                            System.out.println("Edge " + edge
+                                + " is now selected");
                         }
-                };
-
-                final PickedState<String> pickedState = vv.getPickedVertexState();
-                pickedState.addItemListener(new ItemListener() {
-                        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                                Object subject = e.getItem();
-                                if (subject instanceof String) {
-                                        String vertex = (String) subject;
-
-                                        if (pickedState.isPicked(vertex)) {
-                                                selectedNode = vertex;
-                                                if (m != null && showInfo) {
-                                                        if (vertex.contains(" / ")) {
-                                                                vertex = vertex.split(" / ")[0];
-                                                        }
-                                                        transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
-                                                } else {
-                                                        System.out.println("Vertex " + vertex
-                                                                + " is now selected");
-                                                }
-                                        } else {
-                                                selectedNode = null;
-                                                if (transFrame != null && showInfo) {
-                                                        transFrame.setVisible(false);
-                                                        transFrame.dispose();
-                                                } else {
-                                                        System.out.println("Vertex " + vertex
-                                                                + " no longer selected");
-                                                }
-                                        }
-                                }
+                    } else {
+                        selectedNode = null;
+                        if (transFrame != null && showInfo) {
+                            transFrame.setVisible(false);
+                            transFrame.dispose();
+                        } else {
+                            System.out.println("Edge " + edge
+                                + " no longer selected");
                         }
-                });
+                    }
 
-                final PickedState<String> pickedEdgeState = vv.getPickedEdgeState();
-                pickedEdgeState.addItemListener(new ItemListener() {
-                        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                                Object subject = e.getItem();
-                                if (subject instanceof String) {
-                                        String edge = (String) subject;
+                }
+            }
+        });
 
-                                        if (pickedEdgeState.isPicked(edge)) {
-                                                selectedNode = edge;
-                                                if (m != null && showInfo) {
-                                                        transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
-                                                } else {
-                                                        System.out.println("Edge " + edge
-                                                                + " is now selected");
-                                                }
-                                        } else {
-                                                selectedNode = null;
-                                                if (transFrame != null && showInfo) {
-                                                        transFrame.setVisible(false);
-                                                        transFrame.dispose();
-                                                } else {
-                                                        System.out.println("Edge " + edge
-                                                                + " no longer selected");
-                                                }
-                                        }
-                                }
-                        }
-                });
+        float dash[] = {1.0f};
+        final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
+            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+        Transformer<String, Stroke> edgeStrokeTransformer
+            = new Transformer<String, Stroke>() {
+                @Override
+                public Stroke transform(String s) {
+                    return edgeStroke;
+                }
+            };
 
-                float dash[] = {1.0f};
-                final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
-                        BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
-                Transformer<String, Stroke> edgeStrokeTransformer
-                        = new Transformer<String, Stroke>() {
-                                @Override
-                                public Stroke transform(String s) {
-                                        return edgeStroke;
-                                }
-                        };
+        Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
+            new ToStringLabeller<>(),
+            new Transformer<String, String>() {
+                @Override
+                public String transform(String input) {
+                    return "<html><b><font color=\"red\">" + input;
+                }
+            }});
+        Transformer labelTransformer2 = new ChainedTransformer<>(new Transformer[]{
+            new ToStringLabeller<>(),
+            new Transformer<String, String>() {
+                @Override
+                public String transform(String input) {
+                    return "<html><b><font color=\"black\">" + input;
+                }
+            }});
 
-                Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
-                        new ToStringLabeller<>(),
-                        new Transformer<String, String>() {
-                                @Override
-                                public String transform(String input) {
-                                        return "<html><b><font color=\"red\">" + input;
-                                }
-                        }});
-                Transformer labelTransformer2 = new ChainedTransformer<>(new Transformer[]{
-                        new ToStringLabeller<>(),
-                        new Transformer<String, String>() {
-                                @Override
-                                public String transform(String input) {
-                                        return "<html><b><font color=\"black\">" + input;
-                                }
-                        }});
+        vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
+        vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
+        vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
+        vv.getRenderContext().getEdgeLabelRenderer().setRotateEdgeLabels(false);
+        vv.getRenderContext().setEdgeLabelTransformer(labelTransformer);
+        vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+        gm.setMode(ModalGraphMouse.Mode.PICKING);
+        vv.setGraphMouse(gm);
 
-                vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
-                vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
-                vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
-                vv.getRenderContext().getEdgeLabelRenderer().setRotateEdgeLabels(false);
-                vv.getRenderContext().setEdgeLabelTransformer(labelTransformer);
-                vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
-                DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
-                gm.setMode(ModalGraphMouse.Mode.PICKING);
-                vv.setGraphMouse(gm);
-                vv.addKeyListener(this);
+        vv.addKeyListener(this);
 
-                JPanel panel = new JPanel();
-                final JButton button = new JButton("Show Node Info");
-                button.addActionListener(new ActionListener() {
+        JPanel panel = new JPanel();
+        final JButton button = new JButton("Show Node Info");
+        button.addActionListener(new ActionListener() {
 
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                                if (showInfo == false) {
-                                        showInfo = true;
-                                        button.setText("Hide Node Info");
-                                } else {
-                                        showInfo = false;
-                                        button.setText("Show Node Info");
-                                }
-                        }
-                });
-                panel.add(button);
-                panel.setPreferredSize(new Dimension(150, 40));
-                panel.setBackground(Color.WHITE);
-                vv.add(panel);
-                vv.setBackground(Color.WHITE);
-                return vv;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (showInfo == false) {
+                    showInfo = true;
+                    button.setText("Hide Node Info");
+                } else {
+                    showInfo = false;
+                    button.setText("Show Node Info");
+                }
+            }
+        });
+        panel.add(button);
+        panel.setPreferredSize(new Dimension(150, 40));
+        panel.setBackground(Color.WHITE);
+        vv.add(panel);
+        vv.setBackground(Color.WHITE);
+        return vv;
+    }
+
+    public VisualizationViewer printClusteredPathwayInFrame(Graph graph) {
+        g = new SparseMultigraph<>();
+
+        List<Node> nodes = graph.getNodes();
+        List<Edge> edges = graph.getEdges();
+        System.out.println("Number of nodes: " + nodes.size() + " - " + edges.size());
+
+        for (Node node : nodes) {
+            if (node != null) {
+                g.addVertex(node.getId());
+            }
         }
 
-        @Override
-        public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
-                        if (this.selectedNode != null) {
-                                g.removeVertex(this.selectedNode);
+        for (Edge edge : edges) {
+            if (edge != null) {
+                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+            }
+        }
+
+        Layout<String, String> layout = new KKLayout(g);
+        layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
+        vv = new VisualizationViewer<>(layout);
+        vv.setPreferredSize(new Dimension(1400, 1000));
+        Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
+            @Override
+            public Paint transform(String id) {
+                if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
+                    return new Color(29, 140, 243);
+                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
+                    return new Color(255, 0, 0);
+                } else {
+
+                    Random rand = new Random();
+                    String cluster = id.split(" - ")[2];
+                    if (cluster != null) {
+                        if (clusters.containsKey(cluster)) {
+                            return clusters.get(cluster);
+                        } else {
+                            float r = rand.nextFloat();
+                            float g = rand.nextFloat();
+                            float b = rand.nextFloat();
+                            Color randomColor = new Color(r, g, b);
+                            clusters.put(cluster, randomColor);
+                            return randomColor;
                         }
+                    }
+
                 }
-                if (e.getKeyChar() == 'e') {
-                        showReactions(this.selectedNode);
-                }
+                return new Color(255, 255, 255);
+            }
+        };
 
-                if (e.getKeyChar() == 'c') {
-                        removeCofactors();
-                }
-        }
+        final PickedState<String> pickedState = vv.getPickedVertexState();
+        pickedState.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Object subject = e.getItem();
+                if (subject instanceof String) {
+                    String vertex = (String) subject;
 
-        @Override
-        public void keyPressed(KeyEvent e) {
-
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-
-        }
-
-        private void showReactions(String node) {
-                Model mInit = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
-                String spID = node;
-                if (node.contains(" - ")) {
-                        spID = node.split(" - ")[0];
-                }
-
-                Species sp = mInit.getSpecies(spID);
-                if (sp == null) {
-                        return;
-                }
-                Collection<String> Edges = g.getNeighbors(node);
-
-                for (Reaction r : mInit.getListOfReactions()) {
-
-                        if (r.hasReactant(sp) || r.hasProduct(sp)) {
-                                double lb = Double.NEGATIVE_INFINITY, ub = Double.POSITIVE_INFINITY;
-                                // read bounds to know the direction of the edges
-                                if (r.getKineticLaw() != null) {
-                                        KineticLaw law = r.getKineticLaw();
-                                        LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
-                                        lb = lbound.getValue();
-                                        LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                                        ub = ubound.getValue();
-                                }
-
-                                // adds the new reaction node with and edge from the extended node
-                                String reactionName = r.getId() + " - " + uniqueId.nextId();
-                                String initSPName = sp.getId() + " - " + uniqueId.nextId();
-                                boolean isThere = false;
-                                for (String readyEdges : Edges) {
-                                        if (readyEdges.contains(r.getId())) {
-                                                isThere = true;
-                                                break;
-                                        }
-                                }
-
-                                // adds the rest of the compounds in the reaction, the direction of the edges 
-                                // should depend on the boundaries of the reaction
-                                if (!isThere) {
-                                        g.addVertex(reactionName);
-
-                                        EdgeType eType = EdgeType.UNDIRECTED;
-                                        for (SpeciesReference sr : r.getListOfReactants()) {
-                                                Species sps = sr.getSpeciesInstance();
-                                                String spName = sps.getId();
-                                                if (lb == 0) {
-                                                        eType = EdgeType.DIRECTED;
-                                                }
-                                                if (!spName.equals(spID)) {
-                                                        String eName = spName + " - " + uniqueId.nextId();
-                                                        String vName = eName + " - " + sps.getName();
-                                                        g.addVertex(vName);
-                                                        if (lb == 0) {
-                                                                g.addEdge(eName, vName, reactionName, eType);
-                                                        } else {
-                                                                g.addEdge(eName, reactionName, vName, eType);
-                                                        }
-                                                } else {
-                                                        if (lb == 0) {
-                                                                g.addEdge(initSPName, node, reactionName, eType);
-                                                        } else {
-                                                                g.addEdge(initSPName, reactionName, node, eType);
-                                                        }
-                                                }
-
-                                        }
-
-                                        for (SpeciesReference sr : r.getListOfProducts()) {
-                                                Species sps = sr.getSpeciesInstance();
-                                                String spName = sps.getId();
-                                                if (!spName.equals(spID)) {
-                                                        String eName = spName + " - " + uniqueId.nextId();
-                                                        String vName = eName + " - " + sps.getName();
-                                                        g.addVertex(vName);
-                                                        if (lb == 0) {
-                                                                g.addEdge(eName, reactionName, vName, EdgeType.DIRECTED);
-                                                        } else {
-                                                                g.addEdge(eName, vName, reactionName, EdgeType.DIRECTED);
-                                                        }
-                                                } else {
-                                                        if (lb == 0) {
-                                                                g.addEdge(initSPName, reactionName, node, eType);
-
-                                                        } else {
-                                                                g.addEdge(initSPName, node, reactionName, eType);
-                                                        }
-                                                }
-
-                                        }
-                                }
+                    if (pickedState.isPicked(vertex)) {
+                        selectedNode = vertex;
+                        if (m != null && showInfo) {
+                            if (vertex.contains(" / ")) {
+                                vertex = vertex.split(" / ")[0];
+                            }
+                            transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
+                        } else {
+                            System.out.println("Vertex " + vertex
+                                + " is now selected");
                         }
-                }
-
-        }
-
-        private void removeCofactors() {
-
-                Collection<String> Vertices = g.getVertices();
-                for (String node : Vertices) {
-                        if (node.contains("H+") || node.contains("H2O") || node.contains(" - phosphate ") || node.contains(" - ADP")
-                                || node.contains(" - ATP") || node.contains(" - NAD")) {
-                                g.removeVertex(node);
-                                this.removeCofactors();
-                                break;
+                    } else {
+                        selectedNode = null;
+                        if (transFrame != null && showInfo) {
+                            transFrame.setVisible(false);
+                            transFrame.dispose();
+                        } else {
+                            System.out.println("Vertex " + vertex
+                                + " no longer selected");
                         }
+                    }
+                }
+            }
+        });
+
+        final PickedState<String> pickedEdgeState = vv.getPickedEdgeState();
+        pickedEdgeState.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Object subject = e.getItem();
+                if (subject instanceof String) {
+                    String edge = (String) subject;
+
+                    if (pickedEdgeState.isPicked(edge)) {
+                        selectedNode = edge;
+                        if (m != null && showInfo) {
+                            transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
+                        } else {
+                            System.out.println("Edge " + edge
+                                + " is now selected");
+                        }
+                    } else {
+                        selectedNode = null;
+                        if (transFrame != null && showInfo) {
+                            transFrame.setVisible(false);
+                            transFrame.dispose();
+                        } else {
+                            System.out.println("Edge " + edge
+                                + " no longer selected");
+                        }
+                    }
+                }
+            }
+        });
+
+        float dash[] = {1.0f};
+        final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
+            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+        Transformer<String, Stroke> edgeStrokeTransformer
+            = new Transformer<String, Stroke>() {
+                @Override
+                public Stroke transform(String s) {
+                    return edgeStroke;
+                }
+            };
+
+        Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
+            new ToStringLabeller<>(),
+            new Transformer<String, String>() {
+                @Override
+                public String transform(String input) {
+                    return "<html><b><font color=\"red\">" + input;
+                }
+            }});
+        Transformer labelTransformer2 = new ChainedTransformer<>(new Transformer[]{
+            new ToStringLabeller<>(),
+            new Transformer<String, String>() {
+                @Override
+                public String transform(String input) {
+                    return "<html><b><font color=\"black\">" + input;
+                }
+            }});
+
+        vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
+        vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
+        vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
+        vv.getRenderContext().getEdgeLabelRenderer().setRotateEdgeLabels(false);
+        vv.getRenderContext().setEdgeLabelTransformer(labelTransformer);
+        vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+        gm.setMode(ModalGraphMouse.Mode.PICKING);
+        vv.setGraphMouse(gm);
+        vv.addKeyListener(this);
+
+        JPanel panel = new JPanel();
+        final JButton button = new JButton("Show Node Info");
+        button.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (showInfo == false) {
+                    showInfo = true;
+                    button.setText("Hide Node Info");
+                } else {
+                    showInfo = false;
+                    button.setText("Show Node Info");
+                }
+            }
+        });
+        panel.add(button);
+        panel.setPreferredSize(new Dimension(150, 40));
+        panel.setBackground(Color.WHITE);
+        vv.add(panel);
+        vv.setBackground(Color.WHITE);
+        return vv;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
+            if (this.selectedNode != null) {
+                g.removeVertex(this.selectedNode);
+            }
+        }
+        if (e.getKeyChar() == 'e') {
+            showReactions(this.selectedNode);
+        }
+
+        if (e.getKeyChar() == 'c') {
+            removeCofactors();
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
+    private void showReactions(String node) {
+        Collection<String> V = g.getVertices();
+        Layout<String, String> layout = vv.getGraphLayout();
+        for (String v : V) {
+            layout.lock(v, true);
+        }
+
+        Model mInit = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
+        String spID = node;
+        if (node.contains(" - ")) {
+            spID = node.split(" - ")[0];
+        }
+
+        Species sp = mInit.getSpecies(spID);
+        if (sp == null) {
+            return;
+        }
+        Collection<String> Edges = g.getNeighbors(node);
+
+        for (Reaction r : mInit.getListOfReactions()) {
+
+            if (r.hasReactant(sp) || r.hasProduct(sp)) {
+                double lb = Double.NEGATIVE_INFINITY, ub = Double.POSITIVE_INFINITY;
+                // read bounds to know the direction of the edges
+                if (r.getKineticLaw() != null) {
+                    KineticLaw law = r.getKineticLaw();
+                    LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                    lb = lbound.getValue();
+                    LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                    ub = ubound.getValue();
                 }
 
+                // adds the new reaction node with and edge from the extended node
+                String reactionName = r.getId() + " - " + uniqueId.nextId();
+                String initSPName = sp.getId() + " - " + uniqueId.nextId();
+                boolean isThere = false;
+                for (String readyEdges : Edges) {
+                    if (readyEdges.contains(r.getId())) {
+                        isThere = true;
+                        break;
+                    }
+                }
+
+                // adds the rest of the compounds in the reaction, the direction of the edges 
+                // should depend on the boundaries of the reaction
+                if (!isThere) {
+                    g.addVertex(reactionName);
+
+                    EdgeType eType = EdgeType.UNDIRECTED;
+                    for (SpeciesReference sr : r.getListOfReactants()) {
+                        Species sps = sr.getSpeciesInstance();
+                        String spName = sps.getId();
+                        if (lb == 0) {
+                            eType = EdgeType.DIRECTED;
+                        }
+                        if (!spName.equals(spID)) {
+                            String eName = spName + " - " + uniqueId.nextId();
+                            String vName = eName + " - " + sps.getName();
+                            g.addVertex(vName);
+                            if (lb == 0) {
+                                g.addEdge(eName, vName, reactionName, eType);
+                            } else {
+                                g.addEdge(eName, reactionName, vName, eType);
+                            }
+                        } else {
+                            if (lb == 0) {
+                                g.addEdge(initSPName, node, reactionName, eType);
+                            } else {
+                                g.addEdge(initSPName, reactionName, node, eType);
+                            }
+                        }
+
+                    }
+
+                    for (SpeciesReference sr : r.getListOfProducts()) {
+                        Species sps = sr.getSpeciesInstance();
+                        String spName = sps.getId();
+                        if (!spName.equals(spID)) {
+                            String eName = spName + " - " + uniqueId.nextId();
+                            String vName = eName + " - " + sps.getName();
+                            g.addVertex(vName);
+                            if (lb == 0) {
+                                g.addEdge(eName, reactionName, vName, EdgeType.DIRECTED);
+                            } else {
+                                g.addEdge(eName, vName, reactionName, EdgeType.DIRECTED);
+                            }
+                        } else {
+                            if (lb == 0) {
+                                g.addEdge(initSPName, reactionName, node, eType);
+
+                            } else {
+                                g.addEdge(initSPName, node, reactionName, eType);
+                            }
+                        }
+
+                    }
+                }
+            }
         }
+    }
+
+    private void removeCofactors() {
+
+        Collection<String> Vertices = g.getVertices();
+        for (String node : Vertices) {
+            if (node.contains("H+") || node.contains("H2O") || node.contains(" - phosphate ") || node.contains(" - ADP")
+                || node.contains(" - ATP") || node.contains(" - NAD") || node.contains(" - CO2") || node.contains("- oxygen")) {
+                g.removeVertex(node);
+                this.removeCofactors();
+                break;
+            }
+        }
+
+    }
 }
