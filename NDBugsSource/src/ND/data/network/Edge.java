@@ -17,6 +17,7 @@
  */
 package ND.data.network;
 
+import ND.modules.simulation.antNoGraph.uniqueId;
 import org.jgrapht.graph.DefaultEdge;
 
 
