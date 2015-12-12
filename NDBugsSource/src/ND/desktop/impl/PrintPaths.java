@@ -453,6 +453,10 @@ public class PrintPaths implements KeyListener {
         if (e.getKeyChar() == 'c') {
             removeCofactors();
         }
+        
+        if(e.getKeyChar() == 'l'){
+            this.lock();
+        }
     }
 
     @Override
@@ -467,10 +471,7 @@ public class PrintPaths implements KeyListener {
 
     private void showReactions(String initialStringNode) {
         Collection<String> V = g.getVertices();
-        Layout<String, String> layout = vv.getGraphLayout();
-        for (String v : V) {
-            layout.lock(v, true);
-        }
+
         Model mInit = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
 
         String spID = initialStringNode;
@@ -530,10 +531,10 @@ public class PrintPaths implements KeyListener {
                                 graph.addNode(n);
                                 if (lb == 0) {
                                     g.addEdge(eName, vName, reactionName, eType);
-                                    graph.addEdge(new Edge(spName, n, reactionNode));
+                                    graph.addEdge(new Edge(eName, n, reactionNode));
                                 } else {
                                     g.addEdge(eName, reactionName, vName, eType);
-                                    graph.addEdge(new Edge(spName, reactionNode, n));
+                                    graph.addEdge(new Edge(eName, reactionNode, n));
                                 }
                             } else {
                                 if (lb == 0) {
@@ -550,10 +551,10 @@ public class PrintPaths implements KeyListener {
                             String eName = spName + " - " + uniqueId.nextId();
                             if (lb == 0) {
                                 g.addEdge(eName, nodeReactant, reactionName, eType);
-                                graph.addEdge(new Edge(spName, reactantNode, reactionNode));
+                                graph.addEdge(new Edge(eName, reactantNode, reactionNode));
                             } else {
                                 g.addEdge(eName, reactionName, nodeReactant, eType);
-                                graph.addEdge(new Edge(spName, reactionNode, reactantNode));
+                                graph.addEdge(new Edge(eName, reactionNode, reactantNode));
                             }
 
                         }
@@ -574,10 +575,10 @@ public class PrintPaths implements KeyListener {
                                 graph.addNode(n);
                                 if (lb == 0) {
                                     g.addEdge(eName, reactionName, vName, EdgeType.DIRECTED);
-                                    graph.addEdge(new Edge(spName, n, reactionNode));
+                                    graph.addEdge(new Edge(eName, n, reactionNode));
                                 } else {
                                     g.addEdge(eName, vName, reactionName, EdgeType.DIRECTED);
-                                    graph.addEdge(new Edge(spName, reactionNode, n));
+                                    graph.addEdge(new Edge(eName, reactionNode, n));
                                 }
                             } else {
                                 if (lb == 0) {
@@ -594,10 +595,10 @@ public class PrintPaths implements KeyListener {
                             String eName = spName + " - " + uniqueId.nextId();
                             if (lb == 0) {
                                 g.addEdge(eName, reactionName, nodeProduct, EdgeType.DIRECTED);
-                                graph.addEdge(new Edge(spName, reactionNode, productNode));
+                                graph.addEdge(new Edge(eName, reactionNode, productNode));
                             } else {
                                 g.addEdge(eName, nodeProduct, reactionName, EdgeType.DIRECTED);
-                                graph.addEdge(new Edge(spName, productNode, reactionNode));
+                                graph.addEdge(new Edge(eName, productNode, reactionNode));
                             }
                         }
                     }
@@ -628,5 +629,13 @@ public class PrintPaths implements KeyListener {
             }
         }
 
+    }
+
+    private void lock() {
+        Collection<String> V = g.getVertices();
+        Layout<String, String> layout = vv.getGraphLayout();
+        for (String v : V) {
+            layout.lock(v, true);
+        }
     }
 }
