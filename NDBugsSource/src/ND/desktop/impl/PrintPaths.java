@@ -491,7 +491,6 @@ public class PrintPaths implements KeyListener {
         
         for (Reaction r : mInit.getListOfReactions()) {
            if (r.hasReactant(sp) || r.hasProduct(sp)) {
-                //this.m.addReaction(r);            
                 double lb = Double.NEGATIVE_INFINITY;
                 // read bounds to know the direction of the edges
                 if (r.getKineticLaw() != null) {
@@ -508,6 +507,8 @@ public class PrintPaths implements KeyListener {
                 // adds the rest of the compounds in the reaction, the direction of the edges 
                 // should depend on the boundaries of the reaction
                 if (isThere == null) {
+                    this.m.addReaction(r);         
+                
                     g.addVertex(reactionName);
 
                     // Creates the node for the grap
@@ -517,6 +518,9 @@ public class PrintPaths implements KeyListener {
                     EdgeType eType = EdgeType.UNDIRECTED;
                     for (SpeciesReference sr : r.getListOfReactants()) {
                         Species sps = sr.getSpeciesInstance();
+                        if(!this.m.containsSpecies(sp.getId())){
+                            this.m.addSpecies(sps);
+                        }
                         String spName = sps.getId();
                         String nodeReactant = isThere(V, spName);
                         if (lb == 0) {
@@ -563,6 +567,9 @@ public class PrintPaths implements KeyListener {
 
                     for (SpeciesReference sr : r.getListOfProducts()) {
                         Species sps = sr.getSpeciesInstance();
+                        if(!this.m.containsSpecies(sp.getId())){
+                            this.m.addSpecies(sps);
+                        }
                         String spName = sps.getId();
                         String nodeProduct = isThere(V, spName);
                         if (nodeProduct == null) {

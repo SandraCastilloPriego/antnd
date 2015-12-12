@@ -50,6 +50,7 @@ import org.sbml.jsbml.Species;
 public class GetInfoAndTools {
 
         File sources, boundsFile;
+        Model newModel = null;
 
         public GetInfoAndTools() {
                 SourcesConfParameters sourcesParameters = new SourcesConfParameters();
@@ -131,7 +132,7 @@ public class GetInfoAndTools {
                 if (graph != null) {
                         SBMLDocument newDoc = networkDS.getDocument().clone();
                         Model m = networkDS.getDocument().getModel();
-                        Model newModel = newDoc.getModel();
+                        newModel = newDoc.getModel();
 
                         for (Reaction reaction : m.getListOfReactions()) {
                                 if (!isInGraph(reaction.getId(), graph)) {
@@ -183,5 +184,9 @@ public class GetInfoAndTools {
                         }
                 }
                 return false;
+        }
+        
+        public Model getModel(){
+            return this.newModel;
         }
 }
