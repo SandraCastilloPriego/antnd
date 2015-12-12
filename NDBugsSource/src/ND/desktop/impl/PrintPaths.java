@@ -44,6 +44,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -68,9 +69,9 @@ public class PrintPaths implements KeyListener {
 
     private final List<String> initialIds;
     private final String finalId;
-    private final Model m;
+    private Model m;
     private TransFrame transFrame = null;
-    private String selectedNode;
+    private List<String> selectedNode;
     private edu.uci.ics.jung.graph.Graph<String, String> g;
     Map<String, Color> clusters;
     private boolean showInfo = false;
@@ -83,6 +84,7 @@ public class PrintPaths implements KeyListener {
         this.initialIds = initialIds;
         this.finalId = finalId;
         this.clusters = new HashMap<>();
+        this.selectedNode = new ArrayList<>();
 
     }
 
@@ -144,7 +146,7 @@ public class PrintPaths implements KeyListener {
                     String vertex = (String) subject;
 
                     if (pickedState.isPicked(vertex)) {
-                        selectedNode = vertex;
+                        selectedNode.add(vertex);
                         if (m != null && showInfo) {
                             if (vertex.contains(" / ")) {
                                 vertex = vertex.split(" / ")[0];
@@ -155,7 +157,7 @@ public class PrintPaths implements KeyListener {
                                     + " is now selected");
                         }
                     } else {
-                        selectedNode = null;
+                        selectedNode.remove(vertex);
                         if (transFrame != null && showInfo) {
                             transFrame.setVisible(false);
                             transFrame.dispose();
@@ -177,7 +179,7 @@ public class PrintPaths implements KeyListener {
                     String edge = (String) subject;
 
                     if (pickedEdgeState.isPicked(edge)) {
-                        selectedNode = edge;
+                        selectedNode.add(edge);
                         if (m != null && showInfo) {
                             transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                         } else {
@@ -185,7 +187,7 @@ public class PrintPaths implements KeyListener {
                                     + " is now selected");
                         }
                     } else {
-                        selectedNode = null;
+                        selectedNode.remove(edge);
                         if (transFrame != null && showInfo) {
                             transFrame.setVisible(false);
                             transFrame.dispose();
@@ -323,7 +325,7 @@ public class PrintPaths implements KeyListener {
                     String vertex = (String) subject;
 
                     if (pickedState.isPicked(vertex)) {
-                        selectedNode = vertex;
+                        selectedNode.add(vertex);
                         if (m != null && showInfo) {
                             if (vertex.contains(" / ")) {
                                 vertex = vertex.split(" / ")[0];
@@ -334,7 +336,7 @@ public class PrintPaths implements KeyListener {
                                     + " is now selected");
                         }
                     } else {
-                        selectedNode = null;
+                        selectedNode.remove(vertex);
                         if (transFrame != null && showInfo) {
                             transFrame.setVisible(false);
                             transFrame.dispose();
@@ -356,7 +358,7 @@ public class PrintPaths implements KeyListener {
                     String edge = (String) subject;
 
                     if (pickedEdgeState.isPicked(edge)) {
-                        selectedNode = edge;
+                        selectedNode.add(edge);
                         if (m != null && showInfo) {
                             transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                         } else {
@@ -364,7 +366,7 @@ public class PrintPaths implements KeyListener {
                                     + " is now selected");
                         }
                     } else {
-                        selectedNode = null;
+                        selectedNode.remove(edge);
                         if (transFrame != null && showInfo) {
                             transFrame.setVisible(false);
                             transFrame.dispose();
@@ -443,18 +445,20 @@ public class PrintPaths implements KeyListener {
     public void keyTyped(KeyEvent e) {
         if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
             if (this.selectedNode != null) {
-                g.removeVertex(this.selectedNode);
+                for (String v : this.selectedNode) {
+                    g.removeVertex(v);
+                }
             }
         }
         if (e.getKeyChar() == 'e') {
-            showReactions(this.selectedNode);
+            showReactions(this.selectedNode.get(0));
         }
 
         if (e.getKeyChar() == 'c') {
             removeCofactors();
         }
-        
-        if(e.getKeyChar() == 'l'){
+
+        if (e.getKeyChar() == 'l') {
             this.lock();
         }
     }
@@ -484,19 +488,16 @@ public class PrintPaths implements KeyListener {
         if (sp == null) {
             return;
         }
-        //  Collection<String> Edges = g.getNeighbors(node);
-
+        
         for (Reaction r : mInit.getListOfReactions()) {
-
-            if (r.hasReactant(sp) || r.hasProduct(sp)) {
-                double lb = Double.NEGATIVE_INFINITY, ub = Double.POSITIVE_INFINITY;
+           if (r.hasReactant(sp) || r.hasProduct(sp)) {
+                //this.m.addReaction(r);            
+                double lb = Double.NEGATIVE_INFINITY;
                 // read bounds to know the direction of the edges
                 if (r.getKineticLaw() != null) {
                     KineticLaw law = r.getKineticLaw();
                     LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
                     lb = lbound.getValue();
-                    LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                    ub = ubound.getValue();
                 }
 
                 // adds the new reaction node with and edge from the extended node
