@@ -154,7 +154,7 @@ public class PrintPaths implements KeyListener {
                             transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
                         } else {
                             System.out.println("Vertex " + vertex
-                                    + " is now selected");
+                                + " is now selected");
                         }
                     } else {
                         selectedNode.remove(vertex);
@@ -163,7 +163,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Vertex " + vertex
-                                    + " no longer selected");
+                                + " no longer selected");
                         }
                     }
                 }
@@ -184,7 +184,7 @@ public class PrintPaths implements KeyListener {
                             transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                         } else {
                             System.out.println("Edge " + edge
-                                    + " is now selected");
+                                + " is now selected");
                         }
                     } else {
                         selectedNode.remove(edge);
@@ -193,7 +193,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Edge " + edge
-                                    + " no longer selected");
+                                + " no longer selected");
                         }
                     }
 
@@ -203,14 +203,14 @@ public class PrintPaths implements KeyListener {
 
         float dash[] = {1.0f};
         final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
         Transformer<String, Stroke> edgeStrokeTransformer
-                = new Transformer<String, Stroke>() {
-                    @Override
-                    public Stroke transform(String s) {
-                        return edgeStroke;
-                    }
-                };
+            = new Transformer<String, Stroke>() {
+                @Override
+                public Stroke transform(String s) {
+                    return edgeStroke;
+                }
+            };
 
         Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
             new ToStringLabeller<>(),
@@ -333,7 +333,7 @@ public class PrintPaths implements KeyListener {
                             transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
                         } else {
                             System.out.println("Vertex " + vertex
-                                    + " is now selected");
+                                + " is now selected");
                         }
                     } else {
                         selectedNode.remove(vertex);
@@ -342,7 +342,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Vertex " + vertex
-                                    + " no longer selected");
+                                + " no longer selected");
                         }
                     }
                 }
@@ -363,7 +363,7 @@ public class PrintPaths implements KeyListener {
                             transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                         } else {
                             System.out.println("Edge " + edge
-                                    + " is now selected");
+                                + " is now selected");
                         }
                     } else {
                         selectedNode.remove(edge);
@@ -372,7 +372,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Edge " + edge
-                                    + " no longer selected");
+                                + " no longer selected");
                         }
                     }
                 }
@@ -381,14 +381,14 @@ public class PrintPaths implements KeyListener {
 
         float dash[] = {1.0f};
         final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
         Transformer<String, Stroke> edgeStrokeTransformer
-                = new Transformer<String, Stroke>() {
-                    @Override
-                    public Stroke transform(String s) {
-                        return edgeStroke;
-                    }
-                };
+            = new Transformer<String, Stroke>() {
+                @Override
+                public Stroke transform(String s) {
+                    return edgeStroke;
+                }
+            };
 
         Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
             new ToStringLabeller<>(),
@@ -447,6 +447,13 @@ public class PrintPaths implements KeyListener {
             if (this.selectedNode != null) {
                 for (String v : this.selectedNode) {
                     g.removeVertex(v);
+                    String name = v.split(" - ")[0];
+                    if (name.contains(" : ")) {
+                        name = name.split((" : "))[0];
+                    }
+                    if (m.getReaction(name) != null) {
+                        this.m.removeReaction(name);
+                    }
                 }
             }
         }
@@ -488,9 +495,9 @@ public class PrintPaths implements KeyListener {
         if (sp == null) {
             return;
         }
-        
+
         for (Reaction r : mInit.getListOfReactions()) {
-           if (r.hasReactant(sp) || r.hasProduct(sp)) {
+            if (r.hasReactant(sp) || r.hasProduct(sp)) {
                 double lb = Double.NEGATIVE_INFINITY;
                 // read bounds to know the direction of the edges
                 if (r.getKineticLaw() != null) {
@@ -507,8 +514,8 @@ public class PrintPaths implements KeyListener {
                 // adds the rest of the compounds in the reaction, the direction of the edges 
                 // should depend on the boundaries of the reaction
                 if (isThere == null) {
-                    this.m.addReaction(r);         
-                
+                    this.m.addReaction(r);
+
                     g.addVertex(reactionName);
 
                     // Creates the node for the grap
@@ -518,7 +525,7 @@ public class PrintPaths implements KeyListener {
                     EdgeType eType = EdgeType.UNDIRECTED;
                     for (SpeciesReference sr : r.getListOfReactants()) {
                         Species sps = sr.getSpeciesInstance();
-                        if(!this.m.containsSpecies(sp.getId())){
+                        if (!this.m.containsSpecies(sp.getId())) {
                             this.m.addSpecies(sps);
                         }
                         String spName = sps.getId();
@@ -567,7 +574,7 @@ public class PrintPaths implements KeyListener {
 
                     for (SpeciesReference sr : r.getListOfProducts()) {
                         Species sps = sr.getSpeciesInstance();
-                        if(!this.m.containsSpecies(sp.getId())){
+                        if (!this.m.containsSpecies(sp.getId())) {
                             this.m.addSpecies(sps);
                         }
                         String spName = sps.getId();
@@ -630,7 +637,7 @@ public class PrintPaths implements KeyListener {
         Collection<String> Vertices = g.getVertices();
         for (String node : Vertices) {
             if (node.contains("H+") || node.contains("H2O") || node.contains(" - phosphate ") || node.contains(" - ADP")
-                    || node.contains(" - ATP") || node.contains(" - NAD") || node.contains(" - CO2") || node.contains("- oxygen")) {
+                || node.contains(" - ATP") || node.contains(" - NAD") || node.contains(" - CO2") || node.contains("- oxygen")) {
                 g.removeVertex(node);
                 this.removeCofactors();
                 break;
