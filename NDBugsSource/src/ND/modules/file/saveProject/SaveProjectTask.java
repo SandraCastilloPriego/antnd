@@ -146,7 +146,7 @@ public class SaveProjectTask extends AbstractTask {
                 }
                 if (sources != null) {
                     for (String source : sources) {
-                        writer.write("\nSources=: " + source);
+                        writer.write("\nSources= " + source);
                     }
                 }
                 if (graph != null) {
@@ -159,7 +159,7 @@ public class SaveProjectTask extends AbstractTask {
                         }
                     }
                     for (Edge edge : graph.getEdges()) {
-                        writer.write("\nEdges= " + edge.getId() + "= " + edge.getSource().getId() + " || " + edge.getDestination().getId());
+                        writer.write("\nEdges= " + edge.getId() + " // " + edge.getSource().getId() + " || " + edge.getDestination().getId());
                     }
                 }
             } catch (IOException e) {

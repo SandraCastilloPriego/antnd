@@ -78,7 +78,7 @@ public class PrintPaths implements KeyListener {
     private Graph graph;
     private JPanel pn;
     private VisualizationViewer<String, String> vv;
-    SpringLayout<String, String> layout;
+    SpringLayout layout;
 
     public PrintPaths(List<String> initialIds, String finalId, Model m) {
         this.m = m;
@@ -96,6 +96,7 @@ public class PrintPaths implements KeyListener {
         List<Edge> edges = graph.getEdges();
         final Map<String, Color> colors = graph.getColors();
         layout = new SpringLayout<>(g);
+
         //layout = new KKLayout(g);       
         layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
         vv = new VisualizationViewer<>(layout);
@@ -107,7 +108,7 @@ public class PrintPaths implements KeyListener {
                 if (node.getPosition() != null) {
                     layout.transform(name).setLocation(node.getPosition());
                     // System.out.println("Position: " + name + " : " + node.getPosition().toString());
-                    layout.lock(name, true);
+                    vv.getGraphLayout().lock(name, true);
                 }
             }
         }
@@ -479,8 +480,9 @@ public class PrintPaths implements KeyListener {
                     }
                     if (m.getReaction(name) != null) {
                         this.m.removeReaction(name);
-                        this.graph.removeNode(name);
+
                     }
+                    this.graph.removeNode(name);
                 }
             }
         }
@@ -528,6 +530,9 @@ public class PrintPaths implements KeyListener {
         }
 
         for (Reaction r : mInit.getListOfReactions()) {
+            if (r.getId().contains("Ex")) {
+                continue;
+            }
             if (r.hasReactant(sp) || r.hasProduct(sp)) {
                 double lb = Double.NEGATIVE_INFINITY;
                 double ub = Double.POSITIVE_INFINITY;
@@ -556,7 +561,7 @@ public class PrintPaths implements KeyListener {
 
                     // Creates the node for the ANT graph
                     Node reactionNode = new Node(reactionName);
-                    graph.addNode(initNode);
+                    graph.addNode(reactionNode);
 
                     EdgeType eType = EdgeType.UNDIRECTED;
                     if (lb == 0 || ub == 0) {
@@ -676,7 +681,8 @@ public class PrintPaths implements KeyListener {
             if (node.contains("H+") || node.contains("H2O") || node.contains(" : phosphate ") || node.contains(" : ADP")
                 || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(" : oxygen")) {
                 g.removeVertex(node);
-                this.removeCofactors();
+                graph.removeNode(node);
+                removeCofactors();
                 break;
             }
         }
