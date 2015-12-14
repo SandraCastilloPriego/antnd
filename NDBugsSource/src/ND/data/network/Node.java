@@ -17,31 +17,42 @@
  */
 package ND.data.network;
 
+import java.awt.geom.Point2D;
 
 /**
  *
  * @author scsandra
  */
 public class Node {
-        
-        private String id;
-        
-        public Node(String id) {
-                this.id = id;
-        } 
-        
-        public String getId() {
-                return id;
-        }
-        
-        public void setId(String newID){
-                this.id = newID;
-        }
-        
-        @Override
-        public Node clone(){
-                Node n = new Node(this.id);
-                return n;
-        }
-       
+
+    private String id;
+    private Point2D position;
+
+    public Node(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String newID) {
+        this.id = newID;
+    }
+
+    @Override
+    public Node clone() {
+        Node n = new Node(this.id);
+        n.position = this.position;
+        return n;
+    }
+
+    public void setPosition(double x, double y) {
+        this.position = new Point2D.Double(x, y);
+    }
+
+    public Point2D getPosition() {
+        return this.position;
+    }
+
 }

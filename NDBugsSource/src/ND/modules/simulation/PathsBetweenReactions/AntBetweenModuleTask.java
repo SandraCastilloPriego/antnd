@@ -171,7 +171,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                 System.out.println(s.getId());
                 double antAmount = 50;
                 for (int i = 0; i < antAmount; i++) {
-                    Ant ant = new Ant(specie.getId() + " - " + s.getName());
+                    Ant ant = new Ant(specie.getId() + " : " + s.getName());
                     ant.initAnt();
                     specie.addAnt(ant);
                 }
@@ -244,7 +244,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                     Species Sp = m.getSpecies(spfa.getId());
                     Ant a = spfa.getAnt();
                     if (a == null) {
-                        a = new Ant(spfa.getId() + " - " + Sp.getName());
+                        a = new Ant(spfa.getId() + " : " + Sp.getName());
                         a.initAnt();
                     }
                     combinedAnts.put(a, s);
@@ -279,7 +279,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                             this.shortestPath = a.getPathSize();
                             this.graph = a.getGraph();
                             Species biomassSp = m.getSpecies(this.biomassID);
-                            Node biomass = new Node(this.biomassID + " - " + biomassSp.getName());
+                            Node biomass = new Node(this.biomassID + " : " + biomassSp.getName());
                             this.graph.addNode(biomass);
                             Node lastNode = this.graph.getNode(reactionChoosen);
                             Edge edge = new Edge(this.biomassID, lastNode, biomass);

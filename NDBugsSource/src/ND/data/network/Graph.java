@@ -112,6 +112,27 @@ public class Graph {
                 }
         }
 
+        public void removeNode(String node){
+            List<Node> nodeToBeRemoved = new ArrayList<>();
+            List<Edge> edgeToBeRemoved = new ArrayList<>();
+            for(Node n : this.nodes){
+                if(n.getId().contains(node)){
+                    nodeToBeRemoved.add(n);
+                    for(Edge e: this.edges){
+                        if(e.getSource() == n || e.getDestination() == n){
+                            edgeToBeRemoved.add(e);
+                        }
+                    }
+                }
+            }
+            for(Node n : nodeToBeRemoved){
+                this.nodes.remove(n);
+            }
+            for(Edge e : edgeToBeRemoved){
+                this.edges.remove(e);
+            }
+        }
+        
         public void addEdge(Edge edge) {
                 this.edges.add(edge);
         }
