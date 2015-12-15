@@ -554,7 +554,7 @@ public class PrintPaths implements KeyListener {
                 // should depend on the boundaries of the reaction
                 if (isThere == null) {
                     //adds the new reaction to the new model
-                    this.m.addReaction(r);
+                    AddReaction(r);
 
                     // adds the new reaction to the visualization graph
                     g.addVertex(reactionName);
@@ -569,9 +569,6 @@ public class PrintPaths implements KeyListener {
                     }
                     for (SpeciesReference sr : r.getListOfReactants()) {
                         Species sps = sr.getSpeciesInstance();
-                        if (!this.m.containsSpecies(sp.getId())) {
-                            this.m.addSpecies(sps);
-                        }
                         String spName = sps.getId();
                         String nodeReactant = isThere(V, spName);
 
@@ -616,9 +613,6 @@ public class PrintPaths implements KeyListener {
 
                     for (SpeciesReference sr : r.getListOfProducts()) {
                         Species sps = sr.getSpeciesInstance();
-                        if (!this.m.containsSpecies(sp.getId())) {
-                            this.m.addSpecies(sps);
-                        }
                         String spName = sps.getId();
                         String nodeProduct = isThere(V, spName);
                         if (nodeProduct == null) {
@@ -632,19 +626,19 @@ public class PrintPaths implements KeyListener {
                                 graph.addNode(n);
                                 if (lb == 0) {
                                     g.addEdge(eName, reactionName, vName, eType);
-                                    graph.addEdge(new Edge(eName, n, reactionNode));
+                                    graph.addEdge(new Edge(eName, reactionNode, n));
                                 } else {
                                     g.addEdge(eName, vName, reactionName, eType);
-                                    graph.addEdge(new Edge(eName, reactionNode, n));
+                                    graph.addEdge(new Edge(eName, n, reactionNode));
                                 }
                             } else {
                                 if (lb == 0) {
-                                    g.addEdge(initSPName, reactionName, initialStringNode, eType);
-                                    graph.addEdge(new Edge(sp.getId(), reactionNode, initNode));
-
-                                } else {
                                     g.addEdge(initSPName, initialStringNode, reactionName, eType);
                                     graph.addEdge(new Edge(sp.getId(), initNode, reactionNode));
+
+                                } else {
+                                    g.addEdge(initSPName, reactionName, initialStringNode, eType);
+                                    graph.addEdge(new Edge(sp.getId(), reactionNode, initNode));
                                 }
                             }
                         } else {
@@ -700,5 +694,49 @@ public class PrintPaths implements KeyListener {
                 //  System.out.println("New Position:" + vertex + " : " + layout.getX(vertex) + " - " + layout.getY(vertex));
             }
         }
+    }
+
+    private void AddReaction(Reaction reaction) {
+        Reaction r = new Reaction(reaction.getName());
+        r.setId(reaction.getId());
+        r.setName(reaction.getName());
+        
+        for (SpeciesReference sp : reaction.getListOfReactants()) {
+            SpeciesReference spref = new SpeciesReference();
+            spref.setStoichiometry(sp.getCalculatedStoichiometry());
+            
+            if (m.containsSpecies(sp.getSpecies())) {
+                spref.setSpecies(m.getSpecies(sp.getSpecies()));
+            } else {
+                Species specie = sp.getSpeciesInstance().clone();
+                m.addSpecies(specie);
+                spref.setSpecies(specie);
+            }
+            r.addReactant(spref);
+        }
+        
+        for (SpeciesReference sp : reaction.getListOfProducts()) {
+
+            SpeciesReference spref = new SpeciesReference();
+            spref.setStoichiometry(sp.getCalculatedStoichiometry());            
+            if (m.containsSpecies(sp.getSpecies())) {
+                spref.setSpecies(m.getSpecies(sp.getSpecies()));
+            } else {
+                Species specie = sp.getSpeciesInstance().clone();
+                m.addSpecies(specie);
+                spref.setSpecies(specie);
+            }
+            r.addProduct(spref);
+        }
+
+        KineticLaw law = new KineticLaw();
+        LocalParameter lboundP = new LocalParameter("LOWER_BOUND");
+        lboundP.setValue(reaction.getKineticLaw().getLocalParameter("LOWER_BOUND").getValue());
+        law.addLocalParameter(lboundP);
+        LocalParameter uboundP = new LocalParameter("UPPER_BOUND");
+        uboundP.setValue(reaction.getKineticLaw().getLocalParameter("LOWER_BOUND").getValue());
+        law.addLocalParameter(uboundP);
+        r.setKineticLaw(law);
+        m.addReaction(r);
     }
 }
