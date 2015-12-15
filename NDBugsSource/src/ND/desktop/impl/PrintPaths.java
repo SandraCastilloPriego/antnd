@@ -115,7 +115,11 @@ public class PrintPaths implements KeyListener {
 
         for (Edge edge : edges) {
             if (edge != null) {
-                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                if (edge.getDirection()) {
+                    g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                } else {
+                    g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.UNDIRECTED);
+                }
             }
         }
 
@@ -564,8 +568,10 @@ public class PrintPaths implements KeyListener {
                     graph.addNode(reactionNode);
 
                     EdgeType eType = EdgeType.UNDIRECTED;
+                    boolean direction = false;
                     if (lb == 0 || ub == 0) {
                         eType = EdgeType.DIRECTED;
+                        direction = true;
                     }
                     for (SpeciesReference sr : r.getListOfReactants()) {
                         Species sps = sr.getSpeciesInstance();
@@ -582,18 +588,18 @@ public class PrintPaths implements KeyListener {
                                 graph.addNode(n);
                                 if (lb == 0) {
                                     g.addEdge(eName, vName, reactionName, eType);
-                                    graph.addEdge(new Edge(eName, n, reactionNode));
+                                    graph.addEdge(new Edge(eName, n, reactionNode, direction));
                                 } else {
                                     g.addEdge(eName, reactionName, vName, eType);
-                                    graph.addEdge(new Edge(eName, reactionNode, n));
+                                    graph.addEdge(new Edge(eName, reactionNode, n, direction));
                                 }
                             } else {
                                 if (lb == 0) {
                                     g.addEdge(initSPName, initialStringNode, reactionName, eType);
-                                    graph.addEdge(new Edge(sp.getId(), initNode, reactionNode));
+                                    graph.addEdge(new Edge(sp.getId(), initNode, reactionNode, direction));
                                 } else {
                                     g.addEdge(initSPName, reactionName, initialStringNode, eType);
-                                    graph.addEdge(new Edge(sp.getId(), reactionNode, initNode));
+                                    graph.addEdge(new Edge(sp.getId(), reactionNode, initNode, direction));
                                 }
                             }
                         } else {
@@ -602,10 +608,10 @@ public class PrintPaths implements KeyListener {
                             String eName = spName + " - " + uniqueId.nextId();
                             if (lb == 0) {
                                 g.addEdge(eName, nodeReactant, reactionName, eType);
-                                graph.addEdge(new Edge(eName, reactantNode, reactionNode));
+                                graph.addEdge(new Edge(eName, reactantNode, reactionNode, direction));
                             } else {
                                 g.addEdge(eName, reactionName, nodeReactant, eType);
-                                graph.addEdge(new Edge(eName, reactionNode, reactantNode));
+                                graph.addEdge(new Edge(eName, reactionNode, reactantNode, direction));
                             }
 
                         }
@@ -626,19 +632,19 @@ public class PrintPaths implements KeyListener {
                                 graph.addNode(n);
                                 if (lb == 0) {
                                     g.addEdge(eName, reactionName, vName, eType);
-                                    graph.addEdge(new Edge(eName, reactionNode, n));
+                                    graph.addEdge(new Edge(eName, reactionNode, n, direction));
                                 } else {
                                     g.addEdge(eName, vName, reactionName, eType);
-                                    graph.addEdge(new Edge(eName, n, reactionNode));
+                                    graph.addEdge(new Edge(eName, n, reactionNode, direction));
                                 }
                             } else {
                                 if (lb == 0) {
                                     g.addEdge(initSPName, initialStringNode, reactionName, eType);
-                                    graph.addEdge(new Edge(sp.getId(), initNode, reactionNode));
+                                    graph.addEdge(new Edge(sp.getId(), initNode, reactionNode, direction));
 
                                 } else {
                                     g.addEdge(initSPName, reactionName, initialStringNode, eType);
-                                    graph.addEdge(new Edge(sp.getId(), reactionNode, initNode));
+                                    graph.addEdge(new Edge(sp.getId(), reactionNode, initNode, direction));
                                 }
                             }
                         } else {
@@ -646,10 +652,10 @@ public class PrintPaths implements KeyListener {
                             String eName = spName + " - " + uniqueId.nextId();
                             if (lb == 0) {
                                 g.addEdge(eName, reactionName, nodeProduct, eType);
-                                graph.addEdge(new Edge(eName, reactionNode, productNode));
+                                graph.addEdge(new Edge(eName, reactionNode, productNode, direction));
                             } else {
                                 g.addEdge(eName, nodeProduct, reactionName, eType);
-                                graph.addEdge(new Edge(eName, productNode, reactionNode));
+                                graph.addEdge(new Edge(eName, productNode, reactionNode, direction));
                             }
                         }
                     }
@@ -673,7 +679,8 @@ public class PrintPaths implements KeyListener {
         Collection<String> Vertices = g.getVertices();
         for (String node : Vertices) {
             if (node.contains("H+") || node.contains("H2O") || node.contains(" : phosphate ") || node.contains(" : ADP")
-                || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(" : oxygen")) {
+                || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(" : oxygen")
+                || node.contains(": AMP") || node.contains(" : diphospahte ")) {
                 g.removeVertex(node);
                 graph.removeNode(node);
                 removeCofactors();
@@ -700,11 +707,11 @@ public class PrintPaths implements KeyListener {
         Reaction r = new Reaction(reaction.getName());
         r.setId(reaction.getId());
         r.setName(reaction.getName());
-        
+
         for (SpeciesReference sp : reaction.getListOfReactants()) {
             SpeciesReference spref = new SpeciesReference();
             spref.setStoichiometry(sp.getCalculatedStoichiometry());
-            
+
             if (m.containsSpecies(sp.getSpecies())) {
                 spref.setSpecies(m.getSpecies(sp.getSpecies()));
             } else {
@@ -714,11 +721,11 @@ public class PrintPaths implements KeyListener {
             }
             r.addReactant(spref);
         }
-        
+
         for (SpeciesReference sp : reaction.getListOfProducts()) {
 
             SpeciesReference spref = new SpeciesReference();
-            spref.setStoichiometry(sp.getCalculatedStoichiometry());            
+            spref.setStoichiometry(sp.getCalculatedStoichiometry());
             if (m.containsSpecies(sp.getSpecies())) {
                 spref.setSpecies(m.getSpecies(sp.getSpecies()));
             } else {

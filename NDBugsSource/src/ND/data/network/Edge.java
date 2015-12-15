@@ -17,7 +17,6 @@
  */
 package ND.data.network;
 
-import ND.modules.simulation.antNoGraph.uniqueId;
 import org.jgrapht.graph.DefaultEdge;
 
 
@@ -30,14 +29,29 @@ public class Edge extends DefaultEdge{
         private String id;
         private Node source;
         private Node destination;
+        private boolean directional;
         
-        
-        public Edge(){}
-
+               
         public Edge(String id, Node source, Node destination) {
+                this.directional = true;
                 this.id = id;
                 this.source = source;
                 this.destination = destination;
+        }
+        
+         public Edge(String id, Node source, Node destination, boolean directional) {                
+                this.id = id;
+                this.source = source;
+                this.destination = destination;
+                this.directional = directional;
+        }
+        
+        public void setDirection(boolean directional){
+            this.directional = directional;
+        }
+        
+        public boolean getDirection(){
+            return this.directional;
         }
 
         public String getId() {

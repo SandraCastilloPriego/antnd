@@ -164,9 +164,11 @@ public class OpenProjectTask extends AbstractTask {
 
                                                 } else if (strLine.contains("Edges= ")) {
                                                         String edgeName = strLine.split("= ")[1].split(" // ")[0];
-                                                        Node source = g.getNode(strLine.split(" // ")[1].split(" \\|\\| ")[0]);
-                                                        Node destination = g.getNode(strLine.split(" // ")[1].split(" \\|\\| ")[1]);
-                                                        Edge e = new Edge(edgeName, source, destination);
+                                                        String[] parts = strLine.split(" // ");
+                                                        Node source = g.getNode(parts[1].split(" \\|\\| ")[0]);
+                                                        Node destination = g.getNode(parts[1].split(" \\|\\| ")[1]);
+                                                        boolean direction = Boolean.getBoolean(parts[2]);
+                                                        Edge e = new Edge(edgeName, source, destination, direction);
                                                         g.addEdge(e);
                                                 } else {
                                                         data.addInfo(strLine);

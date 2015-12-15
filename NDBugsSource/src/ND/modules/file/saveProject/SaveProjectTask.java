@@ -159,7 +159,7 @@ public class SaveProjectTask extends AbstractTask {
                         }
                     }
                     for (Edge edge : graph.getEdges()) {
-                        writer.write("\nEdges= " + edge.getId() + " // " + edge.getSource().getId() + " || " + edge.getDestination().getId());
+                        writer.write("\nEdges= " + edge.getId() + " // " + edge.getSource().getId() + " || " + edge.getDestination().getId() + " // " + String.valueOf(edge.getDirection()));
                     }
                 }
             } catch (IOException e) {
