@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2013 VTT Biotechnology
+ * Copyright 2013-2014 VTT Biotechnology
  * This file is part of AntND.
  *
  * AntND is free software; you can redistribute it and/or modify it under the
@@ -15,22 +15,22 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.configuration.sources;
+package ND.modules.reactionOP.showPathways;
+
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
-import ND.parameters.parametersType.FileNameParameter;
+import ND.parameters.parametersType.StringParameter;
 
-public class SourcesConfParameters extends SimpleParameterSet {
+public class ShowPathwaysParameters extends SimpleParameterSet {     
+   
 
-        public static final FileNameParameter exchange = new FileNameParameter(
-                "Source", "Define the uptaken compounds including their bounds.", null);
-        public static final FileNameParameter bounds = new FileNameParameter(
-                "Reaction bounds", "Define the bounds of the reactions", null);
-        public static final FileNameParameter pathways = new FileNameParameter(
-                "Pathway information file", "Define the path of the pathway information file.", null);
+        public static final StringParameter pathwayName = new StringParameter(
+                "Pathway name", "Name of the pathway that will be showed", "");
         
-        public SourcesConfParameters() {
-                super(new Parameter[]{exchange, bounds, pathways});
+        
+
+        public ShowPathwaysParameters() {
+                super(new Parameter[]{pathwayName});
         }
 }

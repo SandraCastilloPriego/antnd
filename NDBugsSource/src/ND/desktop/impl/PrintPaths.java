@@ -98,7 +98,7 @@ public class PrintPaths implements KeyListener {
         layout = new SpringLayout<>(g);
 
         //layout = new KKLayout(g);       
-        layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
+        layout.setSize(new Dimension(2400,1900)); // sets the initial size of the space
         vv = new VisualizationViewer<>(layout);
 
         for (Node node : nodes) {
@@ -123,7 +123,7 @@ public class PrintPaths implements KeyListener {
             }
         }
 
-        vv.setPreferredSize(new Dimension(1400, 1000));
+        vv.setPreferredSize(new Dimension(2400, 2000));
         Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
             @Override
             public Paint transform(String id) {
@@ -680,7 +680,7 @@ public class PrintPaths implements KeyListener {
         for (String node : Vertices) {
             if (node.contains("H+") || node.contains("H2O") || node.contains(" : phosphate ") || node.contains(" : ADP")
                 || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(" : oxygen")
-                || node.contains(": AMP") || node.contains(" : diphospahte ")) {
+                || node.contains(": AMP") || node.contains(" : diphosphate ")) {
                 g.removeVertex(node);
                 graph.removeNode(node);
                 removeCofactors();
@@ -704,7 +704,7 @@ public class PrintPaths implements KeyListener {
     }
 
     private void AddReaction(Reaction reaction) {
-        Reaction r = new Reaction(reaction.getName());
+        Reaction r = new Reaction(reaction.getId());
         r.setId(reaction.getId());
         r.setName(reaction.getName());
 
