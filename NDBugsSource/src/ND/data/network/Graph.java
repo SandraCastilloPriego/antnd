@@ -29,180 +29,223 @@ import java.util.Map;
  */
 public class Graph {
 
-        private final List<Node> nodes;
-        private final Map<String,Color> colors;
-        private final List<Edge> edges;
+    private final List<Node> nodes;
+    private final Map<String, Color> colors;
+    private final List<Edge> edges;
 
-        public Graph(List<Node> nodes, List<Edge> edges) {
-                if (nodes == null) {
-                        this.nodes = new ArrayList<>();
-                } else {
-                        this.nodes = nodes;
+    public Graph(List<Node> nodes, List<Edge> edges) {
+        if (nodes == null) {
+            this.nodes = new ArrayList<>();
+        } else {
+            this.nodes = nodes;
+        }
+
+        if (edges == null) {
+            this.edges = new ArrayList<>();
+        } else {
+            this.edges = edges;
+        }
+
+        this.colors = new HashMap<>();
+    }
+
+    public Graph(List<Node> nodes, List<Edge> edges, Map<String, Color> colors) {
+        if (nodes == null) {
+            this.nodes = new ArrayList<>();
+        } else {
+            this.nodes = nodes;
+        }
+
+        if (edges == null) {
+            this.edges = new ArrayList<>();
+        } else {
+            this.edges = edges;
+        }
+
+        this.colors = colors;
+
+    }
+
+    public Map<String, Color> getColors() {
+        return colors;
+    }
+
+    public List<Node> getNodes() {
+        return nodes;
+    }
+
+    public Node getNode(String id) {
+        for (Node n : nodes) {
+            if (n.getId().contains(id)) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    public boolean contains(Node node) {
+        for (Node n : nodes) {
+            if (n.getId().equals(node.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<Edge> getEdges() {
+        return edges;
+    }
+
+    public void addNode2(Node node) {
+        if (!IsInNodes(node)) {
+            this.nodes.add(node);
+        }
+    }
+
+    public void addNode(Node node) {
+        this.nodes.add(node);
+    }
+
+    public void addEdge2(Edge edge) {
+        if (!isInEdges(edge)) {
+            this.edges.add(edge);
+        }
+    }
+
+    public void addEdge(Edge edge) {
+        this.edges.add(edge);
+    }
+
+    public int getNumberOfNodes() {
+        return this.nodes.size();
+    }
+
+    public int getNumberOfEdges() {
+        return this.edges.size();
+    }
+
+    public boolean isEmpty() {
+        return this.nodes.isEmpty();
+    }
+
+    public Node getLastNode() {
+        return this.nodes.get(this.nodes.size() - 1);
+    }
+
+    @Override
+    public String toString() {
+        String str = "";
+        for (Node n : this.nodes) {
+            str = str + n.getId().split(" - ")[0] + " - ";
+        }
+        return str;
+    }
+
+    public void addGraph(Graph g) {
+        for (Node n : g.getNodes()) {
+            if (n.getId() != null) {
+                if (!this.IsInNodes(n)) {
+                    this.nodes.add(n);
                 }
-
-                if (edges == null) {
-                        this.edges = new ArrayList<>();
-                } else {
-                        this.edges = edges;
+            }
+        }
+        for (Edge e : g.getEdges()) {
+            Node source = e.getSource();
+            if (source.getId() != null) {
+                // System.out.println("source : "+ source.getId());
+                Node newSource = this.getNode(source.getId().split(" - ")[0]);
+                if (newSource != null) {
+                    e.setSource(newSource);
                 }
-
-                this.colors = new HashMap<>();
-        }
-
-        public Graph(List<Node> nodes, List<Edge> edges, Map<String,Color> colors) {
-                if (nodes == null) {
-                        this.nodes = new ArrayList<>();
-                } else {
-                        this.nodes = nodes;
-                }
-
-                if (edges == null) {
-                        this.edges = new ArrayList<>();
-                } else {
-                        this.edges = edges;
-                }
-
-                this.colors = colors;
-
-        }
-        
-        public Map<String,Color> getColors(){
-                return colors;
-        }
-
-        public List<Node> getNodes() {
-                return nodes;
-        }
-
-        public Node getNode(String id) {
-                for (Node n : nodes) {
-                        if (n.getId().contains(id)) {
-                                return n;
-                        }
-                }
-                return null;
-        }
-
-        public boolean contains(Node node) {
-                for (Node n : nodes) {
-                        if (n.getId().equals(node.getId())) {
-                                return true;
-                        }
-                }
-                return false;
-        }
-
-        public List<Edge> getEdges() {
-                return edges;
-        }
-
-        public void addNode2(Node node) {
-                if (!IsInNodes(node)) {
-                        this.nodes.add(node);
-                }
-        }
-
-        public void addNode(Node node) {
-                this.nodes.add(node);
-        }
-
-        public void addEdge2(Edge edge) {
-                if (!isInEdges(edge)) {
-                        this.edges.add(edge);
-                }
-        }
-
-        public void addEdge(Edge edge) {
-                this.edges.add(edge);
-        }
-
-        public int getNumberOfNodes() {
-                return this.nodes.size();
-        }
-
-        public int getNumberOfEdges() {
-                return this.edges.size();
-        }
-
-        public boolean isEmpty() {
-                return this.nodes.isEmpty();
-        }
-
-        public Node getLastNode() {
-                return this.nodes.get(this.nodes.size() - 1);
-        }
-
-        @Override
-        public String toString() {
-                String str = "";
-                for (Node n : this.nodes) {
-                        str = str + n.getId().split(" - ")[0] + " - ";
-                }
-                return str;
-        }
-
-        public void addGraph(Graph g) {
-                for (Node n : g.getNodes()) {
-                        this.nodes.add(n);
-                }
-                for (Edge e : g.getEdges()) {
+                Node destination = e.getDestination();
+                // System.out.println("destination : "+ destination.getId());
+                if (destination.getId() != null) {
+                    Node newDestination = this.getNode(destination.getId().split(" - ")[0]);
+                    if (newDestination != null) {
+                        e.setDestination(newDestination);
+                    }
+                   // if (!this.isInEdges(e)) {
                         this.edges.add(e);
+                   // }
                 }
+            }
+        }
+    }
+
+    @Override
+    public Graph clone() {
+        Graph g = new Graph(null, null);
+        for (Node n : this.nodes) {
+            g.addNode(n.clone());
+        }
+        for (Edge e : this.edges) {
+            Edge edge = e.clone();
+            Node source = g.getNode(edge.getSource().getId());
+            Node destination = g.getNode(edge.getDestination().getId());
+            edge.setSource(source);
+            edge.setDestination(destination);
+            g.addEdge(edge);
         }
 
-        @Override
-        public Graph clone() {
-                Graph g = new Graph(null, null);
-                for (Node n : this.nodes) {
-                        g.addNode(n.clone());
-                }
-                for (Edge e : this.edges) {
-                        Edge edge = e.clone();
-                        Node source = g.getNode(edge.getSource().getId());
-                        Node destination = g.getNode(edge.getDestination().getId());
-                        edge.setSource(source);
-                        edge.setDestination(destination);
-                        g.addEdge(edge);
-                }
+        return g;
+    }
 
-                return g;
+    private boolean IsInNodes(Node node) {
+        for (Node n : this.nodes) {
+            if (n.getId().split(" - ")[0].split(" : ")[0].equals(node.getId().split(" - ")[0].split(" : ")[0])) {
+                return true;
+            }
         }
+        return false;
+    }
 
-        private boolean IsInNodes(Node node) {
-                for (Node n : this.nodes) {
-                        if (n.getId().split(" - ")[0].equals(node.getId().split(" - ")[0])) {
-                                return true;
-                        }
-                }
-                return false;
+    private boolean isInEdges(Edge edge) {
+        for (Edge thisEdge : this.edges) {
+            String source = edge.getSource().getId().split(" - ")[0];
+            String destination = edge.getDestination().getId().split(" - ")[0];
+            String thisSource = thisEdge.getSource().getId().split(" - ")[0];
+            String thisDestination = thisEdge.getDestination().getId().split(" - ")[0];
+            if (source.equals(thisSource) && destination.equals(thisDestination)) {
+                return true;
+            }
         }
+        return false;
+    }
 
-        private boolean isInEdges(Edge edge) {
-                for (Edge thisEdge : this.edges) {
-                        String source = edge.getSource().getId().split(" - ")[0];
-                        String destination = edge.getDestination().getId().split(" - ")[0];
-                        String thisSource = thisEdge.getSource().getId().split(" - ")[0];
-                        String thisDestination = thisEdge.getDestination().getId().split(" - ")[0];
-                        if (source.equals(thisSource) && destination.equals(thisDestination)) {
-                                return true;
-                        }
+    public List<Edge> getEdges(String n, boolean source) {
+        List<Edge> edgesN = new ArrayList<>();
+        for (Edge e : this.edges) {
+            if (source) {
+                if (e.getSource().getId().contains(n)) {
+                    edgesN.add(e);
                 }
-                return false;
-        }
-
-        public List<Edge> getEdges(String n, boolean source) {
-                List<Edge> edgesN = new ArrayList<>();
-                for (Edge e : this.edges) {
-                        if (source) {
-                                if (e.getSource().getId().contains(n)) {
-                                        edgesN.add(e);
-                                }
-                        } else {
-                                if (e.getDestination().getId().contains(n)) {
-                                        edgesN.add(e);
-                                }
-                        }
+            } else {
+                if (e.getDestination().getId().contains(n)) {
+                    edgesN.add(e);
                 }
-                return edgesN;
+            }
         }
+        return edgesN;
+    }
+    
+    public List<Node> getConnectedAsSource(Node n){
+        List<Node> connectedNodes = new ArrayList<>();
+        for(Edge e: edges){
+            if(e.getSource() == n){
+                connectedNodes.add(n);
+            }
+        }
+        return connectedNodes;
+    }
+    
+        
+    public List<Node> getConnectedAsDestination(Node n){
+        List<Node> connectedNodes = new ArrayList<>();
+        for(Edge e: edges){
+            if(e.getDestination() == n){
+                connectedNodes.add(n);
+            }
+        }
+        return connectedNodes;
+    }
 }

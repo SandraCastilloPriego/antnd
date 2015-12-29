@@ -15,33 +15,21 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.data.network;
+package ND.modules.simulation.FBA;
 
+import ND.parameters.Parameter;
+import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.StringParameter;
 
-/**
- *
- * @author scsandra
- */
-public class Node {
-        
-        private String id;
-               
-        public Node(String id) {
-                this.id = id;
-        } 
-        
-        public String getId() {
-                return id;
-        }
-        
-        public void setId(String newID){
-                this.id = newID;
-        }
-        
-        @Override
-        public Node clone(){
-                Node n = new Node(this.id);
-                return n;
-        }
+public class AntFBAParameters extends SimpleParameterSet {
+
+        public static final StringParameter objectiveReaction = new StringParameter(
+                "Compound ID", "ID of the compound you want to maximize"); 
+        public static final StringParameter biomassReaction = new StringParameter(
+                "Biomass reaction ID", "ID of the biomas pseudoreaction"); 
        
+
+        public AntFBAParameters() {
+                super(new Parameter[]{objectiveReaction, biomassReaction});
+        }
 }

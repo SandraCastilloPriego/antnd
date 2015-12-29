@@ -33,6 +33,7 @@ public class ReactionFA {
         private double ub = 1000;
         private double lb = -1000;
         private int pheromones = 0;
+    //    private double flux;
 
         public ReactionFA(String id) {
                 this.id = id;
@@ -56,6 +57,14 @@ public class ReactionFA {
                 }
                 this.stoichiometry.put(p, sto);
         }
+        
+//        public double getFlux(){
+//            return flux;
+//        }
+//        
+//       public void setFlux(double flux){
+//           this.flux = flux;
+//       }
 
         public Double getStoichiometry(String specie) {
                 if (this.stoichiometry.containsKey(specie)) {

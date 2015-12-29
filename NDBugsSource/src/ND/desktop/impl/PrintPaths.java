@@ -97,14 +97,15 @@ public class PrintPaths implements KeyListener {
 
         for (Node node : nodes) {
             if (node != null) {
-
                 g.addVertex(node.getId());
             }
         }
 
         for (Edge edge : edges) {
             if (edge != null) {
-                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                try{
+                    g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                }catch(Exception e){}
             }
         }
 
@@ -217,7 +218,8 @@ public class PrintPaths implements KeyListener {
             new Transformer<String, String>() {
                 @Override
                 public String transform(String input) {
-                    return "<html><b><font color=\"red\">" + input;
+                    String input2 = input.split(" - ")[0];
+                    return "<html><b><font color=\"red\">" + input2;
                 }
             }});
         Transformer labelTransformer2 = new ChainedTransformer<>(new Transformer[]{
@@ -225,7 +227,8 @@ public class PrintPaths implements KeyListener {
             new Transformer<String, String>() {
                 @Override
                 public String transform(String input) {
-                    return "<html><b><font color=\"black\">" + input;
+                    String input2 = input.split(" - ")[0];
+                    return "<html><b><font color=\"black\">" + input2;
                 }
             }});
 
@@ -479,8 +482,8 @@ public class PrintPaths implements KeyListener {
         Model mInit = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
 
         String spID = initialStringNode;
-        if (initialStringNode.contains(" - ")) {
-            spID = initialStringNode.split(" - ")[0];
+        if (initialStringNode.contains(" : ")) {
+            spID = initialStringNode.split(" : ")[0];
         }
         Node initNode = graph.getNode(spID);
 
@@ -488,9 +491,9 @@ public class PrintPaths implements KeyListener {
         if (sp == null) {
             return;
         }
-        
+
         for (Reaction r : mInit.getListOfReactions()) {
-           if (r.hasReactant(sp) || r.hasProduct(sp)) {
+            if (r.hasReactant(sp) || r.hasProduct(sp)) {
                 double lb = Double.NEGATIVE_INFINITY;
                 // read bounds to know the direction of the edges
                 if (r.getKineticLaw() != null) {
@@ -501,14 +504,14 @@ public class PrintPaths implements KeyListener {
 
                 // adds the new reaction node with and edge from the extended node
                 String reactionName = r.getId() + " - " + uniqueId.nextId();
-                String initSPName = sp.getId() + " - " + uniqueId.nextId();
+                String initSPName = sp.getId() + " : " + sp.getName() + " - " + uniqueId.nextId();
                 String isThere = this.isThere(V, r.getId());
 
                 // adds the rest of the compounds in the reaction, the direction of the edges 
                 // should depend on the boundaries of the reaction
                 if (isThere == null) {
-                    this.m.addReaction(r);         
-                
+                    this.m.addReaction(r);
+
                     g.addVertex(reactionName);
 
                     // Creates the node for the grap
@@ -518,7 +521,7 @@ public class PrintPaths implements KeyListener {
                     EdgeType eType = EdgeType.UNDIRECTED;
                     for (SpeciesReference sr : r.getListOfReactants()) {
                         Species sps = sr.getSpeciesInstance();
-                        if(!this.m.containsSpecies(sp.getId())){
+                        if (!this.m.containsSpecies(sp.getId())) {
                             this.m.addSpecies(sps);
                         }
                         String spName = sps.getId();
@@ -529,10 +532,10 @@ public class PrintPaths implements KeyListener {
                         if (nodeReactant == null) {
                             if (!spName.equals(spID)) {
                                 String eName = spName + " - " + uniqueId.nextId();
-                                String vName = eName + " - " + sps.getName();
+                                String vName = spName + " : " + sps.getName() + " - " + uniqueId.nextId();
                                 g.addVertex(vName);
                                 //adds the node to the graph
-                                Node n = new Node(spName + " - " + sps.getName());
+                                Node n = new Node(vName);
                                 graph.addNode(n);
                                 if (lb == 0) {
                                     g.addEdge(eName, vName, reactionName, eType);
@@ -567,7 +570,7 @@ public class PrintPaths implements KeyListener {
 
                     for (SpeciesReference sr : r.getListOfProducts()) {
                         Species sps = sr.getSpeciesInstance();
-                        if(!this.m.containsSpecies(sp.getId())){
+                        if (!this.m.containsSpecies(sp.getId())) {
                             this.m.addSpecies(sps);
                         }
                         String spName = sps.getId();
@@ -576,10 +579,10 @@ public class PrintPaths implements KeyListener {
 
                             if (!spName.equals(spID)) {
                                 String eName = spName + " - " + uniqueId.nextId();
-                                String vName = eName + " - " + sps.getName();
+                                String vName = spName + " : " + sps.getName() + " - " + uniqueId.nextId();                                
                                 g.addVertex(vName);
                                 //adds the node to the graph
-                                Node n = new Node(spName + " - " + sps.getName());
+                                Node n = new Node(vName);
                                 graph.addNode(n);
                                 if (lb == 0) {
                                     g.addEdge(eName, reactionName, vName, EdgeType.DIRECTED);
@@ -629,8 +632,8 @@ public class PrintPaths implements KeyListener {
 
         Collection<String> Vertices = g.getVertices();
         for (String node : Vertices) {
-            if (node.contains("H+") || node.contains("H2O") || node.contains(" - phosphate ") || node.contains(" - ADP")
-                    || node.contains(" - ATP") || node.contains(" - NAD") || node.contains(" - CO2") || node.contains("- oxygen")) {
+            if (node.contains("H+") || node.contains("H2O") || node.contains(" : phosphate ") || node.contains(" : ADP")
+                    || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(": oxygen")) {
                 g.removeVertex(node);
                 this.removeCofactors();
                 break;
