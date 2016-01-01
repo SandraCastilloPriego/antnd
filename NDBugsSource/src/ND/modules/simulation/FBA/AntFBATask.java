@@ -56,35 +56,40 @@ public class AntFBATask extends AbstractTask {
     private double finishedPercentage = 0.0f;
 
     private String objectiveID;
-    private final String biomassReactionID;
+    private final int iterations;
     private final Random rand;
     private final HashMap<String, ReactionFA> reactions;
     private final HashMap<String, SpeciesFA> compounds;
     private HashMap<String, String[]> bounds;
     private Map<String, Double[]> sources;
-    private List<String> objectives;
+    private final List<String> objectives;
     private final List<String> sourcesList;
     private final JInternalFrame frame;
     private final JScrollPane panel;
     private final JPanel pn;
-    private double shortestPath = 0;
+    private double shortestPath = Integer.MAX_VALUE;
     private Graph graph;
     private final GetInfoAndTools tools;
-    private Reaction biomassReaction;
+    private final List<String> doneObjectives;
+    private final Map<String, Ant> results;
 
     public AntFBATask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
         this.objectiveID = parameters.getParameter(AntFBAParameters.objectiveReaction).getValue();
-        this.biomassReactionID = parameters.getParameter(AntFBAParameters.biomassReaction).getValue();
+        this.iterations = parameters.getParameter(AntFBAParameters.iterations).getValue();
         this.rand = new Random();
         Date date = new Date();
         long time = date.getTime();
-        this.objectives = new ArrayList<>();
-        this.objectives.add(objectiveID);
+        this.objectives = new ArrayList<>();            
+        this.objectives.add(objectiveID);        
+        this.objectives.add("s_0434");
+        this.objectives.add("s_1198");
         this.reactions = new HashMap<>();
         this.compounds = new HashMap<>();
         this.bounds = new HashMap<>();
         this.sourcesList = new ArrayList<>();
+        this.doneObjectives = new ArrayList<>();
+        this.results = new HashMap<>();
 
         this.frame = new JInternalFrame("Result", true, true, true, true);
         this.pn = new JPanel();
@@ -132,18 +137,27 @@ public class AntFBATask extends AbstractTask {
         frame.setSize(new Dimension(700, 500));
         frame.add(this.panel);
         NDCore.getDesktop().addInternalFrame(frame);
-        for (int i = 0; i < 10; i++) {
+        this.doneObjectives.add(this.objectiveID);       
+        for (int i = 0; i < this.iterations; i++) {
             this.cicle(i);
-            finishedPercentage = (double) i / 10;
+            finishedPercentage = (double) i / this.iterations;
             if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
                 break;
             }
         }
-        for (String objective : this.objectives) {
-            System.out.println(objective);
-        }
+        
         if (getStatus() == TaskStatus.PROCESSING) {
+            this.objectiveID = this.objectives.get(0);
+            for(String obj : this.results.keySet()){
+                if(this.graph == null){
+                    this.graph = this.results.get(obj).getGraph();
+                }else{
+                    this.graph.addGraph(this.results.get(obj).getGraph());
+                }
+            }
             this.tools.createDataFile(graph, networkDS, objectiveID, sourcesList, false);
+           LinearProgramming lp = new LinearProgramming(graph, objectiveID, sources, reactions);
+           System.out.println("Solution: " + lp.getObjectiveValue());
             PrintPaths print = new PrintPaths(this.sourcesList, this.objectives.get(0), this.tools.getModel());
             try {
                 System.out.println("Final graph: " + this.graph.toString());
@@ -182,10 +196,7 @@ public class AntFBATask extends AbstractTask {
 
         for (Reaction r : m.getListOfReactions()) {
             boolean biomass = false;
-            if (r.getId().equals(this.biomassReactionID)) {
-                biomass = true;
-                this.biomassReaction = r;
-            }
+            
             ReactionFA reaction = new ReactionFA(r.getId());
             String[] b = this.bounds.get(r.getId());
             if (b != null) {
@@ -230,7 +241,6 @@ public class AntFBATask extends AbstractTask {
     }
 
     public Ant cicle(int iteration) {
-
         for (String compound : compounds.keySet()) {
 
             List<String> possibleReactions = getPossibleReactions(compound);
@@ -310,38 +320,34 @@ public class AntFBATask extends AbstractTask {
                     Ant a = spFA.getAnt();
                     if (a != null) {
                         // saving the shortest path
-                        if (a.getPathSize() > shortestPath) {
-                            System.out.println(a.flux);
-                            this.shortestPath = a.getFlux();
-                            Graph antGraph = a.getGraph();
-                            if (this.graph == null) {
-                                this.graph = antGraph;
-                            } else {
-                                this.graph.addGraph(antGraph);
-                            }
-                            Node objectiveNode = this.graph.getNode(spFA.getId());
+                        if (a.getPathSize() < shortestPath) {
+                            System.out.println(a.getPathSize());
+                            this.shortestPath = a.getPathSize();
+                            Graph antGraph = a.getGraph();                             
+                            Node objectiveNode = antGraph.getNode(spFA.getId());
                             if(objectiveNode == null)
                                 objectiveNode = new Node(spFA.getId() + " : " + spFA.getName());
-                            this.graph.addNode2(objectiveNode);
-                            Node lastNode = this.graph.getNode(reactionChoosen);
+                            antGraph.addNode2(objectiveNode);
+                            Node lastNode = antGraph.getNode(reactionChoosen);
                             Edge edge = new Edge(this.objectiveID + " : " + a.getFlux(), lastNode, objectiveNode);
-                            this.graph.addEdge(edge);
+                            antGraph.addEdge(edge);
+                            a.setGraph(antGraph);
                             a.print();
+                            this.results.put(this.objectiveID, a);                            
                         }
+                        
                     }
 
-                    if (iteration == 9) {
-                        List<String> newObjectives = getObjective(a);
-                        for (String newObjective : newObjectives) {
-                            if (!this.objectives.contains(newObjective)) {
-                                this.objectives.add(newObjective);
+                    if (iteration == this.iterations-1) {                        
+                        for (String newObjective : this.objectives) {
+                            if (!this.doneObjectives.contains(newObjective)) {
                                 this.objectiveID = newObjective;
-                                this.shortestPath = 0;
-                                for (int i = 0; i < 10; i++) {
+                                this.shortestPath = Integer.MAX_VALUE;
+                                this.doneObjectives.add(this.objectiveID);       
+                                for (int i = 0; i < this.iterations; i++) {
                                     Ant b = this.cicle(i);
                                     if (b != null && a != null) {
                                         a.joinObjectiveGraphs(b, sourcesList);
-                                        this.shortestPath = a.getFlux();
                                     }
                                 }
 
@@ -365,10 +371,7 @@ public class AntFBATask extends AbstractTask {
         }
 
         List<String> connectedReactions = sp.getReactions();
-        for (String reaction : connectedReactions) {
-            if (reaction.contains(this.biomassReactionID)) {
-                continue;
-            }
+        for (String reaction : connectedReactions) {           
             ReactionFA r = this.reactions.get(reaction);
 
             boolean isPossible = true;
@@ -422,16 +425,6 @@ public class AntFBATask extends AbstractTask {
             return true;
         }
         return false;
-    }
-
-    private List<String> getObjective(Ant a) {
-        List<String> newObjectives = new ArrayList<>();
-        for (SpeciesReference sp : this.biomassReaction.getListOfReactants()) {
-            if (a.contains(sp.getSpecies())) {
-                newObjectives.add(sp.getSpecies());
-            }
-        }
-        return newObjectives;
     }
 
 }

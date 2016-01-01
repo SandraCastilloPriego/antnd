@@ -19,17 +19,18 @@ package ND.modules.simulation.FBA;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.IntegerParameter;
 import ND.parameters.parametersType.StringParameter;
 
 public class AntFBAParameters extends SimpleParameterSet {
 
         public static final StringParameter objectiveReaction = new StringParameter(
                 "Compound ID", "ID of the compound you want to maximize"); 
-        public static final StringParameter biomassReaction = new StringParameter(
-                "Biomass reaction ID", "ID of the biomas pseudoreaction"); 
+        public static final IntegerParameter iterations = new IntegerParameter(
+                "Iterations", "Number of iterations", 20); 
        
 
         public AntFBAParameters() {
-                super(new Parameter[]{objectiveReaction, biomassReaction});
+                super(new Parameter[]{objectiveReaction, iterations});
         }
 }
