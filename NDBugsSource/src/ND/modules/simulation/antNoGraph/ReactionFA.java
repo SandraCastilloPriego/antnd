@@ -20,6 +20,7 @@ package ND.modules.simulation.antNoGraph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -27,37 +28,57 @@ import java.util.List;
  */
 public class ReactionFA {
 
-        private final String id;
-        private final List<String> reactants, products;
-        private final HashMap<String, Double> stoichiometry;
-        private double ub = 1000;
-        private double lb = -1000;
-        private int pheromones = 0;
+    private final String id;
+    private final List<String> reactants, products;
+    private final Map<String, String> names;
+    private final HashMap<String, Double> stoichiometry;
+    private double ub = 1000;
+    private double lb = -1000;
+    private int pheromones = 0;
     //    private double flux;
 
-        public ReactionFA(String id) {
-                this.id = id;
-                this.reactants = new ArrayList<>();
-                this.products = new ArrayList<>();
-                this.stoichiometry = new HashMap<>();
-        }
+    public ReactionFA(String id) {
+        this.id = id;
+        this.reactants = new ArrayList<>();
+        this.products = new ArrayList<>();
+        this.stoichiometry = new HashMap<>();
+        this.names = new HashMap<>();
+    }
 
-        public void addReactant(String r, Double sto) {
-                this.reactants.add(r);
-                if (sto < 1.0) {
-                        sto = 1.0;
-                }
-                this.stoichiometry.put(r, sto);
+    public void addReactant(String r, Double sto) {
+        this.reactants.add(r);
+        if (sto < 1.0) {
+            sto = 1.0;
         }
+        this.stoichiometry.put(r, sto);
+    }
 
-        public void addProduct(String p, Double sto) {
-                this.products.add(p);
-                if (sto < 1.0) {
-                        sto = 1.0;
-                }
-                this.stoichiometry.put(p, sto);
+    public void addReactant(String r, String name, Double sto) {
+        this.reactants.add(r);
+        if (sto < 1.0) {
+            sto = 1.0;
         }
-        
+        this.stoichiometry.put(r, sto);
+        this.names.put(r, name);
+    }
+
+    public void addProduct(String p, Double sto) {
+        this.products.add(p);
+        if (sto < 1.0) {
+            sto = 1.0;
+        }
+        this.stoichiometry.put(p, sto);
+    }
+
+    public void addProduct(String p, String name, Double sto) {
+        this.products.add(p);
+        if (sto < 1.0) {
+            sto = 1.0;
+        }
+        this.stoichiometry.put(p, sto);
+        this.names.put(p, name);
+    }
+
 //        public double getFlux(){
 //            return flux;
 //        }
@@ -65,106 +86,120 @@ public class ReactionFA {
 //       public void setFlux(double flux){
 //           this.flux = flux;
 //       }
-
-        public Double getStoichiometry(String specie) {
-                if (this.stoichiometry.containsKey(specie)) {
-                        return this.stoichiometry.get(specie);
-                }
-                return Double.MAX_VALUE;
+    public Double getStoichiometry(String specie) {
+        if (this.stoichiometry.containsKey(specie)) {
+            return this.stoichiometry.get(specie);
         }
+        return Double.MAX_VALUE;
+    }
 
-        public List<String> getReactants() {
-                return this.reactants;
-        }
+    public void setName(String specie, String name) {
+        this.names.put(specie, name);
+    }
 
-        public List<String> getProducts() {
-                return this.products;
-        }
+    public String getName(String specie) {
+        return this.names.get(specie);
+    }
 
-        public void addPheromones(int number) {
-                this.pheromones = this.pheromones + number;
-        }
+    public List<String> getReactants() {
+        return this.reactants;
+    }
 
-        public void removePheromones(int number) {
-                this.pheromones = this.pheromones - number;
-                if (pheromones < 0) {
-                        this.pheromones = 0;
-                }
-        }
+    public List<String> getProducts() {
+        return this.products;
+    }
 
-        public int getPheromones() {
-                return this.pheromones;
-        }
+    public void addPheromones(int number) {
+        this.pheromones = this.pheromones + number;
+    }
 
-        public void setBounds(double lb, double ub) {
-                this.lb = lb;
-                this.ub = ub;
+    public void removePheromones(int number) {
+        this.pheromones = this.pheromones - number;
+        if (pheromones < 0) {
+            this.pheromones = 0;
         }
+    }
 
-        public String getId() {
-                return this.id;
-        }
+    public int getPheromones() {
+        return this.pheromones;
+    }
 
-        public boolean hasReactant(String node) {
-                if (this.reactants.contains(node)) {
-                        return true;
-                }
-                return false;
-        }
+    public void setBounds(double lb, double ub) {
+        this.lb = lb;
+        this.ub = ub;
+    }
 
-        public boolean hasReactant(List<String> nodes) {
-                for (String node : nodes) {
-                        if (this.reactants.contains(node)) {
-                                return true;
-                        }
-                }
-                return false;
-        }
+    public String getId() {
+        return this.id;
+    }
 
-        public double getub() {
-                return this.ub;
+    public boolean hasReactant(String node) {
+        if (this.reactants.contains(node)) {
+            return true;
         }
+        return false;
+    }
 
-        public double getlb() {
-                return this.lb;
+    public boolean hasProduct(String node) {
+        if (this.products.contains(node)) {
+            return true;
         }
+        return false;
+    }
 
-        List<String> getSources(List<String> nodes) {
-                List<String> sources = new ArrayList<>();
-                for (String node : nodes) {
-                        if (this.reactants.contains(node) || this.products.contains(node)) {
-                                sources.add(node);
-                        }
-                }
-                return sources;
+    public boolean hasReactant(List<String> nodes) {
+        for (String node : nodes) {
+            if (this.reactants.contains(node)) {
+                return true;
+            }
         }
+        return false;
+    }
 
-        boolean hasSourcesInProducts(List<String> nodes) {
-                for (String node : nodes) {
-                        if (this.products.contains(node)) {
-                                return true;
-                        }
-                }
-                return false;
-        }
+    public double getub() {
+        return this.ub;
+    }
 
-        boolean hasSourcesInReactants(List<String> nodes) {
-                for (String node : nodes) {
-                        if (this.reactants.contains(node)) {
-                                return true;
-                        }
-                }
-                return false;
-        }
+    public double getlb() {
+        return this.lb;
+    }
 
-        boolean hasSpecies(String edge) {
-                if (this.reactants.contains(edge) || this.products.contains(edge)) {
-                        return true;
-                }
-                return false;
+    List<String> getSources(List<String> nodes) {
+        List<String> sources = new ArrayList<>();
+        for (String node : nodes) {
+            if (this.reactants.contains(node) || this.products.contains(node)) {
+                sources.add(node);
+            }
         }
+        return sources;
+    }
 
-        public void resetPheromones() {
-                this.pheromones = 0;
+    boolean hasSourcesInProducts(List<String> nodes) {
+        for (String node : nodes) {
+            if (this.products.contains(node)) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    boolean hasSourcesInReactants(List<String> nodes) {
+        for (String node : nodes) {
+            if (this.reactants.contains(node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    boolean hasSpecies(String edge) {
+        if (this.reactants.contains(edge) || this.products.contains(edge)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void resetPheromones() {
+        this.pheromones = 0;
+    }
 }

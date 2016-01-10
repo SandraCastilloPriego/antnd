@@ -15,24 +15,25 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.FBA;
+package ND.modules.reactionOP.changebounds;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
-import ND.parameters.parametersType.IntegerParameter;
+import ND.parameters.parametersType.DoubleParameter;
 import ND.parameters.parametersType.StringParameter;
 
-public class AntFBAParameters extends SimpleParameterSet {
+public class ChangeBoundsParameters extends SimpleParameterSet {     
+   
 
-        public static final StringParameter objectiveReaction = new StringParameter(
-                "Compound ID", "ID of the compound you want to maximize"); 
-        public static final IntegerParameter iterations = new IntegerParameter(
-                "Iterations", "Number of iterations", 20); 
-        public static final StringParameter cofactors = new StringParameter(
-                "Cofactors", "ID of the model cofactors separated by comma."); 
+        public static final StringParameter reactionName = new StringParameter(
+                "Reaction name", "Name of the reaction that will be removed", "");
+        public static final DoubleParameter lb = new DoubleParameter(
+                "Lower bound", "Lower Bound", 0.0);
+        public static final DoubleParameter ub = new DoubleParameter(
+                "Upper bound", "Upper Bound", 1000.0);
        
 
-        public AntFBAParameters() {
-                super(new Parameter[]{objectiveReaction, cofactors, iterations});
+        public ChangeBoundsParameters() {
+                super(new Parameter[]{reactionName,lb,ub});
         }
 }

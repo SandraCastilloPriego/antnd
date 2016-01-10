@@ -450,6 +450,8 @@ public class PrintPaths implements KeyListener {
             if (this.selectedNode != null) {
                 for (String v : this.selectedNode) {
                     g.removeVertex(v);
+                    this.m.removeReaction(v.split(" - ")[0]);
+                    this.graph.removeNode(v.split(" - ")[0]);
                 }
             }
         }

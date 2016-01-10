@@ -53,7 +53,7 @@ public class LinearProgramming {
     double objectiveValue;
 
     public LinearProgramming(Graph g, String objective, Map<String, Double[]> sources, HashMap<String, ReactionFA> reactions) {
-        List<String> variables = getVariables(reactions, g, sources);
+ //       List<String> variables = getVariables(reactions, g, sources);
 //        double[] fluxes = new double[variables.size()];
 //        for (int i = 0; i < fluxes.length; i++) {
 //            fluxes[i] = 1;
@@ -123,255 +123,255 @@ public class LinearProgramming {
 //        }
     }
 
-    private Result optimize(double[][] A, double[] b, double[] objective, double[] lb, double[] ub) {
-        net.sf.javailp.SolverFactory factory = new SolverFactoryGLPK();
-        //factory.setParameter(Solver.VERBOSE, 0);
-        factory.setParameter(Solver.TIMEOUT, 100);
-        Problem problem = new Problem();
-        List<String> variables = new ArrayList<>();
-        //Objective Function
-        Linear linear = new Linear();
-        for (int i = 0; i < objective.length; i++) {
-            String var = this.reactions.get(i);
-            //System.out.println(var + " - " + objective[i]);
-            variables.add(var);
-            linear.add(objective[i], var);
-        }
-        // if (maximize) {
-        problem.setObjective(linear);
-        /* } else {
-         problem.setObjective(linear;
-         }*/
-        // Inequalities
-        for (int i = 0; i < b.length; i++) {
-            linear = new Linear();
-            for (int e = 0; e < A.length; e++) {
-                linear.add(A[e][i], variables.get(e));
-            }
-            problem.add(new Constraint(this.species.get(i), linear, Operator.EQ, b[i]));
-        }
-        for (int i = 0; i < variables.size(); i++) {
-            problem.setVarLowerBound(variables.get(i), lb[i]);
-            problem.setVarUpperBound(variables.get(i), ub[i]);
-            //  System.out.println(variables.get(i) + " - " + lb[i] + " - " + ub[i]);
-        }
-        for (String var : variables) {
-            problem.setVarType(var, VarType.REAL);
-        }
-        Solver solver = factory.get(); // you should use this solver only once for one problem
-        Result result = solver.solve(problem);
-
-        //System.out.println(result.toString());
-        return result;
-    }
-
-    private double[][] createMatrix(HashMap<String, ReactionFA> reactions, List<String> variables) {
-        List<String> species = new ArrayList<>();
-        int numReactions=0;
-        for (String r : variables) {
-            if (reactions.containsKey(r)) {
-                numReactions++;
-                ReactionFA reaction = reactions.get(r);
-                for (String reactant : reaction.getReactants()) {
-                    if (!species.contains(reactant)) {
-                        species.add(reactant);
-                    }
-                }
-                for (String product : reaction.getProducts()) {
-                    if (!species.contains(product)) {
-                        species.add(product);
-                    }
-                }
-            }else{
-                species.add(r);
-            }
-        }
-
-      
-        /* for (Species s : m.getListOfSpecies()) {
-         this.species.add(s.getId() + "out");
-         }*/
-        /*int countex = 0;
-         for (String ex : exchange.keySet()) {
-         if (species.contains(ex)) {
-         countex++;
-         }
-         }*/
-        double[][] A = new double[numReactions + species.size()][species.size() /**
-                 * 2
-                 */
-                ];
-
-        /*if (!this.species.contains(this.NAD)) {
-         this.species.add(this.NAD);
-         }
-                
-         if (!this.species.contains(this.NADP)) {
-         this.species.add(this.NADP);
-         }
-                
-         if (!this.species.contains(this.ADP)) {
-         this.species.add(this.ADP);
-         }*/
-        int count = 0;
-        for (String r : variables) {
-            if(reactions.containsKey(r)){
-                ReactionFA reaction = reactions.get(r);
-            for (String reactant : reaction.getReactants()) {
-                int index = species.indexOf(reactant);
-                A[count][index] = -reaction.getStoichiometry(reactant);
-            }
-            for (String product : reaction.getProducts()) {
-                int index = species.indexOf(product);
-                A[count][index] = reaction.getStoichiometry(product);
-            }
-            count++;
-            }
-        }
-        //add exchange reactions
-        for (String ex : exchange.keySet()) {
-            if (species.contains(ex)) {
-                reactions.add(ex);
-                int index = species.indexOf(ex);
-                A[count++][index] = -1;
-            }
-        }
-
-        // System.out.println(m.getNumSpecies() + " - " + count);
-        for (Species sp : m.getListOfSpecies()) {
-            if (!exchange.containsKey(sp.getId()) /*&& !sp.getId().contains("Growth")*/) {
-                reactions.add(sp.getId());
-                int index = species.indexOf(sp.getId());
-                A[count++][index] = -1;
-            }
-        }
-                // System.out.println(m.getNumSpecies() + " - " + count);
-
-        /*for (int i = 0; i < A.length; i++) {
-         for (int e = 0; e < A[0].length; e++) {
-         System.out.print(A[i][e] + " ");
-         }
-         System.out.print("\n");
-         }
-         for (String sp : this.species) {
-         System.out.println(sp);
-         }*/
-        return A;
-    }
-
-    private double[] createB() {
-        //for each reaction 0 is added except for the exchange reactions
-        double[] b = new double[this.species.size()];
-        for (String r : species) {
-            int index = species.indexOf(r);
-            if (exchange.containsKey(r)) {
-                b[index] = 0;
-            } else {
-                b[index] = 0;
-            }
-        }
-        return b;
-    }
-
-    private double[] createObjective() {
-        double[] objective = new double[this.reactions.size()];
-        for (int index = 0; index < reactions.size(); index++) {
-            String r = reactions.get(index);
-            if (r.contains(this.objectiveReaction)) {
-                if (maximize) {
-                    objective[index] = -1;
-                } else {
-                    objective[index] = 1;
-                }
-            } else {
-                objective[index] = 0;
-            }
-            // System.out.println(objective[index]);
-        }
-        return objective;
-    }
-
-    private double[] createLB(HashMap<String, String[]> bounds) {
-        double[] lb = new double[this.reactions.size()];
-        Model m = this.networkDS.getDocument().getModel();
-        for (int index = 0; index < reactions.size(); index++) {
-            String r = reactions.get(index);
-            // System.out.println(r);
-            if (exchange.containsKey(r)) {
-                lb[index] = -exchange.get(r);
-            } else {
-                String[] b = bounds.get(r);
-                if (b == null) {
-                    Reaction reaction = m.getReaction(r);
-                    if (reaction != null) {
-                        KineticLaw law = reaction.getKineticLaw();
-                        if (law != null) {
-                            LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
-                            lb[index] = lbound.getValue();
-                        } else {
-                            lb[index] = 0.0;
-                        }
-                    } else {
-                        lb[index] = 0.0;
-                    }
-                } else {
-                    lb[index] = Double.valueOf(b[3]);
-                }
-            }
-            //  System.out.println(r + " - " + lb[index]);
-        }
-        return lb;
-    }
-
-    private double[] createUP(HashMap<String, String[]> bounds) {
-        double[] ub = new double[this.reactions.size()];
-        Model m = this.networkDS.getDocument().getModel();
-        for (int index = 0; index < reactions.size(); index++) {
-            String r = reactions.get(index);
-            if (exchange.containsKey(r)) {
-                if (r.contains("C00031")) {
-                    ub[index] = -(this.exchange.get(r) - 0.001);
-                } else {
-                    ub[index] = 1000;
-                }
-            } else {
-                String[] b = bounds.get(r);
-                if (b == null) {
-                    Reaction reaction = m.getReaction(r);
-                    if (reaction != null) {
-                        KineticLaw law = reaction.getKineticLaw();
-                        if (law != null) {
-                            LocalParameter lbound = law.getLocalParameter("UPPER_BOUND");
-                            ub[index] = lbound.getValue();
-                        } else {
-                            ub[index] = 1000.0;
-                        }
-                    } else {
-                        ub[index] = 1000.0;
-                    }
-                } else {
-                    ub[index] = Double.valueOf(b[4]);
-                }
-            }// System.out.println(r + " - " + ub[index]);
-
-        }
-        return ub;
-    }
-
-    private List<String> getVariables(HashMap<String, ReactionFA> reactions, Graph g, Map<String, Double[]> sources) {
-        List<String> variables = new ArrayList<>();
-        for (String s : sources.keySet()) {
-            variables.add(s);
-        }
-        for (Node n : g.getNodes()) {
-            String id = n.getId();
-            id = id.split(" : ")[0];
-            if (reactions.containsKey(id)) {
-                variables.add(id);
-            }
-        }
-        return variables;
-    }
+//    private Result optimize(double[][] A, double[] b, double[] objective, double[] lb, double[] ub) {
+//        net.sf.javailp.SolverFactory factory = new SolverFactoryGLPK();
+//        //factory.setParameter(Solver.VERBOSE, 0);
+//        factory.setParameter(Solver.TIMEOUT, 100);
+//        Problem problem = new Problem();
+//        List<String> variables = new ArrayList<>();
+//        //Objective Function
+//        Linear linear = new Linear();
+//        for (int i = 0; i < objective.length; i++) {
+//            String var = this.reactions.get(i);
+//            //System.out.println(var + " - " + objective[i]);
+//            variables.add(var);
+//            linear.add(objective[i], var);
+//        }
+//        // if (maximize) {
+//        problem.setObjective(linear);
+//        /* } else {
+//         problem.setObjective(linear;
+//         }*/
+//        // Inequalities
+//        for (int i = 0; i < b.length; i++) {
+//            linear = new Linear();
+//            for (int e = 0; e < A.length; e++) {
+//                linear.add(A[e][i], variables.get(e));
+//            }
+//            problem.add(new Constraint(this.species.get(i), linear, Operator.EQ, b[i]));
+//        }
+//        for (int i = 0; i < variables.size(); i++) {
+//            problem.setVarLowerBound(variables.get(i), lb[i]);
+//            problem.setVarUpperBound(variables.get(i), ub[i]);
+//            //  System.out.println(variables.get(i) + " - " + lb[i] + " - " + ub[i]);
+//        }
+//        for (String var : variables) {
+//            problem.setVarType(var, VarType.REAL);
+//        }
+//        Solver solver = factory.get(); // you should use this solver only once for one problem
+//        Result result = solver.solve(problem);
+//
+//        //System.out.println(result.toString());
+//        return result;
+//    }
+//
+//    private double[][] createMatrix(HashMap<String, ReactionFA> reactions, List<String> variables) {
+//        List<String> species = new ArrayList<>();
+//        int numReactions=0;
+//        for (String r : variables) {
+//            if (reactions.containsKey(r)) {
+//                numReactions++;
+//                ReactionFA reaction = reactions.get(r);
+//                for (String reactant : reaction.getReactants()) {
+//                    if (!species.contains(reactant)) {
+//                        species.add(reactant);
+//                    }
+//                }
+//                for (String product : reaction.getProducts()) {
+//                    if (!species.contains(product)) {
+//                        species.add(product);
+//                    }
+//                }
+//            }else{
+//                species.add(r);
+//            }
+//        }
+//
+//      
+//        /* for (Species s : m.getListOfSpecies()) {
+//         this.species.add(s.getId() + "out");
+//         }*/
+//        /*int countex = 0;
+//         for (String ex : exchange.keySet()) {
+//         if (species.contains(ex)) {
+//         countex++;
+//         }
+//         }*/
+//        double[][] A = new double[numReactions + species.size()][species.size() /**
+//                 * 2
+//                 */
+//                ];
+//
+//        /*if (!this.species.contains(this.NAD)) {
+//         this.species.add(this.NAD);
+//         }
+//                
+//         if (!this.species.contains(this.NADP)) {
+//         this.species.add(this.NADP);
+//         }
+//                
+//         if (!this.species.contains(this.ADP)) {
+//         this.species.add(this.ADP);
+//         }*/
+//        int count = 0;
+//        for (String r : variables) {
+//            if(reactions.containsKey(r)){
+//                ReactionFA reaction = reactions.get(r);
+//            for (String reactant : reaction.getReactants()) {
+//                int index = species.indexOf(reactant);
+//                A[count][index] = -reaction.getStoichiometry(reactant);
+//            }
+//            for (String product : reaction.getProducts()) {
+//                int index = species.indexOf(product);
+//                A[count][index] = reaction.getStoichiometry(product);
+//            }
+//            count++;
+//            }
+//        }
+//        //add exchange reactions
+//        for (String ex : exchange.keySet()) {
+//            if (species.contains(ex)) {
+//                reactions.add(ex);
+//                int index = species.indexOf(ex);
+//                A[count++][index] = -1;
+//            }
+//        }
+//
+//        // System.out.println(m.getNumSpecies() + " - " + count);
+//        for (Species sp : m.getListOfSpecies()) {
+//            if (!exchange.containsKey(sp.getId()) /*&& !sp.getId().contains("Growth")*/) {
+//                reactions.add(sp.getId());
+//                int index = species.indexOf(sp.getId());
+//                A[count++][index] = -1;
+//            }
+//        }
+//                // System.out.println(m.getNumSpecies() + " - " + count);
+//
+//        /*for (int i = 0; i < A.length; i++) {
+//         for (int e = 0; e < A[0].length; e++) {
+//         System.out.print(A[i][e] + " ");
+//         }
+//         System.out.print("\n");
+//         }
+//         for (String sp : this.species) {
+//         System.out.println(sp);
+//         }*/
+//        return A;
+//    }
+//
+//    private double[] createB() {
+//        //for each reaction 0 is added except for the exchange reactions
+//        double[] b = new double[this.species.size()];
+//        for (String r : species) {
+//            int index = species.indexOf(r);
+//            if (exchange.containsKey(r)) {
+//                b[index] = 0;
+//            } else {
+//                b[index] = 0;
+//            }
+//        }
+//        return b;
+//    }
+//
+//    private double[] createObjective() {
+//        double[] objective = new double[this.reactions.size()];
+//        for (int index = 0; index < reactions.size(); index++) {
+//            String r = reactions.get(index);
+//            if (r.contains(this.objectiveReaction)) {
+//                if (maximize) {
+//                    objective[index] = -1;
+//                } else {
+//                    objective[index] = 1;
+//                }
+//            } else {
+//                objective[index] = 0;
+//            }
+//            // System.out.println(objective[index]);
+//        }
+//        return objective;
+//    }
+//
+//    private double[] createLB(HashMap<String, String[]> bounds) {
+//        double[] lb = new double[this.reactions.size()];
+//        Model m = this.networkDS.getDocument().getModel();
+//        for (int index = 0; index < reactions.size(); index++) {
+//            String r = reactions.get(index);
+//            // System.out.println(r);
+//            if (exchange.containsKey(r)) {
+//                lb[index] = -exchange.get(r);
+//            } else {
+//                String[] b = bounds.get(r);
+//                if (b == null) {
+//                    Reaction reaction = m.getReaction(r);
+//                    if (reaction != null) {
+//                        KineticLaw law = reaction.getKineticLaw();
+//                        if (law != null) {
+//                            LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+//                            lb[index] = lbound.getValue();
+//                        } else {
+//                            lb[index] = 0.0;
+//                        }
+//                    } else {
+//                        lb[index] = 0.0;
+//                    }
+//                } else {
+//                    lb[index] = Double.valueOf(b[3]);
+//                }
+//            }
+//            //  System.out.println(r + " - " + lb[index]);
+//        }
+//        return lb;
+//    }
+//
+//    private double[] createUP(HashMap<String, String[]> bounds) {
+//        double[] ub = new double[this.reactions.size()];
+//        Model m = this.networkDS.getDocument().getModel();
+//        for (int index = 0; index < reactions.size(); index++) {
+//            String r = reactions.get(index);
+//            if (exchange.containsKey(r)) {
+//                if (r.contains("C00031")) {
+//                    ub[index] = -(this.exchange.get(r) - 0.001);
+//                } else {
+//                    ub[index] = 1000;
+//                }
+//            } else {
+//                String[] b = bounds.get(r);
+//                if (b == null) {
+//                    Reaction reaction = m.getReaction(r);
+//                    if (reaction != null) {
+//                        KineticLaw law = reaction.getKineticLaw();
+//                        if (law != null) {
+//                            LocalParameter lbound = law.getLocalParameter("UPPER_BOUND");
+//                            ub[index] = lbound.getValue();
+//                        } else {
+//                            ub[index] = 1000.0;
+//                        }
+//                    } else {
+//                        ub[index] = 1000.0;
+//                    }
+//                } else {
+//                    ub[index] = Double.valueOf(b[4]);
+//                }
+//            }// System.out.println(r + " - " + ub[index]);
+//
+//        }
+//        return ub;
+//    }
+//
+//    private List<String> getVariables(HashMap<String, ReactionFA> reactions, Graph g, Map<String, Double[]> sources) {
+//        List<String> variables = new ArrayList<>();
+//        for (String s : sources.keySet()) {
+//            variables.add(s);
+//        }
+//        for (Node n : g.getNodes()) {
+//            String id = n.getId();
+//            id = id.split(" : ")[0];
+//            if (reactions.containsKey(id)) {
+//                variables.add(id);
+//            }
+//        }
+//        return variables;
+//    }
 
     public double getObjectiveValue() {
         return this.objectiveValue;

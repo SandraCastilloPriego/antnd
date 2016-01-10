@@ -48,7 +48,7 @@ public class SpeciesFA {
         }
         
         public void addAnt(Ant ant) {
-                if (this.ant == null || ant.getFlux() < this.ant.getFlux()) {
+                if (this.ant == null || this.ant.getGraph().getDeadEnds().size() > ant.getGraph().getDeadEnds().size()) {
                         this.ant = ant;
                 }
         }

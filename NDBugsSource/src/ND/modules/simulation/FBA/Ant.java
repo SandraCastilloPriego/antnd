@@ -105,70 +105,56 @@ public class Ant {
         System.out.print("\n");
     }
 
-    public double joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts, double bound, ReactionFA rc) {
-        double localFlux = bound;
-        for (Ant ant : combinedAnts.keySet()) {
-            //  System.out.println(reactionChoosen +"  -  " + combinedAnts.get(ant)+ " - " +bound + " - "+localFlux +" -" +ant.getFlux());
-
-            double f = ant.getFlux() / rc.getStoichiometry(ant.getLocation().split(" : ")[0]);
-           //  System.out.println(rc.getStoichiometry(ant.getLocation().split(" : ")[0]) + " - "+f);
-
-            if (f < localFlux) {
-                localFlux = f;
-            }
-
-//            System.out.println(localFlux);
-
-        }
-       // rc.setFlux(localFlux);
-        Node node = new Node(reactionChoosen + " : " + localFlux + " - " + uniqueId.nextId());
-
+    public void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts, ReactionFA rc) {
+        Node node = new Node(reactionChoosen + " - " + uniqueId.nextId());        
+        g.addNode2(node);
         for (Ant ant : combinedAnts.keySet()) {
             this.pathsize = this.pathsize + ant.getPathSize();
-            g.addNode2(node);
             Graph antGraph = ant.getGraph();
 
             for (Node n : antGraph.getNodes()) {
                 g.addNode2(n);
             }
             for (Edge e : antGraph.getEdges()) {
-                try {
-                    Node inGSource = this.g.getNode(e.getSource().getId().split(" - ")[0]);
-                    Node inGDestination = this.g.getNode(e.getDestination().getId().split(" - ")[0]);
-                    if (inGSource != null) {
-                        e.setSource(inGSource);
-                    }
-                    if (inGDestination != null) {
-                        e.setDestination(inGDestination);
-                    }
-                    g.addEdge(e);
-                } catch (NullPointerException exception) {
-                }
+                g.addEdge(e);
             }
             //System.out.println(ant.getPath().get(ant.getPath().size() - 1));
 
-            Node lastNode = antGraph.getNode(ant.getPath().get(ant.getPath().size() - 1).split(" - ")[0]);
-            Node inGNode = this.g.getNode(lastNode.getId().split(" - ")[0]);
-            if (inGNode != null) {
-                lastNode = inGNode;
-            }
+          /*  Node lastNode = antGraph.getNode(ant.getPath().get(ant.getPath().size() - 1).split(" - ")[0]);
             // System.out.println(lastNode);
-            Edge edge = new Edge(combinedAnts.get(ant) + " : " + localFlux + " - " + uniqueId.nextId(), lastNode, node);
+            Edge edge = new Edge(combinedAnts.get(ant) + " - " + uniqueId.nextId(), lastNode, node);
             g.addEdge(edge);
-
+*/
+            
             for (String p : ant.getPath()) {
                 this.path.add(p);
             }
         }
-        //System.out.println("-------------------------");
+        for(String reactants : rc.getReactants()){
+            Node reactant = g.getNode(reactants);
+            if(reactant == null){
+                reactant = new Node(reactants + " : "+ rc.getName(reactants));
+            }
+            g.addNode2(reactant);
+            Edge e = new Edge(reactants + " - "+ uniqueId.nextId(), reactant, node);
+            g.addEdge(e);       
+        }
+        
+         for(String products : rc.getProducts()){
+            Node product = g.getNode(products);
+            if(product == null){
+                product = new Node(products + " : "+ rc.getName(products));
+            }
+            g.addNode2(product);
+            Edge e = new Edge(products + " - "+ uniqueId.nextId(), node,product);
+            g.addEdge(e);       
+        }
         this.pathsize++;
         this.path.add(node.getId());
-        this.flux = localFlux;
-
         if (this.getPathSize() > 500) {
             this.lost = true;
         }
-        return localFlux;
+
     }
 
     public void joinObjectiveGraphs(Ant newAnt, List<String> sources) {
@@ -210,12 +196,7 @@ public class Ant {
     }
 
     public boolean contains(String id) {
-        for (String p : this.path) {
-            if (p.contains(id)) {
-                return true;
-            }
-        }
-        return false;
+         return g.IsInNodes(id);
     }
 
     public void setPathSize(int pathsize) {

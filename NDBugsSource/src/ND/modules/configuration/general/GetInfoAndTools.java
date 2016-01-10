@@ -70,6 +70,7 @@ public class GetInfoAndTools {
 
                 Map<String, Double[]> exchangeMap = new HashMap<>();
                 try {
+                        if(this.sources == null) return exchangeMap;
                         CsvReader exchange = new CsvReader(new FileReader(this.sources), '\t');
 
                         try {
@@ -85,14 +86,13 @@ public class GetInfoAndTools {
                                         }
                                 }
                         } catch (IOException ex) {
-                                Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(Level.SEVERE, null, ex);
+                                return null;
                         }
 
                         return exchangeMap;
                 } catch (FileNotFoundException ex) {
-                        Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(Level.SEVERE, null, ex);
+                        return null;
                 }
-                return exchangeMap;
         }
 
         public HashMap<String, String[]> readBounds(Dataset networkDS) {
@@ -100,7 +100,7 @@ public class GetInfoAndTools {
                 try {
                         SBMLDocument doc = networkDS.getDocument();
                         Model m = doc.getModel();
-
+                        if(this.boundsFile == null) return b;
                         CsvReader reader = new CsvReader(new FileReader(this.boundsFile));
 
                         while (reader.readRecord()) {

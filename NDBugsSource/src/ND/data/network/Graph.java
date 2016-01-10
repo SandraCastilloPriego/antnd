@@ -142,6 +142,9 @@ public class Graph {
     }
 
     public void addGraph(Graph g) {
+        if (this == g) {
+            return;
+        }
         for (Node n : g.getNodes()) {
             if (n.getId() != null) {
                 if (!this.IsInNodes(n)) {
@@ -151,7 +154,7 @@ public class Graph {
         }
         for (Edge e : g.getEdges()) {
             Node source = e.getSource();
-            if (source.getId() != null) {
+            if (source != null) {
                 // System.out.println("source : "+ source.getId());
                 Node newSource = this.getNode(source.getId().split(" - ")[0]);
                 if (newSource != null) {
@@ -165,10 +168,11 @@ public class Graph {
                         e.setDestination(newDestination);
                     }
                    // if (!this.isInEdges(e)) {
-                        this.edges.add(e);
-                   // }
+
+                    // }
                 }
             }
+            this.edges.add(e);
         }
     }
 
@@ -190,7 +194,7 @@ public class Graph {
         return g;
     }
 
-    private boolean IsInNodes(Node node) {
+    public boolean IsInNodes(Node node) {
         for (Node n : this.nodes) {
             if (n.getId().split(" - ")[0].split(" : ")[0].equals(node.getId().split(" - ")[0].split(" : ")[0])) {
                 return true;
@@ -199,7 +203,29 @@ public class Graph {
         return false;
     }
 
-    private boolean isInEdges(Edge edge) {
+    public boolean IsInNodes(String node) {
+        for (Node n : this.nodes) {
+            if (n.getId().split(" - ")[0].split(" : ")[0].equals(node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean IsInSource(String node) {
+        for (Edge e : this.edges) {
+            Node n = e.getSource();
+            if (n == null) {
+                continue;
+            }
+            if (n.getId().split(" - ")[0].split(" : ")[0].equals(node.split(" - ")[0].split(" : ")[0])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isInEdges(Edge edge) {
         for (Edge thisEdge : this.edges) {
             String source = edge.getSource().getId().split(" - ")[0];
             String destination = edge.getDestination().getId().split(" - ")[0];
@@ -227,25 +253,87 @@ public class Graph {
         }
         return edgesN;
     }
-    
-    public List<Node> getConnectedAsSource(Node n){
+
+    public List<Node> getConnectedAsSource(Node n) {
         List<Node> connectedNodes = new ArrayList<>();
-        for(Edge e: edges){
-            if(e.getSource() == n){
+        for (Edge e : edges) {
+            if (e.getSource() == n) {
                 connectedNodes.add(n);
             }
         }
         return connectedNodes;
     }
-    
+
+    public List<Node> getConnectedAsDestination(Node n) {
+        List<Node> connectedNodes = new ArrayList<>();
+        for (Edge e : edges) {
+            if (e.getDestination() == n) {
+                connectedNodes.add(n);
+            }
+        }
+        return connectedNodes;
+    }
+
+    public List<String> getDeadEnds() {
+        List<String> deadEnds = new ArrayList<>();
+
+        for (Edge e : edges) {
+            boolean isSource = false;
+            Node destination = e.getDestination();
+            if (destination.getId().contains("extracellular") || destination.getId().contains("boundary")) {
+                continue;
+            }
+            for (Edge e2 : edges) {
+                if (e2.getSource() != null && e2.getSource().getId().split(" - ")[0].equals(destination.getId().split(" - ")[0])) {
+                    isSource = true;
+                }
+            }
+
+            if (!isSource && !deadEnds.contains(destination.getId().split(" - ")[0])) {
+                deadEnds.add(destination.getId().split(" - ")[0]);
+            }
+        }
         
-    public List<Node> getConnectedAsDestination(Node n){
-        List<Node> connectedNodes = new ArrayList<>();
-        for(Edge e: edges){
-            if(e.getDestination() == n){
-                connectedNodes.add(n);
+        for (Edge e : edges) {
+            boolean isSource = false;
+            Node destination = e.getSource();
+            if (destination == null) continue;
+            if (destination.getId().contains("extracellular") || destination.getId().contains("boundary")) {
+                continue;
+            }
+            for (Edge e2 : edges) {
+                if (e2.getDestination() != null && e2.getDestination().getId().split(" - ")[0].equals(destination.getId().split(" - ")[0])) {
+                    isSource = true;
+                }
+            }
+
+            if (!isSource && !deadEnds.contains(destination.getId().split(" - ")[0])) {
+                deadEnds.add(destination.getId().split(" - ")[0]);
             }
         }
-        return connectedNodes;
+        return deadEnds;
     }
+
+    public void removeNode(String node) {
+        List<Node> toBeRemove = new ArrayList<>();
+        List<Edge> toBeRemoveEdge = new ArrayList<>();
+
+        for (Node n : this.nodes) {
+            if (n.getId().contains(node)) {
+                toBeRemove.add(n);
+            }
+        }
+        for (Node r : toBeRemove) {
+            this.nodes.remove(r);
+            for (Edge e : this.edges) {
+                if (e.getSource() == r || e.getDestination() == r) {
+                    toBeRemoveEdge.add(e);
+                }
+            }
+        }
+        for(Edge e : toBeRemoveEdge){
+            this.edges.remove(e);
+        }
+    }
+
 }
