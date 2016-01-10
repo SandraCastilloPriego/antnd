@@ -184,6 +184,7 @@ public class SimpleBasicDataset implements Dataset {
                 SimpleBasicDataset newDataset = new SimpleBasicDataset(this.datasetName, this.path);
                 newDataset.setType(this.type);
                 newDataset.setDocument(this.getDocument());
+                newDataset.setGraph(this.graph);
                 return newDataset;
         }
 

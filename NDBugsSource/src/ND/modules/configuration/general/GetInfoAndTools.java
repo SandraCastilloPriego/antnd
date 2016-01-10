@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,14 @@ import org.sbml.jsbml.Species;
  */
 public class GetInfoAndTools {
 
-        File sources, boundsFile;
+        File sources, boundsFile, pathwayFile;
         Model newModel = null;
 
         public GetInfoAndTools() {
                 SourcesConfParameters sourcesParameters = new SourcesConfParameters();
                 this.sources = sourcesParameters.getParameter(SourcesConfParameters.exchange).getValue();
                 this.boundsFile = sourcesParameters.getParameter(SourcesConfParameters.bounds).getValue();
+                this.pathwayFile = sourcesParameters.getParameter(SourcesConfParameters.pathways).getValue();
         }
 
         public File getBoundsFile() {
@@ -64,6 +66,40 @@ public class GetInfoAndTools {
 
         public File getSourcesFile() {
                 return this.sources;
+        }
+        
+        public Map<String, List<String>> GetPathwayInfo() {
+
+                Map<String, List<String>> pathwaysMap = new HashMap<>();
+                try {
+                        CsvReader pathwaycsvFile = new CsvReader(new FileReader(this.pathwayFile), ',');
+
+                        try {
+                                while (pathwaycsvFile.readRecord()) {
+                                        try {
+                                                String[] pathwayRow = pathwaycsvFile.getValues();
+                                                for(int i = 1; i < pathwayRow.length; i++){
+                                                    if(pathwaysMap.containsKey(pathwayRow[i])){
+                                                        pathwaysMap.get(pathwayRow[i]).add(pathwayRow[0]);
+                                                    }else{
+                                                        List<String> p = new ArrayList();
+                                                        p.add(pathwayRow[0]);
+                                                        pathwaysMap.put(pathwayRow[i], p);
+                                                    }
+                                                }
+                                        } catch (IOException | NumberFormatException e) {
+                                                System.out.println(e.toString());
+                                        }
+                                }
+                        } catch (IOException ex) {
+                                Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                        return pathwaysMap;
+                } catch (FileNotFoundException ex) {
+                        Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return pathwaysMap;
         }
 
         public Map<String, Double[]> GetSourcesInfo() {

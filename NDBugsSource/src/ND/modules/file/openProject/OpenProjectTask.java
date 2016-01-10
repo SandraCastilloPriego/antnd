@@ -141,22 +141,34 @@ public class OpenProjectTask extends AbstractTask {
                                         String strLine;
                                         Graph g = null;
                                         while ((strLine = br.readLine()) != null) {
-                                                if (strLine.contains("Biomass: ")) {
-                                                        data.setBiomass(strLine.split(": ")[1]);
-                                                } else if (strLine.contains("Sources: ")) {
-                                                        data.addSource(strLine.split(": ")[1]);
-                                                } else if (strLine.contains("Nodes: ")) {
+                                                if (strLine.contains("Biomass= ")) {
+                                                        data.setBiomass(strLine.split("= ")[1]);
+                                                } else if (strLine.contains("Sources= ")) {
+                                                        data.addSource(strLine.split("= ")[1]);
+                                                } else if (strLine.contains("Nodes= ")) {
                                                         if (g == null) {
                                                                 g = new Graph(null, null);
                                                         }
-                                                        Node n = new Node(strLine.split(": ")[1]);
+                                                        String nodeName = strLine.split("= ")[1];
+                                                        String position = null;
+                                                        if(nodeName.contains(" // ")){
+                                                            position = nodeName.split(" // ")[1];
+                                                            nodeName = nodeName.split(" // ")[0];
+                                                        }
+                                                        Node n = new Node(nodeName);
+                                                        if(position !=null){
+                                                            String[] point = position.split(" , ");
+                                                            n.setPosition(Double.valueOf(point[0]), Double.valueOf(point[1]));
+                                                        }
                                                         g.addNode(n);
 
-                                                } else if (strLine.contains("Edges: ")) {
-                                                        String edgeName = strLine.split(": ")[1].split(": ")[0];
-                                                        Node source = g.getNode(strLine.split(": ")[2].split(" \\|\\| ")[0]);
-                                                        Node destination = g.getNode(strLine.split(": ")[2].split(" \\|\\| ")[1]);
-                                                        Edge e = new Edge(edgeName, source, destination);
+                                                } else if (strLine.contains("Edges= ")) {
+                                                        String edgeName = strLine.split("= ")[1].split(" // ")[0];
+                                                        String[] parts = strLine.split(" // ");
+                                                        Node source = g.getNode(parts[1].split(" \\|\\| ")[0]);
+                                                        Node destination = g.getNode(parts[1].split(" \\|\\| ")[1]);
+                                                        boolean direction = Boolean.getBoolean(parts[2]);
+                                                        Edge e = new Edge(edgeName, source, destination, direction);
                                                         g.addEdge(e);
                                                 } else {
                                                         data.addInfo(strLine);

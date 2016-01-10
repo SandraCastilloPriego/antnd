@@ -36,6 +36,7 @@ import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
 import ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule;
 import ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
+import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.FBA.AntFBAModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
@@ -71,6 +72,7 @@ public class NDModulesList {
                 ShowAllCompoundsModule.class,
                 AddInfoModule.class, 
                 SomePathsModule.class,
+                ShowPathwaysModule.class,
                 // LoopAnalyzerModule.class,
                 //  AntFluxMaxModule.class,
                 //  AntFluxMinModule.class,

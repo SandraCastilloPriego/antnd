@@ -27,8 +27,10 @@ public class SourcesConfParameters extends SimpleParameterSet {
                 "Source", "Define the uptaken compounds including their bounds.", null);
         public static final FileNameParameter bounds = new FileNameParameter(
                 "Reaction bounds", "Define the bounds of the reactions", null);
+        public static final FileNameParameter pathways = new FileNameParameter(
+                "Pathway information file", "Define the path of the pathway information file.", null);
         
         public SourcesConfParameters() {
-                super(new Parameter[]{exchange, bounds});
+                super(new Parameter[]{exchange, bounds, pathways});
         }
 }

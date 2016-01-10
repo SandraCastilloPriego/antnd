@@ -15,46 +15,22 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.data.network;
-
-import java.awt.geom.Point2D;
-
-/**
- *
- * @author scsandra
- */
-public class Node {
+package ND.modules.reactionOP.showPathways;
 
 
-    private String id;
-    private Point2D position;
+import ND.parameters.Parameter;
+import ND.parameters.SimpleParameterSet;
+import ND.parameters.parametersType.StringParameter;
 
-    public Node(String id) {
-        this.id = id;
-    }
+public class ShowPathwaysParameters extends SimpleParameterSet {     
+   
 
-    public String getId() {
-        return id;
-    }
+        public static final StringParameter pathwayName = new StringParameter(
+                "Pathway name", "Name of the pathway that will be showed", "");
+        
+        
 
-    public void setId(String newID) {
-        this.id = newID;
-    }
-
-    @Override
-    public Node clone() {
-        Node n = new Node(this.id);
-        n.position = this.position;
-        return n;
-    }
-
-    public void setPosition(double x, double y) {
-        this.position = new Point2D.Double(x, y);
-    }
-
-    public Point2D getPosition() {
-        return this.position;
-    }
-
-
+        public ShowPathwaysParameters() {
+                super(new Parameter[]{pathwayName});
+        }
 }
