@@ -18,10 +18,13 @@
 package ND.modules.reactionOP.changebounds;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.data.network.Edge;
+import ND.data.network.Graph;
 import ND.main.NDCore;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
+import java.util.List;
 import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
@@ -85,6 +88,10 @@ public class ChangeBoundsTask extends AbstractTask {
                 r.setKineticLaw(law);
                 this.networkDS.setDocument(doc);
                 this.networkDS.addInfo("Changing bounds in reaction: " + this.reactionName + "\nlb: " + lb + "\n up: " + ub + "\n--------------------------");
+                
+                //Graph g =this.networkDS.getGraph();
+               // List<Edge> edges = g.getEdges(r.getId(), true);
+                
             } else {
                 NDCore.getDesktop().displayMessage("The reaction " + reactionName + " doesn't exist in this model.");
             }

@@ -114,7 +114,7 @@ public class Graph {
 
     public void addEdge(Edge edge) {
         this.edges.add(edge);
-    }
+    }  
 
     public int getNumberOfNodes() {
         return this.nodes.size();
