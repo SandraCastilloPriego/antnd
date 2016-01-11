@@ -31,6 +31,7 @@ import ND.modules.otimization.LP.LPModule;
 import ND.modules.reactionOP.AddInfo.AddInfoModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.changebounds.ChangeBoundsModule;
+import ND.modules.reactionOP.deadends.DeadEndsModule;
 import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
 import ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule;
@@ -70,6 +71,7 @@ public class NDModulesList {
                 ShowAllReactionsModule.class,                
                 ShowCompoundModule.class,
                 ShowAllCompoundsModule.class,
+                DeadEndsModule.class,
                 AddInfoModule.class, 
                 SomePathsModule.class,
                 ShowPathwaysModule.class,

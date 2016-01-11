@@ -98,7 +98,7 @@ public class PrintPaths implements KeyListener {
         layout = new SpringLayout<>(g);
 
         //layout = new KKLayout(g);       
-        layout.setSize(new Dimension(2400,1900)); // sets the initial size of the space
+        layout.setSize(new Dimension(2400, 1900)); // sets the initial size of the space
         vv = new VisualizationViewer<>(layout);
 
         for (Node node : nodes) {
@@ -115,13 +115,14 @@ public class PrintPaths implements KeyListener {
 
         for (Edge edge : edges) {
             if (edge != null) {
-
-                if (edge.getDirection()) {
-                    g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
-                } else {
-                    g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.UNDIRECTED);
+                try {
+                    if (edge.getDirection()) {
+                        g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                    } else {
+                        g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.UNDIRECTED);
+                    }
+                } catch (Exception e) {
                 }
-
             }
         }
 
@@ -173,7 +174,7 @@ public class PrintPaths implements KeyListener {
 
                         } else {
                             System.out.println("Vertex " + vertex
-                                + " is now selected");
+                                    + " is now selected");
                         }
                     } else {
                         selectedNode.remove(vertex);
@@ -188,7 +189,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Vertex " + vertex
-                                + " no longer selected");
+                                    + " no longer selected");
                         }
                     }
                 }
@@ -213,7 +214,7 @@ public class PrintPaths implements KeyListener {
                             transFrame = new TransFrame(name);
                         } else {
                             System.out.println("Edge " + edge
-                                + " is now selected");
+                                    + " is now selected");
                         }
                     } else {
                         selectedNode.remove(edge);
@@ -222,7 +223,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Edge " + edge
-                                + " no longer selected");
+                                    + " no longer selected");
                         }
                     }
 
@@ -232,14 +233,14 @@ public class PrintPaths implements KeyListener {
 
         float dash[] = {1.0f};
         final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+                BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
         Transformer<String, Stroke> edgeStrokeTransformer
-            = new Transformer<String, Stroke>() {
-                @Override
-                public Stroke transform(String s) {
-                    return edgeStroke;
-                }
-            };
+                = new Transformer<String, Stroke>() {
+                    @Override
+                    public Stroke transform(String s) {
+                        return edgeStroke;
+                    }
+                };
 
         Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
             new ToStringLabeller<>(),
@@ -367,7 +368,7 @@ public class PrintPaths implements KeyListener {
                             transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
                         } else {
                             System.out.println("Vertex " + vertex
-                                + " is now selected");
+                                    + " is now selected");
                         }
                     } else {
                         selectedNode.remove(vertex);
@@ -376,7 +377,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Vertex " + vertex
-                                + " no longer selected");
+                                    + " no longer selected");
                         }
                     }
                 }
@@ -397,7 +398,7 @@ public class PrintPaths implements KeyListener {
                             transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
                         } else {
                             System.out.println("Edge " + edge
-                                + " is now selected");
+                                    + " is now selected");
                         }
                     } else {
                         selectedNode.remove(edge);
@@ -406,7 +407,7 @@ public class PrintPaths implements KeyListener {
                             transFrame.dispose();
                         } else {
                             System.out.println("Edge " + edge
-                                + " no longer selected");
+                                    + " no longer selected");
                         }
                     }
                 }
@@ -415,14 +416,14 @@ public class PrintPaths implements KeyListener {
 
         float dash[] = {1.0f};
         final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+                BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
         Transformer<String, Stroke> edgeStrokeTransformer
-            = new Transformer<String, Stroke>() {
-                @Override
-                public Stroke transform(String s) {
-                    return edgeStroke;
-                }
-            };
+                = new Transformer<String, Stroke>() {
+                    @Override
+                    public Stroke transform(String s) {
+                        return edgeStroke;
+                    }
+                };
 
         Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
             new ToStringLabeller<>(),
@@ -543,7 +544,6 @@ public class PrintPaths implements KeyListener {
 //            if (r.getId().contains("Ex")) {
 //                continue;
 //            }
-
             if (r.hasReactant(sp) || r.hasProduct(sp)) {
                 double lb = Double.NEGATIVE_INFINITY;
                 double ub = Double.POSITIVE_INFINITY;
@@ -560,7 +560,6 @@ public class PrintPaths implements KeyListener {
                 String reactionName = r.getId() + " - " + uniqueId.nextId();
 
               //  String initSPName = sp.getId() + " : " + sp.getName() + " - " + uniqueId.nextId();
-
                 String initSPName = initialStringNode;
 
                 String isThere = this.isThere(V, r.getId());
@@ -573,7 +572,6 @@ public class PrintPaths implements KeyListener {
                     AddReaction(r);
 
                     // adds the new reaction to the visualization graph
-
                     g.addVertex(reactionName);
 
                     // Creates the node for the ANT graph
@@ -590,9 +588,8 @@ public class PrintPaths implements KeyListener {
                         Species sps = sr.getSpeciesInstance();
 
        //                 if (!this.m.containsSpecies(sp.getId())) {
-         //                   this.m.addSpecies(sps);
-           //             }
-
+                        //                   this.m.addSpecies(sps);
+                        //             }
                         String spName = sps.getId();
                         String nodeReactant = isThere(V, spName);
 
@@ -600,7 +597,6 @@ public class PrintPaths implements KeyListener {
                             if (!spName.equals(spID)) {
                                 String vName = spName + " : " + sps.getName() + " - " + uniqueId.nextId();
                                 String eName = spName + " - " + uniqueId.nextId();
-
 
                                 g.addVertex(vName);
                                 //adds the node to the graph
@@ -641,9 +637,8 @@ public class PrintPaths implements KeyListener {
                         Species sps = sr.getSpeciesInstance();
 
                     //    if (!this.m.containsSpecies(sp.getId())) {
-                      //      this.m.addSpecies(sps);
+                        //      this.m.addSpecies(sps);
                         //}
-
                         String spName = sps.getId();
                         String nodeProduct = isThere(V, spName);
                         if (nodeProduct == null) {
@@ -705,8 +700,8 @@ public class PrintPaths implements KeyListener {
         Collection<String> Vertices = g.getVertices();
         for (String node : Vertices) {
             if (node.contains("H+") || node.contains("H2O") || node.contains(" : phosphate ") || node.contains(" : ADP")
-                || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(" : oxygen")
-                || node.contains(": AMP") || node.contains(" : diphosphate ")) {
+                    || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(" : oxygen")
+                    || node.contains(": AMP") || node.contains(" : diphosphate ")) {
 
                 g.removeVertex(node);
                 graph.removeNode(node);

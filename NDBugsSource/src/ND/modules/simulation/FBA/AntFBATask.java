@@ -126,11 +126,17 @@ public class AntFBATask extends AbstractTask {
         System.out.println("Creating world");
         simulation.createWorld();
         System.out.println("Starting simulation");
-        frame.setSize(new Dimension(700, 500));
-        frame.add(this.panel);
-        NDCore.getDesktop().addInternalFrame(frame);
 
-        run(this.objectiveID);
+        //run(this.objectiveID);
+        for (int i = 0; i < this.iterations; i++) {
+            simulation.cicle();
+            finishedPercentage = (double) i / this.iterations;
+            if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
+                break;
+            }
+        }
+
+        this.analyzeResults();
 
         if (getStatus() == TaskStatus.PROCESSING) {
             for (String obj : this.results.keySet()) {
@@ -141,15 +147,19 @@ public class AntFBATask extends AbstractTask {
                 }
             }
 
-            List<String> deadEnds = this.graph.getDeadEnds();
+         /*   List<String> deadEnds = this.graph.getDeadEnds();
             if (deadEnds.size() > 0) {
                 this.doneFixes.add(deadEnds.get(0));
                 this.fixDeadEnds(deadEnds.get(0));
-            }
+            }*/
 
             this.tools.createDataFile(graph, networkDS, objectiveID, sourcesList, false);
             //  LinearProgramming lp = new LinearProgramming(graph, objectiveID, sources, reactions);
             //System.out.println("Solution: " + lp.getObjectiveValue());
+            frame.setSize(new Dimension(700, 500));
+            frame.add(this.panel);
+            NDCore.getDesktop().addInternalFrame(frame);
+
             PrintPaths print = new PrintPaths(this.sourcesList, this.objectives.get(0), this.tools.getModel());
             try {
                 System.out.println("Final graph: " + this.graph.toString());
@@ -170,28 +180,34 @@ public class AntFBATask extends AbstractTask {
          }*/
     }
 
-    private void run(String objective) {
-        for (int i = 0; i < this.iterations; i++) {
-            simulation.cicle(objective);
-            //finishedPercentage = (double) i / this.iterations;
-            if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
-                break;
-            }
-        }
-        Ant result = simulation.getResult();
-        if (result != null) {
-            this.results.put(objective, result);
-        }
+    /* private void run(String objective) {
+     for (int i = 0; i < this.iterations; i++) {
+     simulation.cicle(objective);
+     //finishedPercentage = (double) i / this.iterations;
+     if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
+     break;
+     }
+     }
+     Ant result = simulation.getResult();
+     if (result != null) {
+     this.results.put(objective, result);
+     }
 
-        for (String obj : simulation.getNewObjectives()) {
-            if (!this.objectives.contains(obj)) {
-                this.objectives.add(obj);
-                simulation.reset();
-                run(obj);
-            }
-        }
-    }
+     for (String cofactor : this.cofactors) {
+     for (String nodes : result.getPath()) {
+     if (nodes.contains(cofactor)) {
+     if (!this.objectives.contains(cofactor)) {
+     this.objectives.add(cofactor);
+     simulation.reset();
+     run(cofactor);
+     }
+     break;
+     }
+     }
 
+     }
+
+     }*/
     private void fixDeadEnds(String deadEnd) {
         String id = deadEnd.split(" : ")[0];
         Map<String, SpeciesFA> compounds = simulation.getCompounds();
@@ -202,10 +218,8 @@ public class AntFBATask extends AbstractTask {
             Ant ant = c.getAnt();
             if (ant != null) {
                 if (ant.getGraph().IsInSource(id)) {
-                    if (selectedAnt == null || ant.contains("boundary") || ant.contains("extracellular")) {
-                        if (selectedAnt == null || ant.getGraph().getDeadEnds().size() < selectedAnt.getGraph().getDeadEnds().size()) {
-                            selectedAnt = ant;
-                        }
+                    if (selectedAnt == null || ant.getPathSize() < selectedAnt.getPathSize()) {
+                        selectedAnt = ant;
                     }
                 }
             }
@@ -241,5 +255,15 @@ public class AntFBATask extends AbstractTask {
 
         }
 
+    }
+
+    private void analyzeResults() {
+        Map<String, SpeciesFA> compounds = this.simulation.getCompounds();
+        SpeciesFA compound = compounds.get(this.objectiveID);
+
+        for (Ant ant : compound.getAnts()) {
+            ant.print();
+            this.graph = ant.getGraph();
+        }
     }
 }

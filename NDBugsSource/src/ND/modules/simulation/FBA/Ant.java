@@ -104,6 +104,14 @@ public class Ant {
         }
         System.out.print("\n");
     }
+    
+    public String toString () {
+        String path =null;
+        for (String p : this.path) {
+            path+=" - " + p.split(" - ")[0];
+        }
+        return path;
+    }
 
     public void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts, ReactionFA rc) {
         Node node = new Node(reactionChoosen + " - " + uniqueId.nextId());        

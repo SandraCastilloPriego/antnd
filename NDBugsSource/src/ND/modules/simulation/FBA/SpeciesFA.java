@@ -26,54 +26,72 @@ import java.util.List;
  */
 public class SpeciesFA {
 
-        private final String id;
-        private final List<String> reactions;
-        private Ant ant;
-        private double pool = 0;
-        private final String name;
+    private final String id;
+    private final List<String> reactions;
+    private List<Ant> ants;
+    private double pool = 0;
+    private final String name;
 
-        public SpeciesFA(String id, String name) {
-                this.ant = null;
-                this.id = id;
-                this.name = name;
-                this.reactions = new ArrayList<>();
-        }
+    public SpeciesFA(String id, String name) {
+        this.ants = new ArrayList<>();
+        this.id = id;
+        this.name = name;
+        this.reactions = new ArrayList<>();
+    }
 
-        public Ant getAnt() {
-                return ant;
+    public Ant getAnt() {
+        if (!ants.isEmpty()) {
+            return ants.get(0);
         }
+        return null;
+    }
 
-        public String getName(){
-            return this.name;
+    public List<Ant> getAnts() {
+        return ants;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void addAnt(Ant ant) {
+        if (this.ants.isEmpty() && !this.isInside(ant)) {
+            this.ants.add(ant);
         }
-        
-        public void addAnt(Ant ant) {
-                if (this.ant == null || this.ant.getGraph().getDeadEnds().size() > ant.getGraph().getDeadEnds().size()) {
-                        this.ant = ant;
+    }
+
+    public void addReaction(String id) {
+        this.reactions.add(id);
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public List<String> getReactions() {
+        return this.reactions;
+    }
+
+    public void clearAnts() {
+        this.ants.clear();
+    }
+
+    public double getPool() {
+        return this.pool;
+    }
+
+    public void setPool(double pool) {
+        this.pool = pool;
+    }
+
+    private boolean isInside(Ant ant) {
+        for (Ant a : ants) {
+            if (a.getPathSize() == ant.getPathSize()) {
+                if (a.toString().equals(ant.toString())) {
+                    return true;
                 }
+            }
         }
-
-        public void addReaction(String id) {
-                this.reactions.add(id);
-        }
-
-        public String getId() {
-                return this.id;
-        }
-
-        public List<String> getReactions() {
-                return this.reactions;
-        }
-        
-        public void clearAnts(){
-                this.ant = null;
-        }
-        
-        public double getPool(){
-            return this.pool;
-        }
-        
-        public void setPool(double pool){
-            this.pool = pool;
-        }
+        return false;
+    }
 }

@@ -79,7 +79,7 @@ public class SaveProjectTask extends AbstractTask {
         try {
             setStatus(TaskStatus.PROCESSING);
             File tempFile = File.createTempFile(file.getName(), ".tmp",
-                file.getParentFile());
+                    file.getParentFile());
             tempFile.deleteOnExit();
             // Create a ZIP stream writing to the temporary file
             FileOutputStream tempStream = new FileOutputStream(tempFile);
@@ -91,7 +91,7 @@ public class SaveProjectTask extends AbstractTask {
             boolean renameOK = tempFile.renameTo(file);
             if (!renameOK) {
                 throw new IOException("Could not move the temporary file "
-                    + tempFile + " to the final location " + file);
+                        + tempFile + " to the final location " + file);
             }
 
             setStatus(TaskStatus.FINISHED);
@@ -159,7 +159,10 @@ public class SaveProjectTask extends AbstractTask {
                         }
                     }
                     for (Edge edge : graph.getEdges()) {
-                        writer.write("\nEdges= " + edge.getId() + " // " + edge.getSource().getId() + " || " + edge.getDestination().getId() + " // " + String.valueOf(edge.getDirection()));
+                        try {
+                            writer.write("\nEdges= " + edge.getId() + " // " + edge.getSource().getId() + " || " + edge.getDestination().getId() + " // " + String.valueOf(edge.getDirection()));
+                        } catch (Exception e) {
+                        }
                     }
                 }
             } catch (IOException e) {
