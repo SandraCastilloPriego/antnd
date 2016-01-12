@@ -205,7 +205,7 @@ public class Graph {
 
     public boolean IsInNodes(String node) {
         for (Node n : this.nodes) {
-            if (n.getId().split(" - ")[0].split(" : ")[0].equals(node)) {
+            if (n.getId().equals(node)) {
                 return true;
             }
         }

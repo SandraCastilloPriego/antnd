@@ -18,12 +18,7 @@
 package ND.modules.simulation.FBA;
 
 import ND.modules.simulation.antNoGraph.ReactionFA;
-import ND.data.network.Edge;
-import ND.data.network.Graph;
-import ND.data.network.Node;
-import ND.modules.simulation.antNoGraph.uniqueId;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -32,7 +27,6 @@ import java.util.List;
  */
 public class Ant {
 
-    private Graph g;
     List<String> path;
     String location;
     boolean lost = false;
@@ -42,24 +36,14 @@ public class Ant {
     public Ant(String location) {
         this.path = new ArrayList<>();
         this.location = location;
-        this.g = new Graph(null, null);
     }
 
     public void initAnt(double flux) {
-        String l = location + " - " + uniqueId.nextId();
-        Node initNode = new Node(l);
-        g.addNode2(initNode);
-        this.path.add(l);
+        this.path.add(location);
         this.flux = flux;
     }
 
-    public Graph getGraph() {
-        return this.g;
-    }
-
-    public void setGraph(Graph g) {
-        this.g = g;
-    }
+   
 
     public void removePath() {
         this.path.clear();
@@ -76,7 +60,6 @@ public class Ant {
     @Override
     public Ant clone() {
         Ant ant = new Ant(this.location);
-        ant.setGraph(this.g);
         ant.setPath(path);
         ant.setPathSize(this.pathsize);
         ant.setFlux(this.flux);
@@ -113,98 +96,34 @@ public class Ant {
         return path;
     }
 
-    public void joinGraphs(String reactionChoosen, HashMap<Ant, String> combinedAnts, ReactionFA rc) {
-        Node node = new Node(reactionChoosen + " - " + uniqueId.nextId());        
-        g.addNode2(node);
-        for (Ant ant : combinedAnts.keySet()) {
-            this.pathsize = this.pathsize + ant.getPathSize();
-            Graph antGraph = ant.getGraph();
-
-            for (Node n : antGraph.getNodes()) {
-                g.addNode2(n);
-            }
-            for (Edge e : antGraph.getEdges()) {
-                g.addEdge(e);
-            }
-            //System.out.println(ant.getPath().get(ant.getPath().size() - 1));
-
-          /*  Node lastNode = antGraph.getNode(ant.getPath().get(ant.getPath().size() - 1).split(" - ")[0]);
-            // System.out.println(lastNode);
-            Edge edge = new Edge(combinedAnts.get(ant) + " - " + uniqueId.nextId(), lastNode, node);
-            g.addEdge(edge);
-*/
-            
-            for (String p : ant.getPath()) {
-                this.path.add(p);
-            }
-        }
-        for(String reactants : rc.getReactants()){
-            Node reactant = g.getNode(reactants);
-            if(reactant == null){
-                reactant = new Node(reactants + " : "+ rc.getName(reactants));
-            }
-            g.addNode2(reactant);
-            Edge e = new Edge(reactants + " - "+ uniqueId.nextId(), reactant, node);
-            g.addEdge(e);       
-        }
+    public void joinGraphs(String reactionChoosen, List<Ant> combinedAnts, ReactionFA rc) {
+        for(Ant ant : combinedAnts){
+            List<String> localPath = ant.getPath();
+            for(String reaction : localPath){
+                if(!this.path.contains(reaction)){
+                    this.path.add(reaction);
+                    this.pathsize++;
         
-         for(String products : rc.getProducts()){
-            Node product = g.getNode(products);
-            if(product == null){
-                product = new Node(products + " : "+ rc.getName(products));
-            }
-            g.addNode2(product);
-            Edge e = new Edge(products + " - "+ uniqueId.nextId(), node,product);
-            g.addEdge(e);       
+                }            
+            }        
         }
-        this.pathsize++;
-        this.path.add(node.getId());
+        this.pathsize++;        
+        this.path.add(reactionChoosen);
         if (this.getPathSize() > 500) {
             this.lost = true;
         }
 
     }
 
-    public void joinObjectiveGraphs(Ant newAnt, List<String> sources) {
-        this.g.addGraph(newAnt.getGraph());
-        List<Node> sourceNodes = new ArrayList<>();
-        for (String source : sources) {
-            Node s = this.g.getNode(source);
-            if (s != null) {
-                sourceNodes.add(s);
-            }
-        }
+   
 
-        for (Node sourceNode : sourceNodes) {
-            List<Node> connNodes = this.g.getConnectedAsSource(sourceNode);
-            for (Node rNode : connNodes) {
-                updateFlux(rNode);
-            }
-        }
-    }
-
-    public void updateFlux(Node rNode) {
-        List<Node> reactants = this.g.getConnectedAsDestination(rNode);
-        double localFlux = Double.MAX_VALUE;
-        for (Node reactant : reactants) {
-            double reactantFlux = Double.valueOf(reactant.getId().split(" - ")[0].split(" : ")[1]);
-            if (localFlux > reactantFlux) {
-                localFlux = reactantFlux;
-            }
-            String newId = reactant.getId().split(" - ")[0].split(" : ")[0];
-            newId = newId + " : " + String.valueOf(localFlux) + " - " + reactant.getId().split(" - ")[1];
-            reactant.setId(newId);
-            this.flux = localFlux;
-            updateFlux(reactant);
-        }
-    }
 
     public boolean isLost() {
         return this.lost;
     }
 
     public boolean contains(String id) {
-         return g.IsInNodes(id);
+         return false;
     }
 
     public void setPathSize(int pathsize) {

@@ -103,7 +103,7 @@ public class PrintPaths implements KeyListener {
 
         for (Node node : nodes) {
             if (node != null) {
-                String name = node.getId();
+                String name = node.getCompleteId();
                 g.addVertex(name);
                 if (node.getPosition() != null) {
                     layout.transform(name).setLocation(node.getPosition());
@@ -117,9 +117,9 @@ public class PrintPaths implements KeyListener {
             if (edge != null) {
                 try {
                     if (edge.getDirection()) {
-                        g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+                        g.addEdge(edge.getId(), edge.getSource().getCompleteId(), edge.getDestination().getCompleteId(), EdgeType.DIRECTED);
                     } else {
-                        g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.UNDIRECTED);
+                        g.addEdge(edge.getId(), edge.getSource().getCompleteId(), edge.getDestination().getCompleteId(), EdgeType.UNDIRECTED);
                     }
                 } catch (Exception e) {
                 }

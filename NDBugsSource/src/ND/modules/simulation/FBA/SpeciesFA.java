@@ -18,6 +18,8 @@
 package ND.modules.simulation.FBA;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -40,6 +42,7 @@ public class SpeciesFA {
     }
 
     public Ant getAnt() {
+
         if (!ants.isEmpty()) {
             return ants.get(0);
         }
@@ -55,7 +58,26 @@ public class SpeciesFA {
     }
 
     public void addAnt(Ant ant) {
-        if (this.ants.isEmpty() && !this.isInside(ant)) {
+        if (!this.isInside(ant)) {
+            if (ants.size() < 30) {
+                this.ants.add(ant);
+            } else {
+                Collections.sort(ants, new Comparator<Ant>() {
+                    public int compare(Ant o1, Ant o2) {
+                        return o1.getPathSize() < o2.getPathSize() ? -1 : o1.getPathSize() > o2.getPathSize() ? 1 : 0;
+                    }
+                });
+                int size = this.ants.get(this.ants.size() - 1).getPathSize();
+                if (size > ant.getPathSize()) {
+                    this.ants.set(this.ants.size() - 1, ant);
+                }
+            }
+        }
+    }
+
+    public void addSingleAnt(Ant ant) {
+        if (this.ants.isEmpty() || this.ants.get(0).getPathSize() > ant.getPathSize()) {
+            this.ants.clear();
             this.ants.add(ant);
         }
     }
@@ -93,5 +115,18 @@ public class SpeciesFA {
             }
         }
         return false;
+    }
+
+    public List<String> combinePahts() {
+        List<String> combined = new ArrayList<>();
+        for(Ant ant: ants){
+            for(String path: ant.getPath()){
+                if(!combined.contains(path)){
+                    combined.add(path);
+                }
+            }
+            
+        }
+        return combined;
     }
 }

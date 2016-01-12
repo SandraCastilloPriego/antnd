@@ -27,14 +27,27 @@ public class Node {
 
 
     private String id;
+    private String name;
     private Point2D position;
 
     public Node(String id) {
         this.id = id;
     }
+    public Node(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public String getId() {
         return id;
+    }
+    
+    public String getCompleteId(){
+        return this.id + " : " + this.getName();
+    }
+    
+    public String getName() {
+        return name;
     }
 
     public void setId(String newID) {
@@ -43,7 +56,7 @@ public class Node {
 
     @Override
     public Node clone() {
-        Node n = new Node(this.id);
+        Node n = new Node(this.id, this.name);
         n.position = this.position;
         return n;
     }

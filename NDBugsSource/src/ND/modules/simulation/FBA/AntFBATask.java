@@ -18,11 +18,14 @@
 package ND.modules.simulation.FBA;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.data.network.Edge;
 import ND.desktop.impl.PrintPaths;
 import ND.main.NDCore;
 import ND.data.network.Graph;
 import ND.data.network.Node;
 import ND.modules.configuration.general.GetInfoAndTools;
+import ND.modules.simulation.antNoGraph.ReactionFA;
+import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
@@ -139,14 +142,7 @@ public class AntFBATask extends AbstractTask {
         this.analyzeResults();
 
         if (getStatus() == TaskStatus.PROCESSING) {
-            for (String obj : this.results.keySet()) {
-                if (this.graph == null) {
-                    this.graph = this.results.get(obj).getGraph();
-                } else {
-                    this.graph.addGraph(this.results.get(obj).getGraph());
-                }
-            }
-
+            
          /*   List<String> deadEnds = this.graph.getDeadEnds();
             if (deadEnds.size() > 0) {
                 this.doneFixes.add(deadEnds.get(0));
@@ -208,7 +204,7 @@ public class AntFBATask extends AbstractTask {
      }
 
      }*/
-    private void fixDeadEnds(String deadEnd) {
+ /*   private void fixDeadEnds(String deadEnd) {
         String id = deadEnd.split(" : ")[0];
         Map<String, SpeciesFA> compounds = simulation.getCompounds();
         System.out.println("id:" + id);
@@ -256,14 +252,49 @@ public class AntFBATask extends AbstractTask {
         }
 
     }
-
+*/
     private void analyzeResults() {
         Map<String, SpeciesFA> compounds = this.simulation.getCompounds();
         SpeciesFA compound = compounds.get(this.objectiveID);
 
+        List<String> path = compound.combinePahts();
+        this.graph = createGraph(path);
         for (Ant ant : compound.getAnts()) {
             ant.print();
-            this.graph = ant.getGraph();
         }
+    }
+    
+    private Graph createGraph(List<String> path){
+        Map<String, ReactionFA> reactions  = this.simulation.getReactions();
+        Map<String, SpeciesFA> compounds  = this.simulation.getCompounds();
+        Graph g = new Graph(null, null);
+        for(String r : path){
+            ReactionFA reaction = reactions.get(r);
+            if(reaction != null){
+                Node reactionNode = new Node(reaction.getId());
+                g.addNode2(reactionNode);
+                for(String reactant : reaction.getReactants()){
+                    SpeciesFA sp = compounds.get(reactant);
+                    Node reactantNode = g.getNode(reactant);
+                    if(reactantNode == null){
+                        reactantNode = new Node(reactant, sp.getName());
+                    }
+                    g.addNode2(reactantNode);
+                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    g.addEdge(e);
+                }
+                for(String product : reaction.getProducts()){
+                    SpeciesFA sp = compounds.get(product);
+                    Node reactantNode = g.getNode(product);
+                    if(reactantNode == null){
+                        reactantNode = new Node(product, sp.getName());
+                    }
+                    g.addNode2(reactantNode);
+                    Edge e = new Edge(r + " - " + uniqueId.nextId(),  reactionNode,reactantNode);
+                    g.addEdge(e);
+                }
+            }
+        }
+        return g;
     }
 }

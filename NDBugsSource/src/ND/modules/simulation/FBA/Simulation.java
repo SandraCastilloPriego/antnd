@@ -46,8 +46,6 @@ public class Simulation {
 
     private final HashMap<String, ReactionFA> reactions;
     private final HashMap<String, SpeciesFA> compounds;
-
-    private double shortestPath = Integer.MAX_VALUE;
     private Ant antResult;
 
     public Simulation(SimpleBasicDataset networkDS, List<String> cofactors, HashMap<String, String[]> bounds, Map<String, Double[]> sources, List<String> sourcesList) {
@@ -67,15 +65,14 @@ public class Simulation {
         Model m = doc.getModel();
         for (Species s : m.getListOfSpecies()) {
             SpeciesFA specie = new SpeciesFA(s.getId(), s.getName());
-            //add the number of initial ants using the sources.. and add them
-            // in the list of nodes with ants
+            this.compounds.put(s.getId(), specie);
+            
             if (this.sources != null && this.sources.containsKey(s.getId())) {
-                Ant ant = new Ant(specie.getId() + " : " + specie.getName());
+                Ant ant = new Ant(specie.getId());
                 ant.initAnt(Math.abs(this.sources.get(s.getId())[0]));
                 specie.addAnt(ant);
                 this.sourcesList.add(s.getId());
             }
-            this.compounds.put(s.getId(), specie);
         }
 
         for (Reaction r : m.getListOfReactions()) {
@@ -139,6 +136,7 @@ public class Simulation {
             }
             this.reactions.put(r.getId(), reaction);
         }
+        
 
     }
 
@@ -164,99 +162,51 @@ public class Simulation {
 
                 // get the ants that must be removed from the reactants ..
                 // creates a superAnt with all the paths until this reaction joined..
-                Ant superAnt = new Ant(null);
-                HashMap<Ant, String> combinedAnts = new HashMap<>();
-                //double lastFlux = bound;
+                List<List<Ant>> paths = new ArrayList<>();
                 for (String s : toBeRemoved) {
                     SpeciesFA spfa = this.compounds.get(s);
 
-                    Ant a = spfa.getAnt();
-                    if (a == null) {
-                        a = new Ant(spfa.getId() + " : " + spfa.getName());
-                        if (this.sources.containsKey(spfa.getId())) {
-                            a.initAnt(Math.abs(this.sources.get(spfa.getId())[0]));
-                        } else {
-                            a.initAnt(spfa.getPool());
+                    List<Ant> a = spfa.getAnts();
+                    // System.out.println("id: " + s + "paths: " + a.size());
+                    if (a.size() > 0) {
+                        paths.add(a);
+                    }
+
+                }
+
+                List<List<Ant>> combinations = Permutation.permutations(paths);
+                
+                List<Ant> superAnts = new ArrayList<>();
+                for (List<Ant> com : combinations) {
+                    Ant superAnt = new Ant(null);
+                    double flux = getFlux(com);
+                    superAnt.joinGraphs(reactionChoosen, com, rc);
+                    superAnts.add(superAnt);
+                }
+
+                // move the ants to the products...   
+                for (String s : toBeAdded) {
+                    for (Ant superAnt : superAnts) {
+                        if (!superAnt.isLost()) {
+                            SpeciesFA spfa = this.compounds.get(s);
+                            Ant newAnt = superAnt.clone();
+                            newAnt.setLocation(compound);
+                            spfa.addAnt(newAnt);
                         }
 
                     }
-                    // spfa.addAnt(a);
-
-                   /* double f = a.getFlux() / rc.getStoichiometry(spfa.getId());
-                    if (f < lastFlux) {
-                        lastFlux = f;
-                    }*/
-
-                    combinedAnts.put(a, s);
                 }
-
-                /* for (String s : toBeRemoved) {
-                 SpeciesFA spfa = this.compounds.get(s);
-                 Ant a = spfa.getAnt();
-                 if (a != null) {
-                 a.setFlux(lastFlux);
-                 }
-                 }*/
-                superAnt.joinGraphs(reactionChoosen, combinedAnts, rc);
-
-                if (!superAnt.isLost()) {
-                    // move the ants to the products...   
-                    for (String s : toBeAdded) {
-                        SpeciesFA spfa = this.compounds.get(s);
-                        //Ant oldAnt = spfa.getAnt();
-                        // if (oldAnt == null /*|| (oldAnt != null && oldAnt.getPathSize() > superAnt.getPathSize())*/) {
-
-                        // for (int e = 0; e < rc.getStoichiometry(s); e++) {
-                        Ant newAnt = superAnt.clone();
-                        newAnt.setLocation(spfa.getId() + " : " + spfa.getName(), rc);
-                        spfa.addAnt(newAnt);
-                        // }
-                        // }
-                    }
-
-                }
-                // When the ants arrive to the biomass
-               /* if (toBeAdded.contains(objectiveID)) {
-                 //System.out.println("Biomass produced!: " + rc.getId());
-
-                 SpeciesFA spFA = this.compounds.get(objectiveID);
-
-                 Ant a = spFA.getAnt();
-                 if (a != null) {
-                 // saving the shortest path
-                 if (a.getPathSize() < shortestPath) {
-                 System.out.println(a.getPathSize());
-                 this.shortestPath = a.getPathSize();
-                 Graph antGraph = a.getGraph();
-                 Node objectiveNode = antGraph.getNode(spFA.getId());
-                 if (objectiveNode == null) {
-                 objectiveNode = new Node(spFA.getId() + " : " + spFA.getName());
-                 }
-                 antGraph.addNode2(objectiveNode);
-                 Node lastNode = antGraph.getNode(reactionChoosen + " : " + a.getFlux());
-
-                 //                            if (lastNode == null) {
-                 //                                lastNode = new Node(reactionChoosen + " : " + a.getFlux() + " - " + uniqueId.nextId());
-                 //                            }
-                 Edge edge = new Edge(objectiveID + " : " + a.getFlux() + " - " + uniqueId.nextId(), lastNode, objectiveNode);
-                 antGraph.addEdge(edge);
-                 a.setGraph(antGraph);
-                 a.print();
-                 this.antResult = a;                            
-                 }
-
-                 }
-                 }*/
+                
             }
         }
     }
 
-    private List<String> getPossibleReactions(String node) {
+    private List<String> getPossibleReactions(String compound) {
 
         List<String> possibleReactions = new ArrayList<>();
-        SpeciesFA sp = this.compounds.get(node);
+        SpeciesFA sp = this.compounds.get(compound);
         Ant ant = sp.getAnt();
-        if (!this.sources.containsKey(node) && ant == null) {
+        if (!this.sources.containsKey(compound) && ant == null) {
             return possibleReactions;
         }
 
@@ -269,7 +219,7 @@ public class Simulation {
                 isPossible = false;
             }
 
-            if (r.hasReactant(node)) {
+            if (r.hasReactant(compound)) {
 
                 if (r.getub() > 0) {
                     List<String> reactants = r.getReactants();
@@ -329,11 +279,30 @@ public class Simulation {
         return this.antResult;
     }
 
-    public void reset() {
-        this.shortestPath = Integer.MAX_VALUE;
-    }
-
+   
     public Map<String, SpeciesFA> getCompounds() {
         return this.compounds;
     }
+
+    public Map<String, ReactionFA> getReactions() {
+        return this.reactions;
+    }
+    
+   /* public double getFlux(){
+        Map<String, Double> fluxes = new HashMap<>();
+        String source = 
+        for(String p : path){
+            if(this.reactions.containsKey(p)){
+                for(String reactants : )
+            }
+        }
+        
+    }*/
+    
+    private double getFlux(List<Ant> com) {
+        return 0.0;
+    
+    }
+    
+    
 }
