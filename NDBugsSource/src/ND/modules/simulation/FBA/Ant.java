@@ -43,8 +43,6 @@ public class Ant {
         this.flux = flux;
     }
 
-   
-
     public void removePath() {
         this.path.clear();
     }
@@ -87,27 +85,28 @@ public class Ant {
         }
         System.out.print("\n");
     }
-    
-    public String toString () {
-        String path =null;
+
+    public String toString() {
+        String path = null;
         for (String p : this.path) {
-            path+=" - " + p.split(" - ")[0];
+            path += " - " + p.split(" - ")[0];
         }
         return path;
     }
 
     public void joinGraphs(String reactionChoosen, List<Ant> combinedAnts, ReactionFA rc) {
-        for(Ant ant : combinedAnts){
+        for (Ant ant : combinedAnts) {
             List<String> localPath = ant.getPath();
-            for(String reaction : localPath){
-                if(!this.path.contains(reaction)){
+            for (String reaction : localPath) {
+                if (!this.path.contains(reaction)) {
                     this.path.add(reaction);
                     this.pathsize++;
-        
-                }            
-            }        
+
+                }
+            }
         }
-        this.pathsize++;        
+                
+        this.pathsize++;
         this.path.add(reactionChoosen);
         if (this.getPathSize() > 500) {
             this.lost = true;
@@ -115,15 +114,15 @@ public class Ant {
 
     }
 
-   
-
-
     public boolean isLost() {
         return this.lost;
     }
 
     public boolean contains(String id) {
-         return false;
+        for(String p : this.path){
+            if(p.equals(id)) return true;
+        }
+        return false;
     }
 
     public void setPathSize(int pathsize) {
@@ -152,4 +151,5 @@ public class Ant {
     public void setFlux(double flux) {
         this.flux = flux;
     }
+
 }

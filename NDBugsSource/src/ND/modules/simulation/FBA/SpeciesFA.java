@@ -17,9 +17,8 @@
  */
 package ND.modules.simulation.FBA;
 
+import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -30,58 +29,69 @@ public class SpeciesFA {
 
     private final String id;
     private final List<String> reactions;
-    private List<Ant> ants;
+    //private final List<Ant> ants;
+    //private List<String> ant;
+    private Ant shortestAnt;
+    // List<String> combined;
     private double pool = 0;
     private final String name;
 
     public SpeciesFA(String id, String name) {
-        this.ants = new ArrayList<>();
+        //this.ants = new ArrayList<>();
         this.id = id;
         this.name = name;
         this.reactions = new ArrayList<>();
+        // this.combined = new ArrayList<>();
     }
 
     public Ant getAnt() {
-
-        if (!ants.isEmpty()) {
-            return ants.get(0);
-        }
-        return null;
+        return this.shortestAnt;
+        /*  if (!ants.isEmpty()) {
+         return ants.get(0);
+         }
+         return null;*/
     }
 
-    public List<Ant> getAnts() {
-        return ants;
-    }
-
+    /* public List<Ant> getAnts() {
+     return ants;
+     }*/
     public String getName() {
         return this.name;
     }
 
-    public void addAnt(Ant ant) {
-        if (!this.isInside(ant)) {
-            if (ants.size() < 30) {
-                this.ants.add(ant);
-            } else {
-                Collections.sort(ants, new Comparator<Ant>() {
-                    public int compare(Ant o1, Ant o2) {
-                        return o1.getPathSize() < o2.getPathSize() ? -1 : o1.getPathSize() > o2.getPathSize() ? 1 : 0;
-                    }
-                });
-                int size = this.ants.get(this.ants.size() - 1).getPathSize();
-                if (size > ant.getPathSize()) {
-                    this.ants.set(this.ants.size() - 1, ant);
-                }
-            }
+    public void addAnt(Ant ant, ReactionFA reaction) {
+        if(this.shortestAnt.contains(reaction))
+        
+        if (this.shortestAnt == null || ant.getPathSize() < this.shortestAnt.getPathSize()) {
+            this.shortestAnt = ant.clone();
+        } else {
+            this.combinePaths(ant);
         }
+
+        /*if (!this.isInside(ant)) {
+         this.combinePaths(ant);        
+         if (ants.size() < 30) {
+         this.ants.add(ant);
+         } else {
+         Collections.sort(ants, new Comparator<Ant>() {
+         public int compare(Ant o1, Ant o2) {
+         return o1.getPathSize() < o2.getPathSize() ? -1 : o1.getPathSize() > o2.getPathSize() ? 1 : 0;
+         }
+         });
+         int size = this.ants.get(this.ants.size() - 1).getPathSize();
+         if (size > ant.getPathSize()) {
+         this.ants.set(this.ants.size() - 1, ant);
+         }
+         }
+         }*/
     }
 
-    public void addSingleAnt(Ant ant) {
-        if (this.ants.isEmpty() || this.ants.get(0).getPathSize() > ant.getPathSize()) {
-            this.ants.clear();
-            this.ants.add(ant);
-        }
-    }
-
+    /*  public void addSingleAnt(Ant ant) {
+     if (this.ants.isEmpty() || this.ants.get(0).getPathSize() > ant.getPathSize()) {
+     this.ants.clear();
+     this.ants.add(ant);
+     }
+     }*/
     public void addReaction(String id) {
         this.reactions.add(id);
     }
@@ -94,10 +104,9 @@ public class SpeciesFA {
         return this.reactions;
     }
 
-    public void clearAnts() {
-        this.ants.clear();
-    }
-
+    /* public void clearAnts() {
+     this.ants.clear();
+     }*/
     public double getPool() {
         return this.pool;
     }
@@ -106,27 +115,45 @@ public class SpeciesFA {
         this.pool = pool;
     }
 
-    private boolean isInside(Ant ant) {
-        for (Ant a : ants) {
-            if (a.getPathSize() == ant.getPathSize()) {
-                if (a.toString().equals(ant.toString())) {
-                    return true;
-                }
+    /* private boolean isInside(Ant ant) {
+     for (Ant a : ants) {
+     if (a.getPathSize() == ant.getPathSize()) {
+     if (a.toString().equals(ant.toString())) {
+     return true;
+     }
+     }
+     }
+     return false;
+     }*/
+
+    /*  public List<String> combinePahts() {
+     List<String> combined = new ArrayList<>();
+     for(Ant ant: ants){
+     for(String path: ant.getPath()){
+     if(!combined.contains(path)){
+     combined.add(path);
+     }
+     }
+            
+     }
+     return combined;
+     }*/
+    private void combinePaths(Ant ant) {
+        Ant antd = this.shortestAnt.clone();
+
+        for (String path : ant.getPath()) {
+            if (!antd.contains(path)) {
+                antd.getPath().add(path);
             }
         }
-        return false;
+        
     }
 
-    public List<String> combinePahts() {
-        List<String> combined = new ArrayList<>();
-        for(Ant ant: ants){
-            for(String path: ant.getPath()){
-                if(!combined.contains(path)){
-                    combined.add(path);
-                }
-            }
-            
-        }
-        return combined;
+    public List<String> getShortest() {
+        return this.shortestAnt.getPath();
+    }
+
+    public double getFlux() {
+        return 0.0;
     }
 }

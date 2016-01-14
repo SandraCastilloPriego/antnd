@@ -142,13 +142,12 @@ public class AntFBATask extends AbstractTask {
         this.analyzeResults();
 
         if (getStatus() == TaskStatus.PROCESSING) {
-            
-         /*   List<String> deadEnds = this.graph.getDeadEnds();
-            if (deadEnds.size() > 0) {
-                this.doneFixes.add(deadEnds.get(0));
-                this.fixDeadEnds(deadEnds.get(0));
-            }*/
 
+            /*   List<String> deadEnds = this.graph.getDeadEnds();
+             if (deadEnds.size() > 0) {
+             this.doneFixes.add(deadEnds.get(0));
+             this.fixDeadEnds(deadEnds.get(0));
+             }*/
             this.tools.createDataFile(graph, networkDS, objectiveID, sourcesList, false);
             //  LinearProgramming lp = new LinearProgramming(graph, objectiveID, sources, reactions);
             //System.out.println("Solution: " + lp.getObjectiveValue());
@@ -204,97 +203,163 @@ public class AntFBATask extends AbstractTask {
      }
 
      }*/
- /*   private void fixDeadEnds(String deadEnd) {
-        String id = deadEnd.split(" : ")[0];
-        Map<String, SpeciesFA> compounds = simulation.getCompounds();
-        System.out.println("id:" + id);
-        Ant selectedAnt = null;
-        for (String sp : compounds.keySet()) {
-            SpeciesFA c = compounds.get(sp);
-            Ant ant = c.getAnt();
-            if (ant != null) {
-                if (ant.getGraph().IsInSource(id)) {
-                    if (selectedAnt == null || ant.getPathSize() < selectedAnt.getPathSize()) {
-                        selectedAnt = ant;
-                    }
-                }
-            }
-        }
-        System.out.println("Boundary:");
-        if (selectedAnt != null) {
-            selectedAnt.print();
-            this.graph.addGraph(selectedAnt.getGraph());
+    /*   private void fixDeadEnds(String deadEnd) {
+     String id = deadEnd.split(" : ")[0];
+     Map<String, SpeciesFA> compounds = simulation.getCompounds();
+     System.out.println("id:" + id);
+     Ant selectedAnt = null;
+     for (String sp : compounds.keySet()) {
+     SpeciesFA c = compounds.get(sp);
+     Ant ant = c.getAnt();
+     if (ant != null) {
+     if (ant.getGraph().IsInSource(id)) {
+     if (selectedAnt == null || ant.getPathSize() < selectedAnt.getPathSize()) {
+     selectedAnt = ant;
+     }
+     }
+     }
+     }
+     System.out.println("Boundary:");
+     if (selectedAnt != null) {
+     selectedAnt.print();
+     this.graph.addGraph(selectedAnt.getGraph());
 
-        }
-        List<String> deadEnds = this.graph.getDeadEnds();
-        System.out.println(deadEnds.size());
-        List<String> toRemove = new ArrayList<>();
-        for (String dead : deadEnds) {
-            System.out.println(dead);
-            if (dead.contains(id)) {
-                toRemove.add(dead);
-            }
-        }
-        for (String r : toRemove) {
-            deadEnds.remove(r);
-        }
-        for (String r : doneFixes) {
-            deadEnds.remove(r);
-        }
-        if (deadEnds.size() > 0) {
-            System.out.println(deadEnds.size());
+     }
+     List<String> deadEnds = this.graph.getDeadEnds();
+     System.out.println(deadEnds.size());
+     List<String> toRemove = new ArrayList<>();
+     for (String dead : deadEnds) {
+     System.out.println(dead);
+     if (dead.contains(id)) {
+     toRemove.add(dead);
+     }
+     }
+     for (String r : toRemove) {
+     deadEnds.remove(r);
+     }
+     for (String r : doneFixes) {
+     deadEnds.remove(r);
+     }
+     if (deadEnds.size() > 0) {
+     System.out.println(deadEnds.size());
 
-            if (deadEnds.size() > 0) {
-                this.doneFixes.add(deadEnds.get(0));
-                this.fixDeadEnds(deadEnds.get(0));
-            }
+     if (deadEnds.size() > 0) {
+     this.doneFixes.add(deadEnds.get(0));
+     this.fixDeadEnds(deadEnds.get(0));
+     }
 
-        }
+     }
 
-    }
-*/
+     }
+     */
     private void analyzeResults() {
         Map<String, SpeciesFA> compounds = this.simulation.getCompounds();
         SpeciesFA compound = compounds.get(this.objectiveID);
 
-        List<String> path = compound.combinePahts();
-        this.graph = createGraph(path);
-        for (Ant ant : compound.getAnts()) {
-            ant.print();
+//        List<String> path = compound.combinePahts();
+        List<String> path = compound.getShortest();
+      /*  Simulation newSimulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList);
+        newSimulation.createWorld(compound.getCombinedAnts(), "s_0629");
+       // this.simulation.createWorld(compound.getCombinedAnts(), "s_0629");
+        for (int i = 0; i < this.iterations; i++) {
+            newSimulation.cicle();
         }
+        compounds = newSimulation.getCompounds();
+        compound = compounds.get(this.objectiveID);
+
+//        List<String> path = compound.combinePahts();
+        List<String> path2 = compound.getShortest();
+        
+        List<String> finalPath = this.combinePahts(path, path2);*/
+
+        this.graph = createGraph(path);
+
+        //this.getVertices(compound);
+
+        /* for (Ant ant : compound.getAnts()) {
+         ant.print();
+         }*/
     }
-    
-    private Graph createGraph(List<String> path){
-        Map<String, ReactionFA> reactions  = this.simulation.getReactions();
-        Map<String, SpeciesFA> compounds  = this.simulation.getCompounds();
+
+    private Graph createGraph(List<String> path) {
+        Map<String, ReactionFA> reactions = this.simulation.getReactions();
+        Map<String, SpeciesFA> compounds = this.simulation.getCompounds();
         Graph g = new Graph(null, null);
-        for(String r : path){
+        for (String r : path) {
             ReactionFA reaction = reactions.get(r);
-            if(reaction != null){
+            if (reaction != null) {
                 Node reactionNode = new Node(reaction.getId());
                 g.addNode2(reactionNode);
-                for(String reactant : reaction.getReactants()){
+                for (String reactant : reaction.getReactants()) {
                     SpeciesFA sp = compounds.get(reactant);
                     Node reactantNode = g.getNode(reactant);
-                    if(reactantNode == null){
+                    if (reactantNode == null) {
                         reactantNode = new Node(reactant, sp.getName());
                     }
                     g.addNode2(reactantNode);
                     Edge e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
                     g.addEdge(e);
                 }
-                for(String product : reaction.getProducts()){
+                for (String product : reaction.getProducts()) {
                     SpeciesFA sp = compounds.get(product);
                     Node reactantNode = g.getNode(product);
-                    if(reactantNode == null){
+                    if (reactantNode == null) {
                         reactantNode = new Node(product, sp.getName());
                     }
                     g.addNode2(reactantNode);
-                    Edge e = new Edge(r + " - " + uniqueId.nextId(),  reactionNode,reactantNode);
+                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
                     g.addEdge(e);
                 }
             }
         }
         return g;
+    }
+
+    /* public List<Vertex> getVertices(SpeciesFA compound) {
+     Map<String, ReactionFA> reactions = this.simulation.getReactions();
+     Map<String, Vertex> verticesMap = new HashMap<>();
+     List<Vertex> vertices = new ArrayList<>();
+
+     for (String r : compound.getAnt().getPath()) {
+     Vertex vr = new Vertex(r);
+     vertices.add(vr);
+     verticesMap.put(r, vr);
+
+     }
+     for (String r : compound.getAnt().getPath()) {
+     ReactionFA reaction = reactions.get(r);
+     if (reaction != null) {
+     for (String reactants : reaction.getReactants()) {
+     Vertex reactant = verticesMap.get(reactants);
+     reactant.adjacencies.add(new DijktraEdge(verticesMap.get(r), 1.0));
+     }
+
+     for (String product : reaction.getProducts()) {
+     Vertex reactionVertex = verticesMap.get(r);
+     reactionVertex.adjacencies.add(new DijktraEdge(verticesMap.get(product), 1.0));
+     }
+     }
+     }
+     Dijkstra.computePaths(verticesMap.get("s_0629"));
+     Dijkstra.getShortestPathTo(verticesMap.get("s_1360"));
+     return vertices;
+     }*/
+    public List<String> combinePahts(List<String> path1, List<String> path2) {
+        List<String> combined = new ArrayList<>();
+        for (String path : path1) {
+            if (!combined.contains(path)) {
+                combined.add(path);
+
+            }
+
+        }
+        for (String path : path2) {
+            if (!combined.contains(path)) {
+                combined.add(path);
+
+            }
+
+        }
+        return combined;
     }
 }
