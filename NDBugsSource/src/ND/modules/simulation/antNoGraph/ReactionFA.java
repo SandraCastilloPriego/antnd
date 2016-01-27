@@ -35,6 +35,7 @@ public class ReactionFA {
     private double ub = 1000;
     private double lb = -1000;
     private int pheromones = 0;
+    private double flux = 0.0;
     //    private double flux;
 
     public ReactionFA(String id) {
@@ -202,4 +203,15 @@ public class ReactionFA {
     public void resetPheromones() {
         this.pheromones = 0;
     }
+    
+    public void setFlux(double flux){
+        this.flux = flux;
+    }
+    
+    
+    
+    public double getFlux(){
+        return this.flux;
+    }
 }
+

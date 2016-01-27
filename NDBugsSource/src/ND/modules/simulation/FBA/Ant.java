@@ -19,7 +19,9 @@ package ND.modules.simulation.FBA;
 
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -27,19 +29,19 @@ import java.util.List;
  */
 public class Ant {
 
-    List<String> path;
+    Map<String, Boolean> path;
     String location;
     boolean lost = false;
     int pathsize = 0;
     double flux = 0.0;
 
     public Ant(String location) {
-        this.path = new ArrayList<>();
+        this.path = new HashMap<>();
         this.location = location;
     }
 
     public void initAnt(double flux) {
-        this.path.add(location);
+        this.path.put(location, true);
         this.flux = flux;
     }
 
@@ -47,18 +49,22 @@ public class Ant {
         this.path.clear();
     }
 
-    public List<String> getPath() {
+    public Map<String, Boolean> getPath() {
         return this.path;
     }
 
-    public void setPath(List<String> path) {
+    public void setPath(Map<String,Boolean> path) {
         this.path = path;
     }
 
     @Override
     public Ant clone() {
         Ant ant = new Ant(this.location);
-        ant.setPath(path);
+        Map<String,Boolean> newPath = new HashMap<>();
+        for(String p : path.keySet()){
+            newPath.put(p, path.get(p));
+        }
+        ant.setPath(newPath);
         ant.setPathSize(this.pathsize);
         ant.setFlux(this.flux);
         return ant;
@@ -80,7 +86,7 @@ public class Ant {
 
     public void print() {
         System.out.print("size: " + this.getPathSize() + " - location: " + this.location + "//");
-        for (String p : this.path) {
+        for (String p : this.path.keySet()) {
             System.out.print(" - " + p.split(" - ")[0]);
         }
         System.out.print("\n");
@@ -88,18 +94,18 @@ public class Ant {
 
     public String toString() {
         String path = null;
-        for (String p : this.path) {
+        for (String p : this.path.keySet()) {
             path += " - " + p.split(" - ")[0];
         }
         return path;
     }
 
-    public void joinGraphs(String reactionChoosen, List<Ant> combinedAnts, ReactionFA rc) {
+    public void joinGraphs(String reactionChoosen, Boolean direction, List<Ant> combinedAnts, ReactionFA rc) {
         for (Ant ant : combinedAnts) {
-            List<String> localPath = ant.getPath();
-            for (String reaction : localPath) {
-                if (!this.path.contains(reaction)) {
-                    this.path.add(reaction);
+            Map<String,Boolean> localPath = ant.getPath();
+            for (String reaction : localPath.keySet()) {
+                if (!this.path.containsKey(reaction)) {
+                    this.path.put(reaction,localPath.get(reaction));
                     this.pathsize++;
 
                 }
@@ -107,8 +113,8 @@ public class Ant {
         }
                 
         this.pathsize++;
-        this.path.add(reactionChoosen);
-        if (this.getPathSize() > 500) {
+        this.path.put(reactionChoosen, direction);
+        if (this.getPathSize() > 50000) {
             this.lost = true;
         }
 
@@ -119,10 +125,7 @@ public class Ant {
     }
 
     public boolean contains(String id) {
-        for(String p : this.path){
-            if(p.equals(id)) return true;
-        }
-        return false;
+        return this.path.containsKey(id);
     }
 
     public void setPathSize(int pathsize) {
@@ -134,8 +137,8 @@ public class Ant {
     }
 
     public boolean compare(Ant ant) {
-        for (String p : this.getPath()) {
-            for (String op : ant.getPath()) {
+        for (String p : this.getPath().keySet()) {
+            for (String op : ant.getPath().keySet()) {
                 if (!p.split(" - ")[0].equals(op.split(" - ")[0])) {
                     return false;
                 }

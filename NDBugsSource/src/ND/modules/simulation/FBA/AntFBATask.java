@@ -257,7 +257,22 @@ public class AntFBATask extends AbstractTask {
         SpeciesFA compound = compounds.get(this.objectiveID);
 
 //        List<String> path = compound.combinePahts();
-        List<String> path = compound.getShortest();
+        Map<String, Boolean> path = compound.getShortest();
+        for(String p : path.keySet()) System.out.println(p);
+        System.out.println(simulation.getFlux(compound.getAnt(), objectiveID));
+        String results = "";
+        for(String c : compounds.keySet()){
+            SpeciesFA compoundr = compounds.get(c);
+            if(compoundr.getAnt() != null){
+            results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compound.getId())+ "\n";
+            }else{
+            results += c + " : " + compoundr.getName()+ "\n";
+            }
+        }
+        this.networkDS.addInfo(results);
+   //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0568"));
+    //    System.out.println(simulation.getFlux(compound.getAnt(), "s_0555"));
+   //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0075"));
       /*  Simulation newSimulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList);
         newSimulation.createWorld(compound.getCombinedAnts(), "s_0629");
        // this.simulation.createWorld(compound.getCombinedAnts(), "s_0629");
@@ -281,14 +296,14 @@ public class AntFBATask extends AbstractTask {
          }*/
     }
 
-    private Graph createGraph(List<String> path) {
+    private Graph createGraph(Map<String, Boolean> path) {
         Map<String, ReactionFA> reactions = this.simulation.getReactions();
         Map<String, SpeciesFA> compounds = this.simulation.getCompounds();
         Graph g = new Graph(null, null);
-        for (String r : path) {
+        for (String r : path.keySet()) {
             ReactionFA reaction = reactions.get(r);
             if (reaction != null) {
-                Node reactionNode = new Node(reaction.getId());
+                Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFlux()));
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
                     SpeciesFA sp = compounds.get(reactant);

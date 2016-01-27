@@ -20,6 +20,7 @@ package ND.modules.simulation.FBA;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -59,14 +60,20 @@ public class SpeciesFA {
         return this.name;
     }
 
-    public void addAnt(Ant ant, ReactionFA reaction) {
-        if(this.shortestAnt.contains(reaction))
+    public void addAnt(Ant ant) {
+
+        // If the actual path contains already the same reaction, chooses the one carrying more flux or the shortest path.
+      /*  if (this.shortestAnt.contains(reaction.getId())) {
+         if ((ant.getFlux() > this.shortestAnt.getFlux()) || (ant.getFlux() == this.shortestAnt.getFlux()
+         && ant.getPathSize() < this.shortestAnt.getPathSize())) {
+         this.shortestAnt = ant.clone();
+         }
+         }*/
         
-        if (this.shortestAnt == null || ant.getPathSize() < this.shortestAnt.getPathSize()) {
+      // if (this.shortestAnt == null ||((ant.getFlux() > this.shortestAnt.getFlux()) || (ant.getFlux() == this.shortestAnt.getFlux()
+       //         && ant.getPathSize() < this.shortestAnt.getPathSize()))) {
             this.shortestAnt = ant.clone();
-        } else {
-            this.combinePaths(ant);
-        }
+      //  }
 
         /*if (!this.isInside(ant)) {
          this.combinePaths(ant);        
@@ -138,18 +145,8 @@ public class SpeciesFA {
      }
      return combined;
      }*/
-    private void combinePaths(Ant ant) {
-        Ant antd = this.shortestAnt.clone();
-
-        for (String path : ant.getPath()) {
-            if (!antd.contains(path)) {
-                antd.getPath().add(path);
-            }
-        }
-        
-    }
-
-    public List<String> getShortest() {
+    
+    public Map<String, Boolean> getShortest() {
         return this.shortestAnt.getPath();
     }
 
