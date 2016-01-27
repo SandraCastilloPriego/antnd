@@ -258,34 +258,36 @@ public class AntFBATask extends AbstractTask {
 
 //        List<String> path = compound.combinePahts();
         Map<String, Boolean> path = compound.getShortest();
-        for(String p : path.keySet()) System.out.println(p);
+        for (String p : path.keySet()) {
+            System.out.println(p);
+        }
         System.out.println(simulation.getFlux(compound.getAnt(), objectiveID));
         String results = "";
-        for(String c : compounds.keySet()){
+        for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
-            if(compoundr.getAnt() != null){
-            results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compound.getId())+ "\n";
-            }else{
-            results += c + " : " + compoundr.getName()+ "\n";
+            if (compoundr.getAnt() != null) {
+                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compound.getId()) + "\n";
+            } else {
+                results += c + " : " + compoundr.getName() + "\n";
             }
         }
         this.networkDS.addInfo(results);
    //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0568"));
-    //    System.out.println(simulation.getFlux(compound.getAnt(), "s_0555"));
-   //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0075"));
+        //    System.out.println(simulation.getFlux(compound.getAnt(), "s_0555"));
+        //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0075"));
       /*  Simulation newSimulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList);
-        newSimulation.createWorld(compound.getCombinedAnts(), "s_0629");
-       // this.simulation.createWorld(compound.getCombinedAnts(), "s_0629");
-        for (int i = 0; i < this.iterations; i++) {
-            newSimulation.cicle();
-        }
-        compounds = newSimulation.getCompounds();
-        compound = compounds.get(this.objectiveID);
+         newSimulation.createWorld(compound.getCombinedAnts(), "s_0629");
+         // this.simulation.createWorld(compound.getCombinedAnts(), "s_0629");
+         for (int i = 0; i < this.iterations; i++) {
+         newSimulation.cicle();
+         }
+         compounds = newSimulation.getCompounds();
+         compound = compounds.get(this.objectiveID);
 
-//        List<String> path = compound.combinePahts();
-        List<String> path2 = compound.getShortest();
+         //        List<String> path = compound.combinePahts();
+         List<String> path2 = compound.getShortest();
         
-        List<String> finalPath = this.combinePahts(path, path2);*/
+         List<String> finalPath = this.combinePahts(path, path2);*/
 
         this.graph = createGraph(path);
 
@@ -312,7 +314,12 @@ public class AntFBATask extends AbstractTask {
                         reactantNode = new Node(reactant, sp.getName());
                     }
                     g.addNode2(reactantNode);
-                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    Edge e;
+                    if (path.get(r)) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    } else {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+                    }
                     g.addEdge(e);
                 }
                 for (String product : reaction.getProducts()) {
@@ -322,7 +329,12 @@ public class AntFBATask extends AbstractTask {
                         reactantNode = new Node(product, sp.getName());
                     }
                     g.addNode2(reactantNode);
-                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+                    Edge e;
+                    if (path.get(r)) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);                        
+                    } else {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    }
                     g.addEdge(e);
                 }
             }

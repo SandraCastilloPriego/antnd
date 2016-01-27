@@ -70,10 +70,10 @@ public class SpeciesFA {
          }
          }*/
         
-      // if (this.shortestAnt == null ||((ant.getFlux() > this.shortestAnt.getFlux()) || (ant.getFlux() == this.shortestAnt.getFlux()
-       //         && ant.getPathSize() < this.shortestAnt.getPathSize()))) {
+       if (this.shortestAnt == null ||/*((ant.getFlux() > this.shortestAnt.getFlux()) || (ant.getFlux() == this.shortestAnt.getFlux()
+                && */ant.getPathSize() < this.shortestAnt.getPathSize()) {
             this.shortestAnt = ant.clone();
-      //  }
+        }
 
         /*if (!this.isInside(ant)) {
          this.combinePaths(ant);        

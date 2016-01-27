@@ -36,7 +36,6 @@ public class ReactionFA {
     private double lb = -1000;
     private int pheromones = 0;
     private double flux = 0.0;
-    //    private double flux;
 
     public ReactionFA(String id) {
         this.id = id;
@@ -135,17 +134,11 @@ public class ReactionFA {
     }
 
     public boolean hasReactant(String node) {
-        if (this.reactants.contains(node)) {
-            return true;
-        }
-        return false;
+        return this.reactants.contains(node);
     }
 
     public boolean hasProduct(String node) {
-        if (this.products.contains(node)) {
-            return true;
-        }
-        return false;
+        return this.products.contains(node);
     }
 
     public boolean hasReactant(List<String> nodes) {
@@ -194,10 +187,7 @@ public class ReactionFA {
     }
 
     boolean hasSpecies(String edge) {
-        if (this.reactants.contains(edge) || this.products.contains(edge)) {
-            return true;
-        }
-        return false;
+        return this.reactants.contains(edge) || this.products.contains(edge);
     }
 
     public void resetPheromones() {

@@ -44,6 +44,6 @@ public class FluxNode {
     }
     
     double getFlux(){
-        return flux * this.reactions.size();
+        return flux /* this.reactions.size()*/;
     }
 }

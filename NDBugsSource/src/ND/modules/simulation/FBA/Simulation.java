@@ -538,14 +538,14 @@ public class Simulation {
             if (fluxes.containsKey(specie)) {
                 List<String> possibleReactions = getPossibleReactions(path, fluxes, specie);
                 for (String reaction : possibleReactions) {
-                    updateFlux(reaction, fluxes, specie);
+                    updateFlux(reaction, path.get(reaction), fluxes, specie);
                     path.remove(reaction);
                 }
             }
         }
     }
 
-    private void updateFlux(String reaction, Map<String, FluxNode> fluxes, String specie) {
+    private void updateFlux(String reaction, Boolean direction, Map<String, FluxNode> fluxes, String specie) {
         ReactionFA reactionFA = this.reactions.get(reaction);
         if (reactionFA.hasReactant(specie) && reactionFA.getub() > 0) {
             // System.out.println("In reactants " + specie + " : " + reactionFA.getub());
@@ -562,19 +562,18 @@ public class Simulation {
                 // }
             }
             for (String product : reactionFA.getProducts()) {
+                FluxNode fluxNode;
                 if (fluxes.containsKey(product)) {
-                    FluxNode fluxNode = fluxes.get(product);
+                    fluxNode = fluxes.get(product);
                     fluxNode.setFlux(Flux * reactionFA.getStoichiometry(product));
-                    fluxNode.addReaction(reaction);
                 } else {
-                    FluxNode fluxNode = new FluxNode(product, Flux * reactionFA.getStoichiometry(product));
-                    fluxNode.addReaction(reaction);
-                    fluxes.put(product, fluxNode);
+                    fluxNode = new FluxNode(product, Flux * reactionFA.getStoichiometry(product));
                 }
+                fluxNode.addReaction(reaction);
+                fluxes.put(product, fluxNode);
                 reactionFA.setFlux(Flux);
             }
-        }
-        if (reactionFA.hasProduct(specie) && reactionFA.getlb() < 0) {
+        }else  {
             double Flux = Math.abs(reactionFA.getlb());
             //  System.out.println("in Products " + specie + " : " + reactionFA.getlb());
             for (String product : reactionFA.getProducts()) {
@@ -588,16 +587,19 @@ public class Simulation {
                 // }
             }
             for (String reactant : reactionFA.getReactants()) {
+                FluxNode fluxNode;
                 if (fluxes.containsKey(reactant)) {
-                    FluxNode fluxnode = fluxes.get(reactant);
-                    fluxnode.setFlux(Flux * reactionFA.getStoichiometry(reactant));
-                    fluxnode.addReaction(reaction);
+                    fluxNode = fluxes.get(reactant);
+                    fluxNode.setFlux(Flux * reactionFA.getStoichiometry(reactant));
+                    
 
                 } else {
-                    FluxNode fluxNode = new FluxNode(reactant, Flux * reactionFA.getStoichiometry(reactant));
+                    fluxNode = new FluxNode(reactant, Flux * reactionFA.getStoichiometry(reactant));
                     fluxNode.addReaction(reaction);
-                    fluxes.put(reactant, fluxNode);
+                    
                 }
+                fluxNode.addReaction(reaction);
+                fluxes.put(reactant, fluxNode);
                 reactionFA.setFlux(Flux);
             }
         }
@@ -668,7 +670,7 @@ public class Simulation {
         for (String r : path.keySet()) {
             ReactionFA reaction = this.reactions.get(r);
             if (reaction != null) {
-                if (reaction.getub() > 0) {
+                if (path.get(r)) {
                     for (String p : reaction.getProducts()) {
                         if (p.equals(c)) {
                             produced++;
@@ -679,8 +681,7 @@ public class Simulation {
                             consumed++;
                         }
                     }
-                }
-                if (reaction.getlb() < 0) {
+                }else {
                     for (String p : reaction.getProducts()) {
                         if (p.equals(c)) {
                             consumed++;
