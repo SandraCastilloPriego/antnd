@@ -428,7 +428,7 @@ public class Simulation {
         if (fluxes.get(objective) == null) {
             return 0.0;
         }
-        return fluxes.get(objective).flux;
+        return fluxes.get(objective).getFlux();
 
     }
 
@@ -506,8 +506,7 @@ public class Simulation {
 
         for (String s : path.keySet()) {
             if (this.sources.containsKey(s)) {
-                FluxNode n = new FluxNode(s, Math.abs(this.sources.get(s)[0]));
-                n.addReaction("initialReaction");
+                FluxNode n = new FluxNode(s, "initialReaction", Math.abs(this.sources.get(s)[0]));
                 fluxes.put(s, n);
             }
 
@@ -526,8 +525,7 @@ public class Simulation {
             }
         }
         for (String c : this.cofactors) {
-            FluxNode n = new FluxNode(c, getBalacedFlux(c, path));
-            n.addReaction("initialReaction");
+            FluxNode n = new FluxNode(c, "initialReaction", /*getBalacedFlux(c, path)*/ Double.MAX_VALUE);
             fluxes.put(c, n);
         }
         return species;
@@ -565,11 +563,10 @@ public class Simulation {
                 FluxNode fluxNode;
                 if (fluxes.containsKey(product)) {
                     fluxNode = fluxes.get(product);
-                    fluxNode.setFlux(Flux * reactionFA.getStoichiometry(product));
+                    fluxNode.setFlux(reactionFA.getId(), Flux * reactionFA.getStoichiometry(product));
                 } else {
-                    fluxNode = new FluxNode(product, Flux * reactionFA.getStoichiometry(product));
+                    fluxNode = new FluxNode(product,reactionFA.getId(), Flux * reactionFA.getStoichiometry(product));
                 }
-                fluxNode.addReaction(reaction);
                 fluxes.put(product, fluxNode);
                 reactionFA.setFlux(Flux);
             }
@@ -590,11 +587,11 @@ public class Simulation {
                 FluxNode fluxNode;
                 if (fluxes.containsKey(reactant)) {
                     fluxNode = fluxes.get(reactant);
-                    fluxNode.setFlux(Flux * reactionFA.getStoichiometry(reactant));
+                    fluxNode.setFlux(reactionFA.getId(),Flux * reactionFA.getStoichiometry(reactant));
                     
 
                 } else {
-                    fluxNode = new FluxNode(reactant, Flux * reactionFA.getStoichiometry(reactant));
+                    fluxNode = new FluxNode(reactant,reactionFA.getId(), Flux * reactionFA.getStoichiometry(reactant));
                     fluxNode.addReaction(reaction);
                     
                 }

@@ -18,32 +18,48 @@
 package ND.modules.simulation.FBA;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author Sandra Castillo <Sandra.castillo@vtt.fi>
  */
 public class FluxNode {
-    Double flux;
+
+    Map<String, Double> flux;
     String id;
     List<String> reactions;
 
-    FluxNode(String id, Double flux) {
-        this.flux= flux;
-        this.id = id; 
+    FluxNode(String id, String reaction, Double flux) {
+        this.flux = new HashMap<>();
+        this.flux.put(reaction, flux);
+        this.id = id;
         this.reactions = new ArrayList<>();
     }
 
-    void setFlux(double bound) {
-        if(bound < flux) flux = bound;
+    void setFlux(String reaction, double bound) {
+        if (this.flux.containsKey(reaction)) {
+            if (this.flux.get(reaction) > bound) {
+                this.flux.put(reaction, bound);
+            }
+        } else {
+            this.flux.put(reaction, bound);
+        }
     }
-    
-    void addReaction(String reaction){
-        if(!reactions.contains(reaction)) reactions.add(reaction);
+
+    void addReaction(String reaction) {
+        if (!reactions.contains(reaction)) {
+            reactions.add(reaction);
+        }
     }
-    
-    double getFlux(){
-        return flux /* this.reactions.size()*/;
+
+    double getFlux() {
+        double Flux = 0;
+        for(String reaction : flux.keySet()){
+            Flux+=this.flux.get(reaction);
+        }
+        return Flux ;
     }
 }
