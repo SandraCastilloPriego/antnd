@@ -30,13 +30,19 @@ public class FluxNode {
 
     Map<String, Double> flux;
     String id;
-    List<String> reactions;
+    List<String> inReactions;
+    double outReactions;
 
     FluxNode(String id, String reaction, Double flux) {
         this.flux = new HashMap<>();
         this.flux.put(reaction, flux);
         this.id = id;
-        this.reactions = new ArrayList<>();
+        this.inReactions = new ArrayList<>();
+        this.outReactions= 1;
+    }
+    
+    public void setOutReactions(double outReactions){
+        this.outReactions = outReactions;
     }
 
     void setFlux(String reaction, double bound) {
@@ -50,8 +56,8 @@ public class FluxNode {
     }
 
     void addReaction(String reaction) {
-        if (!reactions.contains(reaction)) {
-            reactions.add(reaction);
+        if (!inReactions.contains(reaction)) {
+            inReactions.add(reaction);
         }
     }
 
@@ -60,6 +66,8 @@ public class FluxNode {
         for(String reaction : flux.keySet()){
             Flux+=this.flux.get(reaction);
         }
+        Flux = Flux / this.outReactions;
         return Flux ;
-    }
+    }   
+   
 }

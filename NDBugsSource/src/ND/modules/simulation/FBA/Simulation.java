@@ -282,7 +282,7 @@ public class Simulation {
                     SpeciesFA spfa = this.compounds.get(s);
                     Ant newAnt = superAnt.clone();
                     newAnt.setLocation(compound);
-                   /* double flux = this.getFlux(newAnt, s);                   
+                    double flux = this.getFlux(newAnt, s);
                     newAnt.setFlux(flux);
                     Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());
                     double combinedFlux = this.getFlux(combinedAnt, s);
@@ -291,21 +291,22 @@ public class Simulation {
                         spfa.addAnt(newAnt);
                     } else {
                         spfa.addAnt(combinedAnt);
-                    }*/
+                    }
 
-                     if ( (newAnt.contains("r_1054"))) {
-                         if(spfa.getAnt() == null){
-                             spfa.addAnt(newAnt);
-                         }
-                         else if(spfa.getAnt().contains("r_1054")){
-                             if(spfa.getAnt().getPathSize()> newAnt.getPathSize()){
-                             spfa.addAnt(newAnt);
-                             }
-                         }else
+                    /* if ((newAnt.contains("r_1054"))) {
+                     if (spfa.getAnt() == null) {
+                     spfa.addAnt(newAnt);
+                     } else if (spfa.getAnt().contains("r_1054")) {
+                     if (spfa.getAnt().getPathSize() > newAnt.getPathSize()) {
                      spfa.addAnt(newAnt);
                      }
-                    if(spfa.getAnt() == null ||newAnt.getPathSize() <spfa.getAnt().getPathSize()&& !spfa.getAnt().contains("r_1054"))
-                        spfa.addAnt(newAnt);
+                     } else {
+                     spfa.addAnt(newAnt);
+                     }
+                     }
+                     if (spfa.getAnt() == null || newAnt.getPathSize() < spfa.getAnt().getPathSize() && !spfa.getAnt().contains("r_1054")) {
+                     spfa.addAnt(newAnt);
+                     }*/
                     //  }
                     //}
                 }
@@ -506,8 +507,17 @@ public class Simulation {
 
         for (String s : path.keySet()) {
             if (this.sources.containsKey(s)) {
+                List<String> possibleReactions = getConnectedReactions(path, fluxes, s);
+                double outReactions = 0;
+                for (String r : possibleReactions) {
+                    ReactionFA reaction = this.reactions.get(r);
+                    outReactions += reaction.getStoichiometry(s);
+                }
+
                 FluxNode n = new FluxNode(s, "initialReaction", Math.abs(this.sources.get(s)[0]));
+                n.setOutReactions(outReactions);
                 fluxes.put(s, n);
+                species.add(s);
             }
 
             if (this.reactions.containsKey(s)) {
@@ -525,9 +535,23 @@ public class Simulation {
             }
         }
         for (String c : this.cofactors) {
+            List<String> possibleReactions = getConnectedReactions(path, fluxes, c);
+            double outReactions = 0;
+            for (String r : possibleReactions) {
+                ReactionFA reaction = this.reactions.get(r);
+                outReactions += reaction.getStoichiometry(c);
+            }
             FluxNode n = new FluxNode(c, "initialReaction", /*getBalacedFlux(c, path)*/ Double.MAX_VALUE);
+            n.setOutReactions(outReactions);
             fluxes.put(c, n);
         }
+        /* for (String specie : species) {
+         List<String> possibleReactions = getConnectedReactions(path, fluxes, specie);
+         System.out.println(specie + " : " + possibleReactions.toString());
+         if (fluxes.containsKey(specie)) {
+
+         }
+         }*/
         return species;
     }
 
@@ -536,16 +560,16 @@ public class Simulation {
             if (fluxes.containsKey(specie)) {
                 List<String> possibleReactions = getPossibleReactions(path, fluxes, specie);
                 for (String reaction : possibleReactions) {
-                    updateFlux(reaction, path.get(reaction), fluxes, specie);
+                    updateFlux(reaction, path, fluxes, specie);
                     path.remove(reaction);
                 }
             }
         }
     }
 
-    private void updateFlux(String reaction, Boolean direction, Map<String, FluxNode> fluxes, String specie) {
+    private void updateFlux(String reaction, Map<String, Boolean> path, Map<String, FluxNode> fluxes, String specie) {
         ReactionFA reactionFA = this.reactions.get(reaction);
-        if (reactionFA.hasReactant(specie) && reactionFA.getub() > 0) {
+        if (path.get(reaction)) {
             // System.out.println("In reactants " + specie + " : " + reactionFA.getub());
             double Flux = reactionFA.getub();
             for (String reactant : reactionFA.getReactants()) {
@@ -565,12 +589,19 @@ public class Simulation {
                     fluxNode = fluxes.get(product);
                     fluxNode.setFlux(reactionFA.getId(), Flux * reactionFA.getStoichiometry(product));
                 } else {
-                    fluxNode = new FluxNode(product,reactionFA.getId(), Flux * reactionFA.getStoichiometry(product));
+                    List<String> possibleReactions = getConnectedReactions(path, fluxes, product);
+                    double outReactions = 0;
+                    for (String r : possibleReactions) {
+                        ReactionFA reactio = this.reactions.get(r);
+                        outReactions += reactio.getStoichiometry(product);
+                    }
+                    fluxNode = new FluxNode(product, reactionFA.getId(), Flux * reactionFA.getStoichiometry(product));
+                    fluxNode.setOutReactions(outReactions);
                 }
                 fluxes.put(product, fluxNode);
                 reactionFA.setFlux(Flux);
             }
-        }else  {
+        } else {
             double Flux = Math.abs(reactionFA.getlb());
             //  System.out.println("in Products " + specie + " : " + reactionFA.getlb());
             for (String product : reactionFA.getProducts()) {
@@ -587,13 +618,17 @@ public class Simulation {
                 FluxNode fluxNode;
                 if (fluxes.containsKey(reactant)) {
                     fluxNode = fluxes.get(reactant);
-                    fluxNode.setFlux(reactionFA.getId(),Flux * reactionFA.getStoichiometry(reactant));
-                    
+                    fluxNode.setFlux(reactionFA.getId(), Flux * reactionFA.getStoichiometry(reactant));
 
                 } else {
-                    fluxNode = new FluxNode(reactant,reactionFA.getId(), Flux * reactionFA.getStoichiometry(reactant));
-                    fluxNode.addReaction(reaction);
-                    
+                    List<String> possibleReactions = getConnectedReactions(path, fluxes, reactant);
+                    double outReactions = 0;
+                    for (String r : possibleReactions) {
+                        ReactionFA reactio = this.reactions.get(r);
+                        outReactions += reactio.getStoichiometry(reactant);
+                    }
+                    fluxNode = new FluxNode(reactant, reactionFA.getId(), Flux * reactionFA.getStoichiometry(reactant));
+                    fluxNode.setOutReactions(outReactions);
                 }
                 fluxNode.addReaction(reaction);
                 fluxes.put(reactant, fluxNode);
@@ -610,7 +645,7 @@ public class Simulation {
             if (path.containsKey(reaction)) {
                 ReactionFA reactionFA = this.reactions.get(reaction);
                 if (reactionFA.hasReactant(specie)) {
-                    if (reactionFA.getub() == 0) {
+                    if (reactionFA.getub() == 0 || !path.get(reaction)) {
                         isPossible = false;
                     }
                     for (String reactant : reactionFA.getReactants()) {
@@ -620,7 +655,7 @@ public class Simulation {
                     }
                 }
                 if (reactionFA.hasProduct(specie)) {
-                    if (reactionFA.getlb() == 0) {
+                    if (reactionFA.getlb() == 0 || path.get(reaction)) {
                         isPossible = false;
                     }
                     for (String product : reactionFA.getProducts()) {
@@ -661,7 +696,7 @@ public class Simulation {
         return combinedAnt;
     }
 
-    private Double getBalacedFlux(String c,Map<String, Boolean> path) {
+    private Double getBalacedFlux(String c, Map<String, Boolean> path) {
         int produced = 0;
         int consumed = 0;
         for (String r : path.keySet()) {
@@ -678,7 +713,7 @@ public class Simulation {
                             consumed++;
                         }
                     }
-                }else {
+                } else {
                     for (String p : reaction.getProducts()) {
                         if (p.equals(c)) {
                             consumed++;
@@ -697,6 +732,33 @@ public class Simulation {
             return Double.POSITIVE_INFINITY;
         }
         return 0.10;
+    }
+
+    private List<String> getConnectedReactions(Map<String, Boolean> path, Map<String, FluxNode> fluxes, String specie) {
+        List<String> possibleReactions = new ArrayList<>();
+
+        for (String reaction : this.compounds.get(specie).getReactions()) {
+            boolean isPossible = true;
+            if (path.containsKey(reaction)) {
+                ReactionFA reactionFA = this.reactions.get(reaction);
+                if (reactionFA.hasReactant(specie)) {
+                    if (reactionFA.getub() == 0 || !path.get(reaction)) {
+                        isPossible = false;
+                    }
+
+                }
+                if (reactionFA.hasProduct(specie)) {
+                    if (reactionFA.getlb() == 0 || path.get(reaction)) {
+                        isPossible = false;
+                    }
+
+                }
+                if (isPossible) {
+                    possibleReactions.add(reaction);
+                }
+            }
+        }
+        return possibleReactions;
     }
 
 }

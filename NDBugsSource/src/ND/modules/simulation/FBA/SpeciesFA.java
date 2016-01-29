@@ -17,7 +17,6 @@
  */
 package ND.modules.simulation.FBA;
 
-import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +69,8 @@ public class SpeciesFA {
          }
          }*/
         
-       if (this.shortestAnt == null ||/*((ant.getFlux() > this.shortestAnt.getFlux()) || (ant.getFlux() == this.shortestAnt.getFlux()
-                && */ant.getPathSize() < this.shortestAnt.getPathSize()) {
+       if (this.shortestAnt == null ||((ant.getFlux() > this.shortestAnt.getFlux()) || (ant.getFlux() == this.shortestAnt.getFlux()
+                && ant.getPathSize() < this.shortestAnt.getPathSize()))) {
             this.shortestAnt = ant.clone();
         }
 
