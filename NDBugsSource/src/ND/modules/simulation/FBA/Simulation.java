@@ -702,7 +702,6 @@ public class Simulation {
     private Double getBalacedFlux(String c, Map<String, Boolean> path) {
         int produced = this.getConnectedInReactions(path, c);
         int consumed = this.getConnectedOutReactions(path, c);
-        System.out.println(c + " : " + produced + "/" + consumed);
         if (produced >= consumed) {
             return Double.POSITIVE_INFINITY;
         }
