@@ -261,7 +261,7 @@ public class AntFBATask extends AbstractTask {
         for (String p : path.keySet()) {
             System.out.println(p);
         }
-        System.out.println(simulation.getFlux(compound.getAnt(), objectiveID));
+        System.out.println(simulation.getFlux(compound.getAnt(), objectiveID, true));
         String results = "";
        /* for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
