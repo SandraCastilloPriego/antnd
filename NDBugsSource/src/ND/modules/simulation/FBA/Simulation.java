@@ -633,7 +633,7 @@ public class Simulation {
                         fluxNode.setOutReactions(outReactions);
                     }
                 }
-                fluxNode.addReaction(reaction);
+          
                 fluxes.put(reactant, fluxNode);
                 reactionFA.setFlux(Flux);
             }
