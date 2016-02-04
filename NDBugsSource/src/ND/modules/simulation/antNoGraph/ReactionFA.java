@@ -35,7 +35,7 @@ public class ReactionFA {
     private double ub = 1000;
     private double lb = -1000;
     private int pheromones = 0;
-    private double flux = 0.0;
+    private double flux = -1.0;
 
     public ReactionFA(String id) {
         this.id = id;
@@ -47,34 +47,34 @@ public class ReactionFA {
 
     public void addReactant(String r, Double sto) {
         this.reactants.add(r);
-        if (sto < 1.0) {
-            sto = 1.0;
-        }
+        /*  if (sto < 1.0) {
+         sto = 1.0;
+         }*/
         this.stoichiometry.put(r, sto);
     }
 
     public void addReactant(String r, String name, Double sto) {
         this.reactants.add(r);
-        if (sto < 1.0) {
-            sto = 1.0;
-        }
+        /*   if (sto < 1.0) {
+         sto = 1.0;
+         }*/
         this.stoichiometry.put(r, sto);
         this.names.put(r, name);
     }
 
     public void addProduct(String p, Double sto) {
         this.products.add(p);
-        if (sto < 1.0) {
-            sto = 1.0;
-        }
+        /*  if (sto < 1.0) {
+         sto = 1.0;
+         }*/
         this.stoichiometry.put(p, sto);
     }
 
     public void addProduct(String p, String name, Double sto) {
         this.products.add(p);
-        if (sto < 1.0) {
-            sto = 1.0;
-        }
+        /* if (sto < 1.0) {
+         sto = 1.0;
+         }*/
         this.stoichiometry.put(p, sto);
         this.names.put(p, name);
     }
@@ -90,7 +90,7 @@ public class ReactionFA {
         if (this.stoichiometry.containsKey(specie)) {
             return this.stoichiometry.get(specie);
         }
-        return Double.MAX_VALUE;
+        return 0.0;
     }
 
     public void setName(String specie, String name) {
@@ -125,8 +125,16 @@ public class ReactionFA {
     }
 
     public void setBounds(double lb, double ub) {
-        this.lb = lb;
-        this.ub = ub;
+        if (lb < -1000) {
+            this.lb = -1000;
+        } else {
+            this.lb = lb;
+        }
+        if (ub > 1000) {
+            this.ub = 1000;
+        } else {
+            this.ub = ub;
+        }
     }
 
     public String getId() {
@@ -193,15 +201,12 @@ public class ReactionFA {
     public void resetPheromones() {
         this.pheromones = 0;
     }
-    
-    public void setFlux(double flux){
+
+    public void setFlux(double flux) {
         this.flux = flux;
     }
-    
-    
-    
-    public double getFlux(){
+
+    public double getFlux() {
         return this.flux;
     }
 }
-
