@@ -18,6 +18,7 @@
 package ND.modules.simulation.FBA;
 
 import ND.modules.simulation.antNoGraph.ReactionFA;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,72 +38,159 @@ public class FluxNode {
         this.flux = new HashMap<>();
         this.flux.put(reaction, flux);
         this.id = id;
+        ReactionFA initReaction = new ReactionFA(reaction);
+        initReaction.addProduct(id, 1.0);
+        initReaction.setFlux(flux);
+
+        this.outReactions = new ArrayList<>();
+        this.inReactions = new ArrayList<>();
+        this.inReactions.add(initReaction);
     }
 
     FluxNode(String id) {
         this.flux = new HashMap<>();
         this.id = id;
+        this.outReactions = new ArrayList<>();
+        this.inReactions = new ArrayList<>();
     }
 
     public void setOutReactions(List<ReactionFA> outReactions) {
-        this.outReactions = outReactions;
+        for (ReactionFA r : outReactions) {
+            this.outReactions.add(r);
+        }
+    }
+
+    public void setOutReactions(ReactionFA outReaction) {
+        this.outReactions.add(outReaction);
+    }
+
+    public List<ReactionFA> getOutReactions() {
+        return this.outReactions;
     }
 
     public void setInReactions(List<ReactionFA> inReactions) {
-        this.inReactions = inReactions;
-    }
-
-    void setFlux(String reaction, double flux) {
-        if (this.flux.containsKey(reaction)) {
-            if (this.flux.get(reaction) > flux) {
-                this.flux.put(reaction, flux);
-            }
-        } else {
-            this.flux.put(reaction, flux);
+        for (ReactionFA r : inReactions) {
+            this.inReactions.add(r);
         }
     }
 
-    double getFlux(String outReaction) {
+    public void setInReactions(ReactionFA inReaction) {
+        this.inReactions.add(inReaction);
+    }
+
+    /* void setFlux(String reaction, double flux) {
+     if (this.flux.containsKey(reaction)) {
+     if (this.flux.get(reaction) > flux) {
+     this.flux.put(reaction, flux);
+     }
+     } else {
+     this.flux.put(reaction, flux);
+     }
+     }*/
+    void updateFlux(boolean verbose) {
         double Flux = -1.0;
-        ReactionFA outR = null;
-        if (FluxContainsAllInReactions()) {
-            double sumFlux = 0.0;
-            for (String f : flux.keySet()) {
-                //System.out.println(f + " - " + id);
-                if (getInReaction(f) == null) {
-                    sumFlux += flux.get(f);
-                } else {
-                    sumFlux += flux.get(f) * getInReaction(f).getStoichiometry(id);
-                }
-            }
-            double outFlux = 0.0;
+        double sumFlux = this.getFlux();
 
-            for (ReactionFA r : this.outReactions) {
-                outFlux += r.getStoichiometry(id);
-                if (r.getId().equals(outReaction)) {
-                    outR = r;
-                }
-            }
-            if (outR != null) {
-                Flux = (sumFlux / outFlux) * outR.getStoichiometry(id);
-            } else {
-                Flux = -2;
+        double outFlux = 0.0;
+
+        for (ReactionFA r : this.outReactions) {
+            outFlux += Math.abs(r.getStoichiometry(id));
+        }
+        for (ReactionFA r : this.outReactions) {
+            Flux = (sumFlux / outFlux) * r.getStoichiometry(id);
+            if (Flux > 0.0 && (r.getFlux() > Flux || r.getFlux() < 0)) {
+                r.setFlux(Flux);
             }
         }
-        System.out.println(this.id +":"+ this.inReactions.size()+ " / "+ this.outReactions.size()+ " : "+ Flux);
-        return Flux;
+        if (verbose) {
+
+            System.out.print(this.id + ":" + this.inReactions.size() + " / " + this.outReactions.size() + " : " + Flux + "  -->");
+            for (ReactionFA r : this.inReactions) {
+                System.out.print(r.getId() + ">>" + r.getFlux() + " ,");
+            }
+            System.out.print(" <-- ");
+            for (ReactionFA r : this.outReactions) {
+                System.out.print(r.getId() + ">>" + r.getFlux() + ",");
+            }
+            System.out.print("\n");
+        }
     }
 
     double getFlux() {
-        double Flux = -1.0;
-        if (flux.size() == this.inReactions.size()) {
-            Flux = 0.0;
-            for (String f : flux.keySet()) {
-                Flux += flux.get(f) * getInReaction(f).getStoichiometry(id);
+        double sumFlux = 0.0;
+
+        for (ReactionFA r : this.inReactions) {
+            if (r.getFlux() > 0.0) {
+                sumFlux += r.getFlux() * Math.abs(r.getStoichiometry(id));
+            } else {
+                return -1.0;
             }
         }
-        return Flux;
+        return sumFlux;
+
     }
+//    double getFlux(String outReaction) {
+//        double Flux = -1.0;
+//        double sumFlux = 0.0;
+//        ReactionFA outR = null;
+//        if (FluxContainsAllInReactions()) {
+//            for (String f : flux.keySet()) {
+//                if (flux.get(f) > -1) {
+//                    if (getInReaction(f) == null) {
+//                        sumFlux += flux.get(f);
+//                    } else {
+//                        sumFlux += flux.get(f) * Math.abs(getInReaction(f).getStoichiometry(id));
+//                    }
+//                }
+//            }
+//            if (!flux.containsKey("cofactor")) {
+//                double outFlux = 0.0;
+//
+//                for (ReactionFA r : this.outReactions) {
+//                    outFlux += Math.abs(r.getStoichiometry(id));
+//                    // outFlux++;
+//                    if (r.getId().equals(outReaction)) {
+//                        outR = r;
+//                    }
+//                }
+//                if (outR != null) {
+//                    Flux = (sumFlux / outFlux) /* outR.getStoichiometry(id)*/;
+//                } else {
+//                    Flux = -2;
+//                }
+//            }
+//        }
+//
+//        if (flux.containsKey("cofactor")) {
+//            return sumFlux;
+//        }
+//        /*  System.out.print(this.id + ":" + this.inReactions.size() + " / " + this.outReactions.size() + " : " + Flux + "  -->");
+//         for (ReactionFA r : this.inReactions) {
+//         System.out.print(r.getId() + ",");
+//         }
+//         System.out.print(" <-- ");
+//         for (ReactionFA r : this.outReactions) {
+//         System.out.print(r.getId() + ",");
+//         }
+//         System.out.print("\n");*/
+//        return Flux;
+//        // return sumFlux;
+//    }
+//
+//    double getFlux() {
+//        double Flux = -1.0;
+//        if (FluxContainsAllInReactions()) {
+//            Flux = 0.0;
+//            for (String f : flux.keySet()) {
+//                try {
+//                    Flux += flux.get(f) * Math.abs(getInReaction(f).getStoichiometry(id));
+//                } catch (Exception e) {
+//                    Flux += flux.get(f);
+//                }
+//            }
+//        }
+//        return Flux;
+//    }
 
     private ReactionFA getInReaction(String f) {
         for (ReactionFA inReaction : this.inReactions) {
@@ -114,12 +202,26 @@ public class FluxNode {
     }
 
     private boolean FluxContainsAllInReactions() {
+        if (flux.containsKey("cofactor")) {
+            return true;
+        }
         for (ReactionFA r : this.inReactions) {
-            if (this.flux.get(r.getId()) == null || this.flux.get(r.getId()) <= 0.0) {
+            if (this.flux.get(r.getId()) == null /*|| this.flux.get(r.getId()) <= 0.0*/) {
                 return false;
             }
         }
         return true;
     }
 
+    /* void print() {
+     System.out.print(this.id + ":" + this.inReactions.size() + " / " + this.outReactions.size() + " : " + this.getFlux() + "  -->");
+     for (ReactionFA r : this.inReactions) {
+     System.out.print(r.getId() + ",");
+     }
+     System.out.print(" <-- ");
+     for (ReactionFA r : this.outReactions) {
+     System.out.print(r.getId() + ",");
+     }
+     System.out.print("\n");
+     }*/
 }

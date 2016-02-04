@@ -17,12 +17,14 @@
  */
 package ND.modules.simulation.FBA;
 
+import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.data.network.Edge;
 import ND.desktop.impl.PrintPaths;
 import ND.main.NDCore;
 import ND.data.network.Graph;
 import ND.data.network.Node;
+import ND.data.parser.impl.BasicFilesParserSBML;
 import ND.modules.configuration.general.GetInfoAndTools;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.modules.simulation.antNoGraph.uniqueId;
@@ -30,6 +32,7 @@ import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,6 +42,9 @@ import java.util.Random;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.Species;
 
 /**
  *
@@ -111,11 +117,21 @@ public class AntFBATask extends AbstractTask {
     public void cancel() {
         setStatus(TaskStatus.CANCELED);
     }
+    
+    private ReactionFA createReaction(String name){
+        ReactionFA reaction = new ReactionFA("Ex_"+ name);
+        reaction.addReactant(name, 1.0);
+        reaction.setBounds(-1000, 1000);
+        return reaction;
+    }
 
     @Override
     public void run() {
         //   try {
         setStatus(TaskStatus.PROCESSING);
+        
+        
+        
         if (this.networkDS == null) {
             setStatus(TaskStatus.ERROR);
             NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
@@ -124,6 +140,36 @@ public class AntFBATask extends AbstractTask {
         this.sources = tools.GetSourcesInfo();
         System.out.println("Reading bounds");
         this.bounds = tools.readBounds(networkDS);
+        
+        
+        
+        
+     /*   BasicFilesParserSBML parser = new BasicFilesParserSBML("/home/scsandra/Documents/CellFactory2015/YeastModel/yeast_7.00/ymn.sbml");
+                                parser.createDataset("ymn2.smbl");
+                                SimpleBasicDataset dataset = (SimpleBasicDataset) parser.getDataset();
+                                if (dataset.getDocument() != null) {
+                                        NDCore.getDesktop().AddNewFile(dataset);
+                                }                               
+                                
+       
+        Simulation simulation2 = new Simulation(dataset, this.cofactors, this.bounds, this.sources, this.sourcesList);
+        simulation2.createWorld();
+        Map<String, ReactionFA>  reactions = simulation2.getReactions();
+        reactions.put("Ex_s_1203", this.createReaction("s_1203"));
+        reactions.put("Ex_s_1198", this.createReaction("s_1198"));
+        reactions.put("Ex_s_0394", this.createReaction("s_0394"));
+        reactions.put("Ex_s_0434", this.createReaction("s_0434"));
+        reactions.put("Ex_s_0794", this.createReaction("s_0794"));
+        reactions.put("Ex_s_0383", this.createReaction("s_0383"));
+        reactions.put("Ex_s_0796", this.createReaction("s_0796"));
+        
+        LinearProgramming lp = new LinearProgramming(simulation2.getCompounds(), simulation2.getReactions());
+        
+        */
+        
+        
+        
+        
         simulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList);
 
         System.out.println("Creating world");
@@ -261,12 +307,13 @@ public class AntFBATask extends AbstractTask {
         for (String p : path.keySet()) {
             System.out.println(p);
         }
-        System.out.println(simulation.getFlux(compound.getAnt(), objectiveID, true));
+        System.out.println(simulation.getFlux(compound.getAnt(), objectiveID, true, true));
+        //System.out.println(compound.getAnt().getFlux());
         String results = "";
         for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
             if (compoundr.getAnt() != null) {
-                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compound.getId(), true) + "\n";
+                results += c + " : " + compoundr.getName() + " --> " + /*simulation.getFlux(compound.getAnt(),compoundr.getId(), true) */ compound.getAnt().getFlux()+ "\n";
             } else {
                 results += c + " : " + compoundr.getName() + "\n";
             }

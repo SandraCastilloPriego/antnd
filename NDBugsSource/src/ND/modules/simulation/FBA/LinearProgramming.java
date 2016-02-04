@@ -21,6 +21,7 @@ import ND.data.network.Graph;
 import ND.data.network.Node;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import scpsolver.lpsolver.LinearProgramSolver;
 import scpsolver.lpsolver.SolverFactory;
 import scpsolver.problems.LPSolution;
 import scpsolver.problems.LPWizard;
+import scpsolver.problems.LPWizardConstraint;
 
 /**
  *
@@ -49,11 +51,62 @@ import scpsolver.problems.LPWizard;
  */
 public class LinearProgramming {
 
-    Map<String, Double> fluxes;
     double objectiveValue;
 
-    public LinearProgramming(Graph g, String objective, Map<String, Double[]> sources, HashMap<String, ReactionFA> reactions) {
- //       List<String> variables = getVariables(reactions, g, sources);
+    public LinearProgramming(Map<String, SpeciesFA> species, Map<String, ReactionFA> reactions) {
+
+        /*    LPWizard lpw = new LPWizard();
+         lpw.plus("x1",5.0).plus("x2",10.0);
+         lpw.addConstraint("c1",8,"<=").plus("x1",3.0).plus("x2",1.0);
+         lpw.addConstraint("c2",4,"<=").plus("x2",4.0);
+         lpw.addConstraint("c3", 2, ">=").plus("x1",2.0); 
+         */
+        double[] b = CreateB(reactions.values());
+        List<String> fluxes = new ArrayList<>();
+        for (ReactionFA r : reactions.values()) {
+            fluxes.add(r.getId());
+        }
+
+        LPWizard lpw = new LPWizard();
+        for (ReactionFA r : reactions.values()) {
+            if (r.getId().equals("r_0962")) {
+                lpw.plus("r_0962", 1.0);
+            } else {
+                lpw.plus("r_0962", 0.0);
+            }            
+        }
+        // LPWizardConstraint c = lpw.addConstraint("c0", 0, "=");
+        System.out.print("       -> ");
+        for (ReactionFA r : reactions.values()) {
+            System.out.print(r.getId() + "  ");
+        }
+        System.out.print("\n");
+        for (String sp : species.keySet()) {
+            LPWizardConstraint c = lpw.addConstraint(sp, 0, "=");
+            System.out.print(sp + " -> ");
+            for (ReactionFA r : reactions.values()) {
+                if (r.hasReactant(sp)) {
+                    System.out.print(r.getStoichiometry(sp) * -1 + "        ");
+                    c.plus(r.getId(), r.getStoichiometry(sp) * -1);
+                } else {
+                    System.out.print(r.getStoichiometry(sp) + "        ");
+                    c.plus(r.getId(), r.getStoichiometry(sp));
+                }
+            }
+            System.out.print("\n");
+        }
+
+        for (ReactionFA r : reactions.values()) {
+            lpw.addConstraint(r.getId(), r.getlb(), ">=");
+            lpw.addConstraint(r.getId(), r.getub(), "<=");
+        }
+
+        LinearProgramSolver solver = SolverFactory.getSolver("GLPK");
+
+        LPSolution sol = lpw.solve(solver);
+      //  objectiveValue = sol.getObjectiveValue();
+        // System.out.println(objectiveValue);
+        //       List<String> variables = getVariables(reactions, g, sources);
 //        double[] fluxes = new double[variables.size()];
 //        for (int i = 0; i < fluxes.length; i++) {
 //            fluxes[i] = 1;
@@ -372,12 +425,18 @@ public class LinearProgramming {
 //        }
 //        return variables;
 //    }
-
     public double getObjectiveValue() {
         return this.objectiveValue;
     }
 
-    public Map<String, Double> getFluxes() {
-        return this.fluxes;
+   // public Map<String, Double> getFluxes() {
+    //    return this.fluxes;
+    //}
+    private double[] CreateB(Collection<ReactionFA> values) {
+        double[] b = new double[values.size()];
+        /*for(ReactionFA reaction : values){
+            if(reacit("r_0962", 1.0);
+        }*/
+        return null;
     }
 }
