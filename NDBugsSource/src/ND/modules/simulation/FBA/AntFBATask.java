@@ -313,7 +313,7 @@ public class AntFBATask extends AbstractTask {
         for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
             if (compoundr.getAnt() != null) {
-                results += c + " : " + compoundr.getName() + " --> " + /*simulation.getFlux(compound.getAnt(),compoundr.getId(), true) */ compound.getAnt().getFlux()+ "\n";
+                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compound.getAnt(),compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/+ "\n";
             } else {
                 results += c + " : " + compoundr.getName() + "\n";
             }

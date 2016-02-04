@@ -281,18 +281,18 @@ public class Simulation {
                     SpeciesFA spfa = this.compounds.get(s);
                     Ant newAnt = superAnt.clone();
                     newAnt.setLocation(compound);
-                    double flux = this.getFlux(newAnt, s, true, false);
+                    double flux = this.getFlux(newAnt, s, false, false);
                     //System.out.println(s + "-> "+ flux);
-                    //newAnt.setFlux(flux);
-                    Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());
-                    double combinedFlux = this.getFlux(combinedAnt, s, true, false);
-                    combinedAnt.setFlux(combinedFlux);
-                    if (flux > combinedFlux) {
-                        spfa.addAnt(newAnt);
-                    } else {
-                        spfa.addAnt(combinedAnt);
-                    }
-                    //spfa.addAnt(newAnt);
+                    newAnt.setFlux(flux);
+                   // Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());
+                   // double combinedFlux = this.getFlux(combinedAnt, s, true, false);
+                  //  combinedAnt.setFlux(combinedFlux);
+                   // if (flux > combinedFlux) {
+                   //     spfa.addAnt(newAnt);
+                  //  } else {
+                    //    spfa.addAnt(combinedAnt);
+                  //  }
+                    spfa.addAnt(newAnt);
                     /* if ((newAnt.contains("r_1054"))) {
                      if (spfa.getAnt() == null) {
                      spfa.addAnt(newAnt);
