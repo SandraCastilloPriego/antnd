@@ -35,7 +35,7 @@ public class ReactionFA {
     private double ub = 1000;
     private double lb = -1000;
     private int pheromones = 0;
-    private double flux = -1.0;
+    private Map<String, Double> flux;
 
     public ReactionFA(String id) {
         this.id = id;
@@ -43,6 +43,7 @@ public class ReactionFA {
         this.products = new ArrayList<>();
         this.stoichiometry = new HashMap<>();
         this.names = new HashMap<>();
+        this.flux = new HashMap<>();
     }
 
     public void addReactant(String r, Double sto) {
@@ -202,11 +203,20 @@ public class ReactionFA {
         this.pheromones = 0;
     }
 
-    public void setFlux(double flux) {
-        this.flux = flux;
+    public void setFlux(String specie, Double flux) {
+      // if ((this.flux.containsKey(specie) && this.flux.get(specie) < flux && this.flux.get(specie)>=0.0) || !this.flux.containsKey(specie)) {
+            this.flux.put(specie, flux);
+      // }
     }
 
     public double getFlux() {
-        return this.flux;
+        double min = Double.MAX_VALUE;
+        for (String sp : this.flux.keySet()) {
+            Double spflux = this.flux.get(sp);
+            if (spflux != -1 && spflux < min) {
+                min = spflux;
+            }
+        }
+        return min;
     }
 }

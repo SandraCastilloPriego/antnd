@@ -68,10 +68,23 @@ public class SpeciesFA {
          this.shortestAnt = ant.clone();
          }
          }*/
-        
-       if (this.shortestAnt == null ||((ant.getFlux() > this.shortestAnt.getFlux()) || (ant.getFlux() == this.shortestAnt.getFlux()
-                && ant.getPathSize() < this.shortestAnt.getPathSize()))) {
+       
+
+        if (this.shortestAnt == null || ant.getFlux() > this.shortestAnt.getFlux() || (ant.getFlux() == this.shortestAnt.getFlux()
+                && ant.getPathSize() < this.shortestAnt.getPathSize())) {
             this.shortestAnt = ant.clone();
+
+            if (this.id.equals("s_1399")) {
+                this.shortestAnt.print();
+                System.out.println(this.shortestAnt.getFlux());
+            }
+        }else{
+         if (this.id.equals("s_1399")) {
+            System.out.print("NO: ");
+            
+           ant.print();
+            System.out.println(ant.getFlux());
+        }
         }
 
         /*if (!this.isInside(ant)) {
@@ -144,7 +157,6 @@ public class SpeciesFA {
      }
      return combined;
      }*/
-    
     public Map<String, Boolean> getShortest() {
         return this.shortestAnt.getPath();
     }

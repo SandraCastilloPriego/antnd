@@ -40,7 +40,7 @@ public class FluxNode {
         this.id = id;
         ReactionFA initReaction = new ReactionFA(reaction);
         initReaction.addProduct(id, 1.0);
-        initReaction.setFlux(flux);
+        initReaction.setFlux(this.id, flux);
 
         this.outReactions = new ArrayList<>();
         this.inReactions = new ArrayList<>();
@@ -89,7 +89,7 @@ public class FluxNode {
      }*/
     void updateFlux(boolean verbose) {
         double Flux = -1.0;
-        double sumFlux = this.getFlux();
+        double sumFlux = this.getSumFlux();
 
         double outFlux = 0.0;
 
@@ -98,9 +98,9 @@ public class FluxNode {
         }
         for (ReactionFA r : this.outReactions) {
             Flux = (sumFlux / outFlux) * r.getStoichiometry(id);
-            if (Flux > 0.0 && (r.getFlux() > Flux || r.getFlux() < 0)) {
-                r.setFlux(Flux);
-            }
+            // if (Flux > 0.0 && (r.getFlux() > Flux || r.getFlux() < 0)) {
+            r.setFlux(this.id, Flux);
+            // }
         }
         if (verbose) {
 
@@ -117,13 +117,26 @@ public class FluxNode {
     }
 
     double getFlux() {
+        double sumFlux = this.getSumFlux();
+
+        double outFlux = 0.0;
+
+        for (ReactionFA r : this.outReactions) {
+            outFlux += Math.abs(r.getStoichiometry(id));
+        }
+        if (outFlux > 0) {
+            return (sumFlux / outFlux);
+        } else {
+            return sumFlux;
+        }
+    }
+
+    double getSumFlux() {
         double sumFlux = 0.0;
 
         for (ReactionFA r : this.inReactions) {
             if (r.getFlux() > 0.0) {
                 sumFlux += r.getFlux() * Math.abs(r.getStoichiometry(id));
-            } else {
-                return -1.0;
             }
         }
         return sumFlux;
@@ -224,4 +237,24 @@ public class FluxNode {
      }
      System.out.print("\n");
      }*/
+    void setBalancedFlux() {
+        int in = 0, out = 0;
+        for (ReactionFA r : this.inReactions) {
+            if (!r.getId().equals("cofactor")) {
+                in += r.getStoichiometry(id);
+            }
+        }
+
+        for (ReactionFA r : this.outReactions) {
+
+            out += r.getStoichiometry(id);
+
+        }
+        if (in >= out) {
+            this.inReactions.get(0).setFlux(this.id, -1.0);
+        } else {
+            this.inReactions.get(0).setFlux(this.id, 0.01);
+        }
+
+    }
 }

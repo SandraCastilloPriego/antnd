@@ -18,7 +18,6 @@
 package ND.modules.simulation.FBA;
 
 import ND.modules.simulation.antNoGraph.ReactionFA;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,6 @@ public class Ant {
 
     public void initAnt(double flux) {
         this.path.put(location, true);
-        this.flux = flux;
     }
 
     public void removePath() {
