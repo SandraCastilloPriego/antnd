@@ -36,6 +36,8 @@ public class ReactionFA {
     private double lb = -1000;
     private int pheromones = 0;
     private Map<String, Double> flux;
+    private double finalFlux;
+    private boolean status = false;
 
     public ReactionFA(String id) {
         this.id = id;
@@ -204,9 +206,19 @@ public class ReactionFA {
     }
 
     public void setFlux(String specie, Double flux) {
-      // if ((this.flux.containsKey(specie) && this.flux.get(specie) < flux && this.flux.get(specie)>=0.0) || !this.flux.containsKey(specie)) {
-            this.flux.put(specie, flux);
-      // }
+        // if ((this.flux.containsKey(specie) && this.flux.get(specie) < flux && this.flux.get(specie)>=0.0) || !this.flux.containsKey(specie)) {
+        // if (!status) {
+        this.flux.put(specie, flux);
+        //}
+        // }
+    }
+
+    public void setFlux(double flux) {
+        this.finalFlux = flux;
+    }
+
+    public double getFinalFlux() {
+        return this.finalFlux;
     }
 
     public double getFlux() {
@@ -217,6 +229,40 @@ public class ReactionFA {
                 min = spflux;
             }
         }
+        //setStatus();
         return min;
+    }
+
+    private void setStatus() {
+        boolean isInProducts = true;
+        for (String sp : this.flux.keySet()) {
+            if (!this.products.contains(sp)) {
+                isInProducts = false;
+            }
+        }
+
+        if (isInProducts) {
+            this.status = true;
+            for (String product : this.products) {
+                if (!this.flux.containsKey(product)) {
+                    this.status = false;
+                }
+            }
+        } else {
+            this.status = true;
+            for (String reactant : this.reactants) {
+                if (!this.flux.containsKey(reactant)) {
+                    this.status = false;
+                }
+
+            }
+        }
+    }
+
+    public boolean isBidirecctional() {
+        if (this.lb < 0 & this.ub > 0) {
+            return true;
+        }
+        return false;
     }
 }

@@ -170,7 +170,7 @@ public class AntFBATask extends AbstractTask {
         
         
         
-        simulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList);
+        simulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList,this.objectiveID);
 
         System.out.println("Creating world");
         simulation.createWorld();
@@ -313,7 +313,7 @@ public class AntFBATask extends AbstractTask {
         for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
             if (compoundr.getAnt() != null) {
-                results += c + " : " + compoundr.getName() + " --> " + /*simulation.getFlux(compound.getAnt(),compoundr.getId(), true, false) */ compound.getAnt().getFlux()+ "\n";
+                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compound.getAnt(),compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/+ "\n";
             } else {
                 results += c + " : " + compoundr.getName() + "\n";
             }
