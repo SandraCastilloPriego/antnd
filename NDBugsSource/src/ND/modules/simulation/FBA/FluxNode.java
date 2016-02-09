@@ -246,15 +246,13 @@ public class FluxNode {
         }
 
         for (ReactionFA r : this.outReactions) {
-
             out += r.getStoichiometry(id);
-
         }
-       // if (in >= out) {
+        if (in >= out) {
             this.inReactions.get(0).setFlux(this.id, -1.0);
-     //   } else {
-      //      this.inReactions.get(0).setFlux(this.id, 0.01);
-      //  }
+        } else {
+            this.inReactions.get(0).setFlux(this.id, 0.01);
+        }
 
     }
 }

@@ -43,6 +43,7 @@ public class Simulation {
     private final List<String> sourcesList;
     private final List<String> objectives;
     private final List<String> cofactors;
+    private final List<String> cofactors2;
     private final String objective;
 
     private HashMap<String, ReactionFA> reactions;
@@ -50,9 +51,10 @@ public class Simulation {
     private Ant antResult;
     private List<String> doneReactions;
 
-    public Simulation(SimpleBasicDataset networkDS, List<String> cofactors, HashMap<String, String[]> bounds, Map<String, Double[]> sources, List<String> sourcesList, String objective) {
+    public Simulation(SimpleBasicDataset networkDS, List<String> cofactors, List<String> cofactors2, HashMap<String, String[]> bounds, Map<String, Double[]> sources, List<String> sourcesList, String objective) {
         this.networkDS = networkDS;
         this.cofactors = cofactors;
+        this.cofactors2 = cofactors2;
         this.objectives = new ArrayList();
         this.bounds = bounds;
         this.sources = sources;
@@ -502,12 +504,12 @@ public class Simulation {
 
         for (String c : this.cofactors) {
             FluxNode n;
-            /* if (!real) {
-             n = this.initFluxNode(c, path, "cofactor", -1);
-             n.setBalancedFlux();
-             } else {*/
             n = this.initFluxNode(c, path, "cofactor", -1);
-            // }
+            if (!real) {                
+                if (this.cofactors2.contains(c)) {
+                    n.setBalancedFlux();
+                }
+            } 
             fluxes.put(c, n);
             species.add(c);
         }
@@ -593,7 +595,7 @@ public class Simulation {
     }
 
     private List<ReactionFA> getConnectedOutReactions2(Map<String, Boolean> path, String specie) {
-        if(this.compounds.get(specie) == null){
+        if (this.compounds.get(specie) == null) {
             System.out.println(specie);
         }
         List<ReactionFA> possibleReactions = new ArrayList<>();

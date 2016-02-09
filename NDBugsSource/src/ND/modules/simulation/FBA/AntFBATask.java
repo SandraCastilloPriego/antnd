@@ -68,7 +68,7 @@ public class AntFBATask extends AbstractTask {
     private Graph graph;
     private final GetInfoAndTools tools;
     private final Map<String, Ant> results;
-    private final List<String> cofactors;
+    private final List<String> cofactors, cofactors2;
     private List<String> doneFixes;
     Simulation simulation;
 
@@ -80,6 +80,12 @@ public class AntFBATask extends AbstractTask {
         this.cofactors = new ArrayList<>();
         for (String cofactor : cofactorsString.split(",")) {
             this.cofactors.add(cofactor.trim());
+        }
+        
+        String cofactors2String = parameters.getParameter(AntFBAParameters.cofactors2).getValue();
+        this.cofactors2 = new ArrayList<>();
+        for (String cofactor : cofactors2String.split(",")) {
+            this.cofactors2.add(cofactor.trim());
         }
         this.rand = new Random();
         Date date = new Date();
@@ -170,7 +176,7 @@ public class AntFBATask extends AbstractTask {
         
         
         
-        simulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList,this.objectiveID);
+        simulation = new Simulation(this.networkDS, this.cofactors, this.cofactors2, this.bounds, this.sources, this.sourcesList,this.objectiveID);
 
         System.out.println("Creating world");
         simulation.createWorld();

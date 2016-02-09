@@ -30,9 +30,11 @@ public class AntFBAParameters extends SimpleParameterSet {
                 "Iterations", "Number of iterations", 20); 
         public static final StringParameter cofactors = new StringParameter(
                 "Cofactors", "ID of the model cofactors separated by comma."); 
+        public static final StringParameter cofactors2 = new StringParameter(
+                "Cofactors2", "ID of the model cofactors separated by comma."); 
        
 
         public AntFBAParameters() {
-                super(new Parameter[]{objectiveReaction, cofactors, iterations});
+                super(new Parameter[]{objectiveReaction, cofactors, cofactors2, iterations});
         }
 }
