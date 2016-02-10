@@ -82,11 +82,11 @@ public class AntFBATask extends AbstractTask {
             this.cofactors.add(cofactor.trim());
         }
         
-        String cofactors2String = parameters.getParameter(AntFBAParameters.cofactors2).getValue();
+     //   String cofactors2String = parameters.getParameter(AntFBAParameters.cofactors2).getValue();
         this.cofactors2 = new ArrayList<>();
-        for (String cofactor : cofactors2String.split(",")) {
+        /**for (String cofactor : cofactors2String.split(",")) {
             this.cofactors2.add(cofactor.trim());
-        }
+        }*/
         this.rand = new Random();
         Date date = new Date();
         long time = date.getTime();

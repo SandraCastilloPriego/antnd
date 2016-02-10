@@ -74,12 +74,12 @@ public class SpeciesFA {
                 && ant.getPathSize() < this.shortestAnt.getPathSize())) {
             this.shortestAnt = ant.clone();
 
-            if (this.id.equals("s_1037")) {
+            if (this.id.equals("s_1399")) {
                 this.shortestAnt.print();
                 System.out.println(this.shortestAnt.getFlux());
             }
         }else{
-         if (this.id.equals("s_1037")) {
+         if (this.id.equals("s_1399")) {
             System.out.print("NO: ");
             
            ant.print();

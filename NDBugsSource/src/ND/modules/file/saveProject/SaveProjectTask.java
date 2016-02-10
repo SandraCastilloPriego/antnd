@@ -153,9 +153,9 @@ public class SaveProjectTask extends AbstractTask {
                     for (Node node : graph.getNodes()) {
                         Point2D position = node.getPosition();
                         if (position != null) {
-                            writer.write("\nNodes= " + node.getId() + " // " + position.getX() + " , " + position.getY());
+                            writer.write("\nNodes= " + node.getId() +" : " + node.getName() + " // " + position.getX() + " , " + position.getY());
                         } else {
-                            writer.write("\nNodes= " + node.getId());
+                            writer.write("\nNodes= " + node.getId() +" : " + node.getName());
                         }
                     }
                     for (Edge edge : graph.getEdges()) {

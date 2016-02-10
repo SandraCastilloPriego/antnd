@@ -155,7 +155,9 @@ public class OpenProjectTask extends AbstractTask {
                                                             position = nodeName.split(" // ")[1];
                                                             nodeName = nodeName.split(" // ")[0];
                                                         }
-                                                        Node n = new Node(nodeName);
+                                                        String id = nodeName.split(" : ")[0];
+                                                        String name = nodeName.split(" : ")[1];
+                                                        Node n = new Node(id, name);
                                                         if(position !=null){
                                                             String[] point = position.split(" , ");
                                                             n.setPosition(Double.valueOf(point[0]), Double.valueOf(point[1]));

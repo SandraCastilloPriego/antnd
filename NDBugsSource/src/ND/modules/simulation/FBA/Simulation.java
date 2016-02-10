@@ -506,7 +506,7 @@ public class Simulation {
             FluxNode n;
             n = this.initFluxNode(c, path, "cofactor", -1);
             if (!real) {                
-                if (this.cofactors2.contains(c)) {
+                if (this.cofactors.contains(c)) {
                     n.setBalancedFlux();
                 }
             } 

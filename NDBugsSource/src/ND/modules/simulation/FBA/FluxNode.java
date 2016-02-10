@@ -106,25 +106,29 @@ public class FluxNode {
                     maxFlux.add(r.getId());
                 } else {
                     r.setFlux(this.id, r.getub());
-                    extra = +Flux - r.getub();
+                    extra = +(Flux - r.getub());
                 }
             } else {
                 if (Math.abs(r.getlb()) > Flux) {
                     maxFlux.add(r.getId());
                 } else {
                     r.setFlux(this.id, Math.abs(r.getlb()));
-                    extra = +Flux - r.getlb();
+                    extra = +(Flux - Math.abs(r.getlb()));
                 }
             }
 
         }
-        double sharedFlux = (sumFlux + extra / maxFlux.size());
+        double sharedFlux = (sumFlux + extra) / maxFlux.size();
         for (ReactionFA r : this.outReactions) {
             if (maxFlux.contains(r.getId())) {
                 Flux = sharedFlux * r.getStoichiometry(id);
                 r.setFlux(this.id, Flux);
             }
         }
+        /*for (ReactionFA r : this.outReactions) {
+         Flux = (sumFlux / outFlux) * r.getStoichiometry(id);
+         r.setFlux(this.id, Flux);
+         }*/
 
         if (verbose) {
 

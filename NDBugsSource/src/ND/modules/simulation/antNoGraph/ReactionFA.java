@@ -209,7 +209,7 @@ public class ReactionFA {
         // if ((this.flux.containsKey(specie) && this.flux.get(specie) < flux && this.flux.get(specie)>=0.0) || !this.flux.containsKey(specie)) {
         // if (!status) {
         this.flux.put(specie, flux);
-        //}
+       // }
         // }
     }
 
