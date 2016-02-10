@@ -96,12 +96,36 @@ public class FluxNode {
         for (ReactionFA r : this.outReactions) {
             outFlux += Math.abs(r.getStoichiometry(id));
         }
+
+        List<String> maxFlux = new ArrayList<>();
+        double extra = 0;
         for (ReactionFA r : this.outReactions) {
             Flux = (sumFlux / outFlux) * r.getStoichiometry(id);
-            // if (Flux > 0.0 && (r.getFlux() > Flux || r.getFlux() < 0)) {
-            r.setFlux(this.id, Flux);
-            // }
+            if (r.hasReactant(id)) {
+                if (r.getub() > Flux) {
+                    maxFlux.add(r.getId());
+                } else {
+                    r.setFlux(this.id, r.getub());
+                    extra = +Flux - r.getub();
+                }
+            } else {
+                if (Math.abs(r.getlb()) > Flux) {
+                    maxFlux.add(r.getId());
+                } else {
+                    r.setFlux(this.id, Math.abs(r.getlb()));
+                    extra = +Flux - r.getlb();
+                }
+            }
+
         }
+        double sharedFlux = (sumFlux + extra / maxFlux.size());
+        for (ReactionFA r : this.outReactions) {
+            if (maxFlux.contains(r.getId())) {
+                Flux = sharedFlux * r.getStoichiometry(id);
+                r.setFlux(this.id, Flux);
+            }
+        }
+
         if (verbose) {
 
             System.out.print(this.id + ":" + this.inReactions.size() + " / " + this.outReactions.size() + " : " + Flux + "  -->");
