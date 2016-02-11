@@ -183,5 +183,41 @@ public class SaveProjectTask extends AbstractTask {
             finishedPercentage = ((double) i++ / selectedFiles.length) / 2;
         }
     }
+    
+    
+    private void savePaths(ZipOutputStream zipStream) throws IOException {
+        Dataset[] selectedFiles = NDCore.getDesktop().getAllDataFiles();
+        for (final Dataset datafile : selectedFiles) {
+            String info = datafile.getInfo().getText();
+            String biomass = datafile.getBiomassId();
+            List<String> sources = datafile.getSources();
+            Graph graph = datafile.getGraph();
+            zipStream.putNextEntry(new ZipEntry(datafile.getDatasetName() + ".paths"));
+            File tempFile = File.createTempFile(datafile.getDatasetName() + "-paths", ".tmp");
+
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(tempFile.getAbsoluteFile()));
+                writer.write(info);
+               
+            } catch (IOException e) {
+            } finally {
+                try {
+                    if (writer != null) {
+                        writer.close();
+                    }
+                } catch (IOException e) {
+                }
+            }
+
+            try (FileInputStream fileStream = new FileInputStream(tempFile)) {
+                StreamCopy copyMachine = new StreamCopy();
+                copyMachine.copy(fileStream, zipStream);
+            }
+            tempFile.delete();
+            finishedPercentage = ((double) i++ / selectedFiles.length) / 2;
+        }
+    }
+
 
 }

@@ -134,7 +134,7 @@ public class PrintPaths implements KeyListener {
                 String name = id.split(" - ")[0];
                 if (id.contains("H+") || id.contains("H2O") || id.contains(" : phosphate ") || id.contains(" : ADP")
                     || id.contains(" : ATP") || id.contains(" : NAD") || id.contains(" : CO2") || id.contains(" : oxygen")
-                    || id.contains(": AMP") || id.contains(" : diphosphate ")|| id.contains(" : carbon dioxide ")) {
+                    || id.contains(": AMP") || id.contains(" : diphosphate ")|| id.contains(" : carbon dioxide ")|| id.contains(" : potassium ")) {
                     return Color.ORANGE;
                 } else if (id.contains("Ex_")) {
                     return new Color(29, 140, 243);
@@ -704,10 +704,9 @@ public class PrintPaths implements KeyListener {
         for (String node : Vertices) {
             if (node.contains("H+") || node.contains("H2O") || node.contains(" : phosphate ") || node.contains(" : ADP")
                 || node.contains(" : ATP") || node.contains(" : NAD") || node.contains(" : CO2") || node.contains(" : oxygen")
-                || node.contains(": AMP") || node.contains(" : diphosphate ")|| node.contains(" : carbon dioxide ")) {
-
+                || node.contains(": AMP") || node.contains(" : diphosphate ")|| node.contains(" : carbon dioxide ")|| node.contains(" : potassium ")) {
                 g.removeVertex(node);
-                graph.removeNode(node);
+             //   graph.removeNode(node);
                 removeCofactors();
                 break;
             }

@@ -20,7 +20,10 @@ package ND.data;
 import ND.data.network.Edge;
 import ND.data.network.Graph;
 import ND.data.network.Node;
+import ND.modules.simulation.antNoGraph.ReactionFA;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JTextArea;
 import org.sbml.jsbml.SBMLDocument;
 
@@ -144,4 +147,12 @@ public interface Dataset {
         public void SetCluster(boolean isCluster);
         
         public boolean isCluster();
+        
+        public void setPaths(Map<String, ND.modules.simulation.FBA.SpeciesFA> paths);
+        
+        public HashMap<String, ND.modules.simulation.FBA.SpeciesFA> getPaths();
+        
+        public void setReactionsFA(Map<String, ReactionFA> reactions);
+        
+        public HashMap<String, ReactionFA> getReactionsFA();
 }

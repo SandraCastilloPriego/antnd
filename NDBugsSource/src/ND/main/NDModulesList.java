@@ -28,6 +28,7 @@ import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.file.saveProject.SaveProjectModule;
 import ND.modules.otimization.LP.LPModule;
+import ND.modules.otimization.visualization.FluxVisualizationModule;
 import ND.modules.reactionOP.AddInfo.AddInfoModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.changebounds.ChangeBoundsModule;
@@ -85,5 +86,6 @@ public class NDModulesList {
                 KNeighborhoodModule.class,
                 //KStepMarkovModule.class,
                 //CycleDetectorModule.class,
-                CompareModule.class};
+                CompareModule.class,
+                FluxVisualizationModule.class  };
 }

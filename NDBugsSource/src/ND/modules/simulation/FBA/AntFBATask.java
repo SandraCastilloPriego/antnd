@@ -81,12 +81,13 @@ public class AntFBATask extends AbstractTask {
         for (String cofactor : cofactorsString.split(",")) {
             this.cofactors.add(cofactor.trim());
         }
-        
-     //   String cofactors2String = parameters.getParameter(AntFBAParameters.cofactors2).getValue();
+
+        //   String cofactors2String = parameters.getParameter(AntFBAParameters.cofactors2).getValue();
         this.cofactors2 = new ArrayList<>();
-        /**for (String cofactor : cofactors2String.split(",")) {
-            this.cofactors2.add(cofactor.trim());
-        }*/
+        /**
+         * for (String cofactor : cofactors2String.split(",")) {
+         * this.cofactors2.add(cofactor.trim()); }
+         */
         this.rand = new Random();
         Date date = new Date();
         long time = date.getTime();
@@ -123,9 +124,9 @@ public class AntFBATask extends AbstractTask {
     public void cancel() {
         setStatus(TaskStatus.CANCELED);
     }
-    
-    private ReactionFA createReaction(String name){
-        ReactionFA reaction = new ReactionFA("Ex_"+ name);
+
+    private ReactionFA createReaction(String name) {
+        ReactionFA reaction = new ReactionFA("Ex_" + name);
         reaction.addReactant(name, 1.0);
         reaction.setBounds(-1000, 1000);
         return reaction;
@@ -135,9 +136,7 @@ public class AntFBATask extends AbstractTask {
     public void run() {
         //   try {
         setStatus(TaskStatus.PROCESSING);
-        
-        
-        
+
         if (this.networkDS == null) {
             setStatus(TaskStatus.ERROR);
             NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
@@ -146,37 +145,30 @@ public class AntFBATask extends AbstractTask {
         this.sources = tools.GetSourcesInfo();
         System.out.println("Reading bounds");
         this.bounds = tools.readBounds(networkDS);
-        
-        
-        
-        
-     /*   BasicFilesParserSBML parser = new BasicFilesParserSBML("/home/scsandra/Documents/CellFactory2015/YeastModel/yeast_7.00/ymn.sbml");
-                                parser.createDataset("ymn2.smbl");
-                                SimpleBasicDataset dataset = (SimpleBasicDataset) parser.getDataset();
-                                if (dataset.getDocument() != null) {
-                                        NDCore.getDesktop().AddNewFile(dataset);
-                                }                               
+
+        /*   BasicFilesParserSBML parser = new BasicFilesParserSBML("/home/scsandra/Documents/CellFactory2015/YeastModel/yeast_7.00/ymn.sbml");
+         parser.createDataset("ymn2.smbl");
+         SimpleBasicDataset dataset = (SimpleBasicDataset) parser.getDataset();
+         if (dataset.getDocument() != null) {
+         NDCore.getDesktop().AddNewFile(dataset);
+         }                               
                                 
        
-        Simulation simulation2 = new Simulation(dataset, this.cofactors, this.bounds, this.sources, this.sourcesList);
-        simulation2.createWorld();
-        Map<String, ReactionFA>  reactions = simulation2.getReactions();
-        reactions.put("Ex_s_1203", this.createReaction("s_1203"));
-        reactions.put("Ex_s_1198", this.createReaction("s_1198"));
-        reactions.put("Ex_s_0394", this.createReaction("s_0394"));
-        reactions.put("Ex_s_0434", this.createReaction("s_0434"));
-        reactions.put("Ex_s_0794", this.createReaction("s_0794"));
-        reactions.put("Ex_s_0383", this.createReaction("s_0383"));
-        reactions.put("Ex_s_0796", this.createReaction("s_0796"));
+         Simulation simulation2 = new Simulation(dataset, this.cofactors, this.bounds, this.sources, this.sourcesList);
+         simulation2.createWorld();
+         Map<String, ReactionFA>  reactions = simulation2.getReactions();
+         reactions.put("Ex_s_1203", this.createReaction("s_1203"));
+         reactions.put("Ex_s_1198", this.createReaction("s_1198"));
+         reactions.put("Ex_s_0394", this.createReaction("s_0394"));
+         reactions.put("Ex_s_0434", this.createReaction("s_0434"));
+         reactions.put("Ex_s_0794", this.createReaction("s_0794"));
+         reactions.put("Ex_s_0383", this.createReaction("s_0383"));
+         reactions.put("Ex_s_0796", this.createReaction("s_0796"));
         
-        LinearProgramming lp = new LinearProgramming(simulation2.getCompounds(), simulation2.getReactions());
+         LinearProgramming lp = new LinearProgramming(simulation2.getCompounds(), simulation2.getReactions());
         
-        */
-        
-        
-        
-        
-        simulation = new Simulation(this.networkDS, this.cofactors, this.cofactors2, this.bounds, this.sources, this.sourcesList,this.objectiveID);
+         */
+        simulation = new Simulation(this.networkDS, this.cofactors, this.cofactors2, this.bounds, this.sources, this.sourcesList, this.objectiveID);
 
         System.out.println("Creating world");
         simulation.createWorld();
@@ -190,35 +182,41 @@ public class AntFBATask extends AbstractTask {
                 break;
             }
         }
-
-        this.analyzeResults();
-
-        if (getStatus() == TaskStatus.PROCESSING) {
-
-            /*   List<String> deadEnds = this.graph.getDeadEnds();
-             if (deadEnds.size() > 0) {
-             this.doneFixes.add(deadEnds.get(0));
-             this.fixDeadEnds(deadEnds.get(0));
-             }*/
-            this.tools.createDataFile(graph, networkDS, objectiveID, sourcesList, false);
-            //  LinearProgramming lp = new LinearProgramming(graph, objectiveID, sources, reactions);
-            //System.out.println("Solution: " + lp.getObjectiveValue());
-            frame.setSize(new Dimension(700, 500));
-            frame.add(this.panel);
-            NDCore.getDesktop().addInternalFrame(frame);
-
-            PrintPaths print = new PrintPaths(this.sourcesList, this.objectives.get(0), this.tools.getModel());
-            try {
-                System.out.println("Final graph: " + this.graph.toString());
-                this.pn.add(print.printPathwayInFrame(this.graph));
-            } catch (NullPointerException ex) {
-                System.out.println("Imprimendo: " + ex.toString());
+        for (String compound : simulation.getCompounds().keySet()) {
+            SpeciesFA specie = simulation.getCompounds().get(compound);
+            if (specie.getAnt() != null) {
+                simulation.getFlux(specie.getAnt(), compound, true, false);
             }
         }
-        if (this.graph == null) {
-            NDCore.getDesktop().displayMessage("No path was found.");
-        }
+        this.networkDS.setPaths(simulation.getCompounds());
+        this.networkDS.setReactionsFA(simulation.getReactions());
 
+        // this.analyzeResults();
+//        if (getStatus() == TaskStatus.PROCESSING) {
+//
+//            /*   List<String> deadEnds = this.graph.getDeadEnds();
+//             if (deadEnds.size() > 0) {
+//             this.doneFixes.add(deadEnds.get(0));
+//             this.fixDeadEnds(deadEnds.get(0));
+//             }*/
+//            this.tools.createDataFile(graph, networkDS, objectiveID, sourcesList, false);
+//            //  LinearProgramming lp = new LinearProgramming(graph, objectiveID, sources, reactions);
+//            //System.out.println("Solution: " + lp.getObjectiveValue());
+//            frame.setSize(new Dimension(700, 500));
+//            frame.add(this.panel);
+//            NDCore.getDesktop().addInternalFrame(frame);
+//
+//            PrintPaths print = new PrintPaths(this.sourcesList, this.objectives.get(0), this.tools.getModel());
+//            try {
+//                System.out.println("Final graph: " + this.graph.toString());
+//                this.pn.add(print.printPathwayInFrame(this.graph));
+//            } catch (NullPointerException ex) {
+//                System.out.println("Imprimendo: " + ex.toString());
+//            }
+//        }
+//        if (this.graph == null) {
+//            NDCore.getDesktop().displayMessage("No path was found.");
+//        }
         setStatus(TaskStatus.FINISHED);
 
         /*  } catch (Exception e) {
@@ -319,13 +317,13 @@ public class AntFBATask extends AbstractTask {
         for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
             if (compoundr.getAnt() != null) {
-                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compound.getAnt(),compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/+ "\n";
+                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compound.getAnt(), compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/ + "\n";
             } else {
                 results += c + " : " + compoundr.getName() + "\n";
             }
         }
         this.networkDS.addInfo(results);
-   //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0568"));
+        //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0568"));
         //    System.out.println(simulation.getFlux(compound.getAnt(), "s_0555"));
         //     System.out.println(simulation.getFlux(compound.getAnt(), "s_0075"));
       /*  Simulation newSimulation = new Simulation(this.networkDS, this.cofactors, this.bounds, this.sources, this.sourcesList);
@@ -384,7 +382,7 @@ public class AntFBATask extends AbstractTask {
                     g.addNode2(reactantNode);
                     Edge e;
                     if (path.get(r)) {
-                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);                        
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
                     } else {
                         e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
                     }
