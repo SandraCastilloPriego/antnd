@@ -33,6 +33,8 @@ public class FluxNode {
     String id;
     List<ReactionFA> outReactions;
     List<ReactionFA> inReactions;
+    List<String> path;
+    boolean isCofactor = false;
 
     FluxNode(String id, String reaction, Double flux) {
         this.flux = new HashMap<>();
@@ -44,7 +46,9 @@ public class FluxNode {
 
         this.outReactions = new ArrayList<>();
         this.inReactions = new ArrayList<>();
+        this.path = new ArrayList<>();
         this.inReactions.add(initReaction);
+        this.isCofactor = true;
     }
 
     FluxNode(String id) {
@@ -52,6 +56,10 @@ public class FluxNode {
         this.id = id;
         this.outReactions = new ArrayList<>();
         this.inReactions = new ArrayList<>();
+        this.path = new ArrayList<>();
+        if (id.contains("H2O") || id.contains("H+")) {
+            this.isCofactor = true;
+        }
     }
 
     public void setOutReactions(List<ReactionFA> outReactions) {
@@ -88,6 +96,7 @@ public class FluxNode {
      }
      }*/
     void updateFlux(boolean verbose) {
+        path.clear();
         double Flux = -1.0;
         double sumFlux = this.getSumFlux();
 
@@ -116,13 +125,20 @@ public class FluxNode {
                     extra = +(Flux - Math.abs(r.getlb()));
                 }
             }
-
+            //r.setFlux(this.id, Flux);
+            if (!this.isCofactor) {
+                path.add(id);
+                r.addPath(path);
+            }
         }
         double sharedFlux = (sumFlux + extra) / maxFlux.size();
         for (ReactionFA r : this.outReactions) {
             if (maxFlux.contains(r.getId())) {
                 Flux = sharedFlux * r.getStoichiometry(id);
                 r.setFlux(this.id, Flux);
+            }
+            if (!this.isCofactor) {
+                r.addPath(path);
             }
         }
         /*for (ReactionFA r : this.outReactions) {
@@ -134,11 +150,19 @@ public class FluxNode {
 
             System.out.print(this.id + ":" + this.inReactions.size() + " / " + this.outReactions.size() + " : " + Flux + "  -->");
             for (ReactionFA r : this.inReactions) {
-                System.out.print(r.getId() + ">>" + r.getFlux() + " ,");
+                System.out.print(r.getId() + ">>" + r.getFlux() + " (");
+                for (String p : r.getPath()) {
+                    System.out.print(p + ";");
+                }
+                System.out.print(")");
             }
             System.out.print(" <-- ");
             for (ReactionFA r : this.outReactions) {
-                System.out.print(r.getId() + ">>" + r.getFlux() + ",");
+                System.out.print(r.getId() + ">>" + r.getFlux() + "(");
+                for (String p : r.getPath()) {
+                    System.out.print(p + ";");
+                }
+                System.out.print(")");
             }
             System.out.print("\n");
         }
@@ -163,8 +187,13 @@ public class FluxNode {
         double sumFlux = 0.0;
 
         for (ReactionFA r : this.inReactions) {
-            if (r.getFlux() > 0.0) {
+            if (r.getFlux() > 0.0 && !r.isInPath(id)) {
                 sumFlux += r.getFlux() * Math.abs(r.getStoichiometry(id));
+                if (!this.isCofactor) {
+                    for (String p : r.getPath()) {
+                        this.path.add(p);
+                    }
+                }
             }
         }
         return sumFlux;

@@ -188,6 +188,19 @@ public class AntFBATask extends AbstractTask {
                 simulation.getFlux(specie.getAnt(), compound, true, false);
             }
         }
+        
+        simulation.getFlux(simulation.getCompounds().get("s_0075").getAnt(), "s_0075", true, true);
+        
+//        String results = "";
+//        for (String c : compounds.keySet()) {
+//            SpeciesFA compoundr = compounds.get(c);
+//            if (compoundr.getAnt() != null) {
+//                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compound.getAnt(), compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/ + "\n";
+//            } else {
+//                results += c + " : " + compoundr.getName() + "\n";
+//            }
+//        }
+//        this.networkDS.addInfo(results);
         this.networkDS.setPaths(simulation.getCompounds());
         this.networkDS.setReactionsFA(simulation.getReactions());
 

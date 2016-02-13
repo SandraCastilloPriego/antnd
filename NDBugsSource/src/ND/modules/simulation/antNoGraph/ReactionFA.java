@@ -30,6 +30,7 @@ public class ReactionFA {
 
     private final String id;
     private final List<String> reactants, products;
+    private List<String> path;
     private final Map<String, String> names;
     private final HashMap<String, Double> stoichiometry;
     private double ub = 1000;
@@ -46,6 +47,7 @@ public class ReactionFA {
         this.stoichiometry = new HashMap<>();
         this.names = new HashMap<>();
         this.flux = new HashMap<>();
+        this.path = new ArrayList<>();
     }
 
     public void addReactant(String r, Double sto) {
@@ -264,5 +266,24 @@ public class ReactionFA {
             return true;
         }
         return false;
+    }
+    
+    public void addPath(String id){
+        this.path.add(id);
+    }
+    
+    public boolean isInPath(String id){
+        return this.path.contains(id);
+    }
+    
+    public List<String> getPath(){
+        return this.path;
+    }
+    
+    public void addPath(List<String> path){
+        for(String p : path){
+            if(!this.path.contains(p))
+            this.path.add(p);
+        }
     }
 }
