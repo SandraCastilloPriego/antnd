@@ -204,7 +204,7 @@ public class AntFBATask extends AbstractTask {
         this.networkDS.setPaths(simulation.getCompounds());
         this.networkDS.setReactionsFA(simulation.getReactions());
 
-        // this.analyzeResults();
+         this.analyzeResults();
 //        if (getStatus() == TaskStatus.PROCESSING) {
 //
 //            /*   List<String> deadEnds = this.graph.getDeadEnds();
@@ -317,20 +317,20 @@ public class AntFBATask extends AbstractTask {
      */
     private void analyzeResults() {
         Map<String, SpeciesFA> compounds = this.simulation.getCompounds();
-        SpeciesFA compound = compounds.get(this.objectiveID);
+       /* SpeciesFA compound = compounds.get(this.objectiveID);
 
 //        List<String> path = compound.combinePahts();
         Map<String, Boolean> path = compound.getShortest();
         for (String p : path.keySet()) {
             System.out.println(p);
-        }
-        System.out.println(simulation.getFlux(compound.getAnt(), objectiveID, true, false));
+        }*/
+       // System.out.println(simulation.getFlux(compound.getAnt(), objectiveID, true, false));
         //System.out.println(compound.getAnt().getFlux());
         String results = "";
         for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
             if (compoundr.getAnt() != null) {
-                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compound.getAnt(), compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/ + "\n";
+                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/ + "\n";
             } else {
                 results += c + " : " + compoundr.getName() + "\n";
             }
@@ -353,7 +353,7 @@ public class AntFBATask extends AbstractTask {
         
          List<String> finalPath = this.combinePahts(path, path2);*/
 
-        this.graph = createGraph(path);
+       // this.graph = createGraph(path);
 
         //this.getVertices(compound);
 

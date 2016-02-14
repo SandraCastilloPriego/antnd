@@ -105,6 +105,12 @@ public class FluxNode {
         for (ReactionFA r : this.outReactions) {
             outFlux += Math.abs(r.getStoichiometry(id));
         }
+        if(sumFlux == -1){
+            for (ReactionFA r : this.outReactions) {
+                r.setFlux(id, -1.0);
+            }
+            return;
+        }
 
         List<String> maxFlux = new ArrayList<>();
         double extra = 0;
@@ -174,6 +180,7 @@ public class FluxNode {
         double outFlux = 0.0;
 
         for (ReactionFA r : this.outReactions) {
+            if(r.getId().equals("cofactor")&& r.getFlux()==-1) return -1;
             outFlux += Math.abs(r.getStoichiometry(id));
         }
         if (outFlux > 0) {

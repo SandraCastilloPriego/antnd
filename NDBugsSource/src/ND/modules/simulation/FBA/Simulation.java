@@ -283,7 +283,7 @@ public class Simulation {
                     // if (!superAnt.isLost() /*&& !this.cofactors.contains(s)*/) {
                     SpeciesFA spfa = this.compounds.get(s);
                     Ant newAnt = superAnt.clone();
-                 //   if (!this.objective.equals(s) || this.objective.equals(s) && !hasOutput(newAnt, spfa)) {
+                    if (!this.objective.equals(s) || this.objective.equals(s) && !hasOutput(newAnt, spfa)) {
                         newAnt.setLocation(compound);
                         double flux = this.getFlux(newAnt, s, false, false);
                         //System.out.println(s + "-> "+ flux);
@@ -297,7 +297,7 @@ public class Simulation {
                          spfa.addAnt(combinedAnt);
                          }*/
                         spfa.addAnt(newAnt);
-                 //   }
+                    }
                     /* if ((newAnt.contains("r_1054"))) {
                      if (spfa.getAnt() == null) {
                      spfa.addAnt(newAnt);
