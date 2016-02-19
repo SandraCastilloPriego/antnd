@@ -36,6 +36,13 @@ import java.util.Map;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.LocalParameter;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.SpeciesReference;
 
 /**
  *
@@ -45,7 +52,7 @@ public class FluxVisualizationTask extends AbstractTask {
 
     private final SimpleBasicDataset networkDS;
     private final double finishedPercentage = 0.0f;
-    private final HashMap<String, ReactionFA> reactions;
+    private HashMap<String, ReactionFA> reactions;
     private final HashMap<String, SpeciesFA> compounds;
     private final String objective;
     private final GetInfoAndTools tools;
@@ -58,7 +65,10 @@ public class FluxVisualizationTask extends AbstractTask {
         this.objective = parameters.getParameter(FluxVisualizationParameters.objective).getValue();
         this.reactions = this.networkDS.getReactionsFA();
         this.compounds = this.networkDS.getPaths();
-        if (reactions == null || compounds == null) {
+        if(reactions == null){
+            createReactions();
+        }
+        if (compounds == null) {
             setStatus(TaskStatus.CANCELED);
             NDCore.getDesktop().displayErrorMessage("The selected dataset doesn't contain any flux calculation.");
         }
@@ -153,6 +163,61 @@ public class FluxVisualizationTask extends AbstractTask {
             }
         }
         return g;
+    }
+
+    private void createReactions() {
+        SBMLDocument doc = this.networkDS.getDocument();
+        this.reactions = new HashMap<>();
+        Model m = doc.getModel();
+        for (Species s : m.getListOfSpecies()) {
+            SpeciesFA specie = new SpeciesFA(s.getId(), s.getName());
+            this.compounds.put(s.getId(), specie);
+        }
+
+        for (Reaction r : m.getListOfReactions()) {
+            boolean biomass = false;
+
+            ReactionFA reaction = new ReactionFA(r.getId());
+            String[] b = null;
+           
+                try {
+                    KineticLaw law = r.getKineticLaw();
+                    LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                    LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                    reaction.setBounds(lbound.getValue(), ubound.getValue());
+                } catch (Exception ex) {
+                    reaction.setBounds(-1000, 1000);
+                }
+            
+            for (SpeciesReference s : r.getListOfReactants()) {
+
+                Species sp = s.getSpeciesInstance();
+
+                reaction.addReactant(sp.getId(), sp.getName(), s.getStoichiometry());
+                SpeciesFA spFA = this.compounds.get(sp.getId());
+                if (biomass) {
+                    spFA.setPool(Math.abs(s.getStoichiometry()));
+                }
+                if (spFA != null) {
+                    spFA.addReaction(r.getId());
+                } else {
+                    System.out.println(sp.getId());
+                }
+            }
+
+            for (SpeciesReference s : r.getListOfProducts()) {
+                Species sp = s.getSpeciesInstance();
+                
+                reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
+                SpeciesFA spFA = this.compounds.get(sp.getId());
+                if (spFA != null) {
+                    spFA.addReaction(r.getId());
+                } else {
+                    System.out.println(sp.getId());
+                }
+            }
+            this.reactions.put(r.getId(), reaction);
+        }   
     }
 
 }

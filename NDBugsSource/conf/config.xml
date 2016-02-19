@@ -4,24 +4,25 @@
         <module class="ND.modules.file.openfile.OpenBasicFileModule">
             <parameters>
                 <parameter name="File name">
-                    <file>/home/scsandra/Documents/CellFactory2015/retropath/model/yeast_7.6/yeast_7.6_cobra.xml</file>
+                    <file>/home/scsandra/Documents/CellFactory2015/corecoPost/Model/sbml/0.5/Tree.sbml</file>
                 </parameter>
             </parameters>
         </module>
         <module class="ND.modules.file.openProject.OpenProjectModule">
             <parameters>
-                <parameter name="Project name">/home/scsandra/Documents/CleanCellFactory/TreeReconstruction/Project/test.zip</parameter>
+                <parameter name="Project name">/home/scsandra/Documents/CellFactory2015/YeastModel/yeast_7.00/biomass.zip</parameter>
             </parameters>
         </module>
         <module class="ND.modules.file.saveProject.SaveProjectModule">
             <parameters>
-                <parameter name="File name">/home/scsandra/Documents/CleanCellFactory/TreeReconstruction/Project/test.zip</parameter>
+                <parameter name="File name">/home/scsandra/Documents/CellFactory2015/YeastModel/yeast_7.00/biomass.zip</parameter>
             </parameters>
         </module>
         <module class="ND.modules.configuration.sources.SourcesConfModule">
             <parameters>
-                <parameter name="Source">/home/scsandra/Documents/CleanCellFactory/TreeReconstruction/Data/minMed.csv</parameter>
+                <parameter name="Source">/home/scsandra/Documents/CellFactory2015/corecoPost/Model/sources.txt</parameter>
                 <parameter name="Reaction bounds"/>
+                <parameter name="Pathway information file">/home/scsandra/Documents/experimentAnt/kegg-pathways.csv</parameter>
             </parameters>
         </module>
         <module class="ND.modules.configuration.cofactors.CofactorConfModule">
@@ -31,9 +32,9 @@
         </module>
         <module class="ND.modules.simulation.PathsBetweenReactions.AntBetweenModule">
             <parameters>
-                <parameter name="Compound ID From:">s_1382</parameter>
-                <parameter name="Compound ID To:">s_0174</parameter>
-                <parameter name="Excluded compounds:">s_0803,s_1275,s_1200,s_0794,s_0797,s_0799, s_1278,s_1205,s_1198,s_1203,s_1205,s_1212,s_1207,s_1214,s_1210,s_1207,s_0807,s_0796,s_1419,s_0831,s_1273,s_0532</parameter>
+                <parameter name="Compound ID From:">C03492</parameter>
+                <parameter name="Compound ID To:">C04352</parameter>
+                <parameter name="Excluded compounds:">C00001,C00006,C00005,C00007,C00002,C00011, C00008, C00024,C00067,C00025,C00097</parameter>
             </parameters>
         </module>
         <module class="ND.modules.simulation.superAnt.SuperAntModule">
@@ -51,23 +52,37 @@
                 <parameter name="Steady state">true</parameter>
             </parameters>
         </module>
+        <module class="ND.modules.simulation.FBA.AntFBAModule">
+            <parameters>
+                <parameter name="Compound ID">C00002</parameter>
+                <parameter name="Cofactors">C00002,C00008,C00006,C00005,C00004,C00003,C00010,C00120,C00016,C01352</parameter>
+                <parameter name="Iterations">10</parameter>
+            </parameters>
+        </module>
         <module class="ND.modules.reactionOP.addReaction.AddReactionModule">
             <parameters>
-                <parameter name="Reaction name">Biomass</parameter>
-                <parameter name="Compound Id">CHEBI37671,C00008,C00133,C00020,C00062,C00152,C00049,C00002,C00575,CHEBI17029,C00055,C00010,C00097,C00360,C00239,C00362,C00364,C01694,C00016,C00035,C00096,C00064,C00025,C00037,C00144,C00051,C00001,C00135,C00407,C00123,C00047,C00073,C00003,C00079,C00009,C00148,C00255,C00065,C00059,C00369,C00101,C00188,C01083,C00078,C00082,C00105,C00183,C05437,Growth </parameter>
-                <parameter name="Stoichiometry">-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1</parameter>
+                <parameter name="Reaction name">biomass</parameter>
+                <parameter name="Compound Id">s_0002,s_0423,s_0526,s_0773,s_0782,s_0955,s_0965,s_0969,s_0973,s_0991,s_0999,s_1003,s_1006,s_1016,s_1021,s_1025,s_1032,s_1035,s_1039,s_1045,s_1048,s_1051,s_1056,s_1405,s_1467,s_1520,s_1545,s_0450 </parameter>
+                <parameter name="Stoichiometry">-1.14,-0.051,-0.05,-0.519,-0.051,-0.357,-0.136,-0.172,-0.172,-0.268,-0.268,-0.325,-0.075,-0.172,-0.25,-0.239,-0.114,-0.129,-0.254,-0.197,-0.028,-0.0965,-0.257,-9.0E-4,-0.02,-0.0234,-0.067,1 </parameter>
+                <parameter name="Lower bound">0.0</parameter>
+                <parameter name="Upper bound">1000.0</parameter>
+            </parameters>
+        </module>
+        <module class="ND.modules.reactionOP.changebounds.ChangeBoundsModule">
+            <parameters>
+                <parameter name="Reaction name">r0678YCM606R03103</parameter>
                 <parameter name="Lower bound">0.0</parameter>
                 <parameter name="Upper bound">1000.0</parameter>
             </parameters>
         </module>
         <module class="ND.modules.reactionOP.removeReaction.RemoveReactionModule">
             <parameters>
-                <parameter name="Reaction name">Biomass</parameter>
+                <parameter name="Reaction name">R00582</parameter>
             </parameters>
         </module>
         <module class="ND.modules.reactionOP.showReaction.ShowReactionModule">
             <parameters>
-                <parameter name="Reaction name">r_0408</parameter>
+                <parameter name="Reaction name">R168ANIGERR01522</parameter>
             </parameters>
         </module>
         <module class="ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule">
@@ -75,16 +90,19 @@
         </module>
         <module class="ND.modules.reactionOP.showCompound.ShowCompoundModule">
             <parameters>
-                <parameter name="Compound name">s_0279</parameter>
+                <parameter name="Compound name">pyruvate</parameter>
             </parameters>
         </module>
         <module class="ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule">
             <parameters/>
         </module>
+        <module class="ND.modules.reactionOP.deadends.DeadEndsModule">
+            <parameters/>
+        </module>
         <module class="ND.modules.reactionOP.AddInfo.AddInfoModule">
             <parameters>
                 <parameter name="File name">/home/scsandra/Documents/CellFactory2015/retropath/mappings/experiment.csv</parameter>
-                <parameter name="Database">/home/scsandra/Documents/CellFactory2015</parameter>
+                <parameter name="Database">/home/scsandra/Documents/CellFactory2015/Neo4j</parameter>
             </parameters>
         </module>
         <module class="ND.modules.simulation.somePaths.SomePathsModule">
@@ -94,6 +112,11 @@
                 <parameter name="Steady state">true</parameter>
             </parameters>
         </module>
+        <module class="ND.modules.reactionOP.showPathways.ShowPathwaysModule">
+            <parameters>
+                <parameter name="Pathway name">rn00010</parameter>
+            </parameters>
+        </module>
         <module class="ND.modules.otimization.LP.LPModule">
             <parameters>
                 <parameter name="Objective">C00055</parameter>
@@ -101,7 +124,7 @@
         </module>
         <module class="ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule">
             <parameters>
-                <parameter name="Fluxes">/home/scsandra/Documents/gopal/testvis.csv</parameter>
+                <parameter name="Fluxes">/home/scsandra/Documents/CellFactory2015/corecoPost/fluxes.csv</parameter>
                 <parameter name="Flux threshold">1.0E-6</parameter>
             </parameters>
         </module>
@@ -123,6 +146,11 @@
         </module>
         <module class="ND.modules.analysis.CompareModels.CompareModule">
             <parameters/>
+        </module>
+        <module class="ND.modules.otimization.visualization.FluxVisualizationModule">
+            <parameters>
+                <parameter name="Compound">C00022</parameter>
+            </parameters>
         </module>
         <module class="ParameterPath">
             <parameters/>

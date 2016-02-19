@@ -23,6 +23,8 @@ import ND.main.NDCore;
 import ND.data.network.Edge;
 import ND.data.network.Graph;
 import ND.data.network.Node;
+import ND.modules.simulation.FBA.SpeciesFA;
+import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import ND.util.StreamCopy;
@@ -36,7 +38,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
@@ -79,19 +83,20 @@ public class SaveProjectTask extends AbstractTask {
         try {
             setStatus(TaskStatus.PROCESSING);
             File tempFile = File.createTempFile(file.getName(), ".tmp",
-                    file.getParentFile());
+                file.getParentFile());
             tempFile.deleteOnExit();
             // Create a ZIP stream writing to the temporary file
             FileOutputStream tempStream = new FileOutputStream(tempFile);
             try (ZipOutputStream zipStream = new ZipOutputStream(tempStream)) {
                 saveSBMLFiles(zipStream);
                 saveHistory(zipStream);
+                savePaths(zipStream);
                 zipStream.close();
             }
             boolean renameOK = tempFile.renameTo(file);
             if (!renameOK) {
                 throw new IOException("Could not move the temporary file "
-                        + tempFile + " to the final location " + file);
+                    + tempFile + " to the final location " + file);
             }
 
             setStatus(TaskStatus.FINISHED);
@@ -153,9 +158,9 @@ public class SaveProjectTask extends AbstractTask {
                     for (Node node : graph.getNodes()) {
                         Point2D position = node.getPosition();
                         if (position != null) {
-                            writer.write("\nNodes= " + node.getId() +" : " + node.getName() + " // " + position.getX() + " , " + position.getY());
+                            writer.write("\nNodes= " + node.getId() + " : " + node.getName() + " // " + position.getX() + " , " + position.getY());
                         } else {
-                            writer.write("\nNodes= " + node.getId() +" : " + node.getName());
+                            writer.write("\nNodes= " + node.getId() + " : " + node.getName());
                         }
                     }
                     for (Edge edge : graph.getEdges()) {
@@ -183,41 +188,47 @@ public class SaveProjectTask extends AbstractTask {
             finishedPercentage = ((double) i++ / selectedFiles.length) / 2;
         }
     }
-    
-    
+
     private void savePaths(ZipOutputStream zipStream) throws IOException {
         Dataset[] selectedFiles = NDCore.getDesktop().getAllDataFiles();
         for (final Dataset datafile : selectedFiles) {
-            String info = datafile.getInfo().getText();
-            String biomass = datafile.getBiomassId();
-            List<String> sources = datafile.getSources();
-            Graph graph = datafile.getGraph();
-            zipStream.putNextEntry(new ZipEntry(datafile.getDatasetName() + ".paths"));
-            File tempFile = File.createTempFile(datafile.getDatasetName() + "-paths", ".tmp");
+            if (datafile.getPath() != null) {
+                HashMap<String, SpeciesFA> compounds = datafile.getPaths();
+                zipStream.putNextEntry(new ZipEntry(datafile.getDatasetName() + ".paths"));
+                File tempFile = File.createTempFile(datafile.getDatasetName() + "-paths", ".tmp");
 
-            BufferedWriter writer = null;
-            try {
-                writer = new BufferedWriter(new FileWriter(tempFile.getAbsoluteFile()));
-                writer.write(info);
-               
-            } catch (IOException e) {
-            } finally {
+                BufferedWriter writer = null;
                 try {
-                    if (writer != null) {
-                        writer.close();
+                    writer = new BufferedWriter(new FileWriter(tempFile.getAbsoluteFile()));
+                    for (String c : compounds.keySet()) {
+                        SpeciesFA compound = compounds.get(c);
+                        if (compound.getAnt() != null) {
+                            writer.write(compound.getId() + " - " + compound.getName() + " : ");
+                            Map<String, Boolean> path = compound.getAnt().getPath();
+                            for (String r : path.keySet()) {
+                                writer.write(r + " - " + path.get(r) + ",");
+                            }
+                            writer.write("\n");
+                        }
                     }
                 } catch (IOException e) {
+                } finally {
+                    try {
+                        if (writer != null) {
+                            writer.close();
+                        }
+                    } catch (IOException e) {
+                    }
                 }
-            }
 
-            try (FileInputStream fileStream = new FileInputStream(tempFile)) {
-                StreamCopy copyMachine = new StreamCopy();
-                copyMachine.copy(fileStream, zipStream);
+                try (FileInputStream fileStream = new FileInputStream(tempFile)) {
+                    StreamCopy copyMachine = new StreamCopy();
+                    copyMachine.copy(fileStream, zipStream);
+                }
+                tempFile.delete();
+                finishedPercentage = ((double) i++ / selectedFiles.length) / 2;
             }
-            tempFile.delete();
-            finishedPercentage = ((double) i++ / selectedFiles.length) / 2;
         }
     }
-
 
 }

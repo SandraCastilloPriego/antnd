@@ -189,7 +189,7 @@ public class AntFBATask extends AbstractTask {
             }
         }
         
-        simulation.getFlux(simulation.getCompounds().get("s_0075").getAnt(), "s_0075", true, true);
+       // simulation.getFlux(simulation.getCompounds().get("s_0075").getAnt(), "s_0075", true, true);
         
 //        String results = "";
 //        for (String c : compounds.keySet()) {
