@@ -73,7 +73,7 @@ public class NDModulesList {
                 ShowCompoundModule.class,
                 ShowAllCompoundsModule.class,
                 DeadEndsModule.class,
-                AddInfoModule.class, 
+                //AddInfoModule.class, 
                 SomePathsModule.class,
                 ShowPathwaysModule.class,
                 // LoopAnalyzerModule.class,

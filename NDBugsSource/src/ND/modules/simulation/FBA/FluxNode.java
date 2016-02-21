@@ -116,7 +116,7 @@ public class FluxNode {
         double extra = 0;
         for (ReactionFA r : this.outReactions) {
             Flux = (sumFlux / outFlux) * r.getStoichiometry(id);
-            if (r.hasReactant(id)) {
+           /* if (r.hasReactant(id)) {
                 if (r.getub() > Flux) {
                     maxFlux.add(r.getId());
                 } else {
@@ -130,23 +130,21 @@ public class FluxNode {
                     r.setFlux(this.id, Math.abs(r.getlb()));
                     extra = +(Flux - Math.abs(r.getlb()));
                 }
-            }
-            //r.setFlux(this.id, Flux);
+            }*/
+            r.setFlux(this.id, Flux);
             if (!this.isCofactor) {
-                path.add(id);
-                r.addPath(path);
+              //  path.add(id);
+               // r.addPath(path);
             }
         }
-        double sharedFlux = (sumFlux + extra) / maxFlux.size();
+       /* double sharedFlux = (sumFlux + extra) / maxFlux.size();
         for (ReactionFA r : this.outReactions) {
             if (maxFlux.contains(r.getId())) {
                 Flux = sharedFlux * r.getStoichiometry(id);
                 r.setFlux(this.id, Flux);
             }
-            if (!this.isCofactor) {
-                r.addPath(path);
-            }
-        }
+            
+        }*/
         /*for (ReactionFA r : this.outReactions) {
          Flux = (sumFlux / outFlux) * r.getStoichiometry(id);
          r.setFlux(this.id, Flux);
@@ -180,7 +178,7 @@ public class FluxNode {
         double outFlux = 0.0;
 
         for (ReactionFA r : this.outReactions) {
-            if(r.getId().equals("cofactor")&& r.getFlux()==-1) return -1;
+           // if(r.getId().equals("cofactor")&& r.getFlux()==-1) return -1;
             outFlux += Math.abs(r.getStoichiometry(id));
         }
         if (outFlux > 0) {
@@ -194,11 +192,11 @@ public class FluxNode {
         double sumFlux = 0.0;
 
         for (ReactionFA r : this.inReactions) {
-            if (r.getFlux() > 0.0 && !r.isInPath(id)) {
+            if (r.getFlux() > 0.0 /*&& !r.isInPath(id)*/) {
                 sumFlux += r.getFlux() * Math.abs(r.getStoichiometry(id));
                 if (!this.isCofactor) {
                     for (String p : r.getPath()) {
-                        this.path.add(p);
+                   //     this.path.add(p);
                     }
                 }
             }

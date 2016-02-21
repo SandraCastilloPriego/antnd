@@ -55,7 +55,7 @@ public class AntFBATask extends AbstractTask {
     private final SimpleBasicDataset networkDS;
     private double finishedPercentage = 0.0f;
 
-    private final String objectiveID;
+    //private final String objectiveID;
     private final int iterations;
     private final Random rand;
     private HashMap<String, String[]> bounds;
@@ -74,7 +74,7 @@ public class AntFBATask extends AbstractTask {
 
     public AntFBATask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
-        this.objectiveID = parameters.getParameter(AntFBAParameters.objectiveReaction).getValue();
+     //   this.objectiveID = parameters.getParameter(AntFBAParameters.objectiveReaction).getValue();
         this.iterations = parameters.getParameter(AntFBAParameters.iterations).getValue();
         String cofactorsString = parameters.getParameter(AntFBAParameters.cofactors).getValue();
         this.cofactors = new ArrayList<>();
@@ -92,7 +92,7 @@ public class AntFBATask extends AbstractTask {
         Date date = new Date();
         long time = date.getTime();
         this.objectives = new ArrayList<>();
-        this.objectives.add(objectiveID);
+       // this.objectives.add(objectiveID);
         this.bounds = new HashMap<>();
         this.sourcesList = new ArrayList<>();
         this.results = new HashMap<>();
@@ -168,7 +168,7 @@ public class AntFBATask extends AbstractTask {
          LinearProgramming lp = new LinearProgramming(simulation2.getCompounds(), simulation2.getReactions());
         
          */
-        simulation = new Simulation(this.networkDS, this.cofactors, this.cofactors2, this.bounds, this.sources, this.sourcesList, this.objectiveID);
+        simulation = new Simulation(this.networkDS, this.cofactors, this.cofactors2, this.bounds, this.sources, this.sourcesList, null);
 
         System.out.println("Creating world");
         simulation.createWorld();

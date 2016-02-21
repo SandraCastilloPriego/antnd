@@ -83,8 +83,9 @@ public class OpenProjectTask extends AbstractTask {
                 loadSBMLFiles(zipFile);
                 finishedPercentage = 0.5f;
                 loadInfo(zipFile);
-                finishedPercentage = 0.99f;
+                finishedPercentage = 0.70f;
                 loadPaths(zipFile);
+                finishedPercentage = 0.99f;
             }
             setStatus(TaskStatus.FINISHED);
         } catch (IOException e) {
@@ -96,7 +97,7 @@ public class OpenProjectTask extends AbstractTask {
     private void loadSBMLFiles(ZipFile zipFile) throws IOException {
         Enumeration zipEntries = zipFile.entries();
         Pattern filePattern = Pattern
-            .compile("(.*)\\.sbml$|(.*)\\.xml$");
+                .compile("(.*)\\.sbml$|(.*)\\.xml$");
         while (zipEntries.hasMoreElements()) {
             if (isCanceled()) {
                 return;
@@ -127,7 +128,7 @@ public class OpenProjectTask extends AbstractTask {
     private void loadInfo(ZipFile zipFile) throws IOException {
         Enumeration zipEntries = zipFile.entries();
         Pattern filePattern = Pattern
-            .compile("(.*)\\.info$");
+                .compile("(.*)\\.info$");
         while (zipEntries.hasMoreElements()) {
             if (isCanceled()) {
                 return;
@@ -192,7 +193,7 @@ public class OpenProjectTask extends AbstractTask {
     private void loadPaths(ZipFile zipFile) throws IOException {
         Enumeration zipEntries = zipFile.entries();
         Pattern filePattern = Pattern
-            .compile("(.*)\\.paths$");
+                .compile("(.*)\\.paths$");
         while (zipEntries.hasMoreElements()) {
             if (isCanceled()) {
                 return;
@@ -205,27 +206,33 @@ public class OpenProjectTask extends AbstractTask {
             if (data != null) {
                 Matcher fileMatcher = filePattern.matcher(entryName);
                 if (fileMatcher.matches()) {
-                    InputStream sbmlStream = zipFile.getInputStream(entry);
-                    DataInputStream in = new DataInputStream(sbmlStream);
+                    InputStream pathStream = zipFile.getInputStream(entry);
+                    DataInputStream in = new DataInputStream(pathStream);
                     BufferedReader br = new BufferedReader(new InputStreamReader(in));
                     String strLine;
-                    HashMap<String, SpeciesFA> compounds = new HashMap<>();                    
+                    HashMap<String, SpeciesFA> compounds = new HashMap<>();
                     while ((strLine = br.readLine()) != null) {
-                        String compoundInfo = strLine.split(" : ")[0];
-                        String pathInfo = strLine.split(" : ")[1];
-                        SpeciesFA compound = new SpeciesFA(compoundInfo.split(" - ")[0], compoundInfo.split(" - ")[1]);
-                        Map<String, Boolean> path = new HashMap<>();
-                        String[] pathString = pathInfo.split(",");
-                        for(String pS : pathString){
-                            path.put(pS.split(" - ")[0], Boolean.valueOf(pS.split(" - ")[1]));
+                        try {
+                            String compoundInfo = strLine.split(" : ")[0];
+                            String pathInfo = strLine.split(" : ")[1];
+                            SpeciesFA compound = new SpeciesFA(compoundInfo.split(" - ")[0], compoundInfo.split(" - ")[1]);
+                            Map<String, Boolean> path = new HashMap<>();
+                            String[] pathString = pathInfo.split(",");
+                            for (String pS : pathString) {
+                                path.put(pS.split(" - ")[0], Boolean.valueOf(pS.split(" - ")[1]));
+                            }
+                            Ant ant = new Ant(compound.getId());
+                            ant.setPath(path);
+                            ant.setPathSize(path.size());
+                            compound.setAnt(ant);                            
+                            compounds.put(compound.getId(), compound);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        Ant ant = new Ant(compound.getId());
-                        ant.setPath(path);
-                        compound.addAnt(ant);
-                        compounds.put(compound.getId(), compound);
                     }
                     //Close the input stream
                     in.close();
+                    compounds.get("s_1399").getAnt().print();
                     data.setPaths(compounds);
                 }
             }

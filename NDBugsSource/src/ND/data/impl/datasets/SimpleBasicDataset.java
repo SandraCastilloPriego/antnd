@@ -221,12 +221,12 @@ public class SimpleBasicDataset implements Dataset {
     }
 
     @Override
-    public void setPaths(Map<String, ND.modules.simulation.FBA.SpeciesFA> paths) {
+    public void setPaths(Map<String, SpeciesFA> paths) {
         this.compounds = (HashMap<String, SpeciesFA>) paths;
     }
 
     @Override
-    public HashMap<String, ND.modules.simulation.FBA.SpeciesFA> getPaths() {
+    public HashMap<String, SpeciesFA> getPaths() {
         return this.compounds;
     }
 

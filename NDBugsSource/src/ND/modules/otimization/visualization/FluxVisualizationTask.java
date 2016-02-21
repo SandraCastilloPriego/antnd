@@ -65,7 +65,8 @@ public class FluxVisualizationTask extends AbstractTask {
         this.objective = parameters.getParameter(FluxVisualizationParameters.objective).getValue();
         this.reactions = this.networkDS.getReactionsFA();
         this.compounds = this.networkDS.getPaths();
-        if(reactions == null){
+        if (reactions == null) {
+            System.out.println("Creating reactions");
             createReactions();
         }
         if (compounds == null) {
@@ -77,7 +78,6 @@ public class FluxVisualizationTask extends AbstractTask {
         this.frame = new JInternalFrame("Result", true, true, true, true);
         this.pn = new JPanel();
         this.panel = new JScrollPane(pn);
-
     }
 
     @Override
@@ -99,12 +99,10 @@ public class FluxVisualizationTask extends AbstractTask {
     public void run() {
         try {
             setStatus(TaskStatus.PROCESSING);
-            Graph g = createGraph(this.compounds.get(this.objective).getAnt().getPath());
-            setStatus(TaskStatus.FINISHED);
+            Graph g = createGraph(this.compounds.get(this.objective).getAnt().getPath());           
 
             this.tools.createDataFile(g, networkDS, this.objective, this.networkDS.getSources(), false);
-            //  LinearProgramming lp = new LinearProgramming(graph, objectiveID, sources, reactions);
-            //System.out.println("Solution: " + lp.getObjectiveValue());
+
             frame.setSize(new Dimension(700, 500));
             frame.add(this.panel);
             NDCore.getDesktop().addInternalFrame(frame);
@@ -116,7 +114,7 @@ public class FluxVisualizationTask extends AbstractTask {
             } catch (NullPointerException ex) {
                 System.out.println("Imprimendo: " + ex.toString());
             }
-
+            setStatus(TaskStatus.FINISHED);
         } catch (Exception e) {
             System.out.println(e.toString());
             setStatus(TaskStatus.ERROR);
@@ -169,26 +167,22 @@ public class FluxVisualizationTask extends AbstractTask {
         SBMLDocument doc = this.networkDS.getDocument();
         this.reactions = new HashMap<>();
         Model m = doc.getModel();
-        for (Species s : m.getListOfSpecies()) {
-            SpeciesFA specie = new SpeciesFA(s.getId(), s.getName());
-            this.compounds.put(s.getId(), specie);
-        }
 
         for (Reaction r : m.getListOfReactions()) {
             boolean biomass = false;
 
             ReactionFA reaction = new ReactionFA(r.getId());
             String[] b = null;
-           
-                try {
-                    KineticLaw law = r.getKineticLaw();
-                    LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
-                    LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                    reaction.setBounds(lbound.getValue(), ubound.getValue());
-                } catch (Exception ex) {
-                    reaction.setBounds(-1000, 1000);
-                }
-            
+
+            try {
+                KineticLaw law = r.getKineticLaw();
+                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                reaction.setBounds(lbound.getValue(), ubound.getValue());
+            } catch (Exception ex) {
+                reaction.setBounds(-1000, 1000);
+            }
+
             for (SpeciesReference s : r.getListOfReactants()) {
 
                 Species sp = s.getSpeciesInstance();
@@ -207,7 +201,7 @@ public class FluxVisualizationTask extends AbstractTask {
 
             for (SpeciesReference s : r.getListOfProducts()) {
                 Species sp = s.getSpeciesInstance();
-                
+
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
                 SpeciesFA spFA = this.compounds.get(sp.getId());
                 if (spFA != null) {
@@ -217,7 +211,7 @@ public class FluxVisualizationTask extends AbstractTask {
                 }
             }
             this.reactions.put(r.getId(), reaction);
-        }   
+        }
     }
 
 }

@@ -24,7 +24,6 @@ import ND.data.network.Edge;
 import ND.data.network.Graph;
 import ND.data.network.Node;
 import ND.modules.simulation.FBA.SpeciesFA;
-import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import ND.util.StreamCopy;
@@ -211,7 +210,7 @@ public class SaveProjectTask extends AbstractTask {
                             writer.write("\n");
                         }
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                 } finally {
                     try {
                         if (writer != null) {

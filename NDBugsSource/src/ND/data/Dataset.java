@@ -20,6 +20,7 @@ package ND.data;
 import ND.data.network.Edge;
 import ND.data.network.Graph;
 import ND.data.network.Node;
+import ND.modules.simulation.FBA.SpeciesFA;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.HashMap;
 import java.util.List;
@@ -148,9 +149,9 @@ public interface Dataset {
         
         public boolean isCluster();
         
-        public void setPaths(Map<String, ND.modules.simulation.FBA.SpeciesFA> paths);
+        public void setPaths(Map<String, SpeciesFA> paths);
         
-        public HashMap<String, ND.modules.simulation.FBA.SpeciesFA> getPaths();
+        public HashMap<String, SpeciesFA> getPaths();
         
         public void setReactionsFA(Map<String, ReactionFA> reactions);
         

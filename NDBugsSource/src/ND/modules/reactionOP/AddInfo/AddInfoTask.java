@@ -18,34 +18,22 @@
 package ND.modules.reactionOP.AddInfo;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.data.network.Node;
 import ND.main.NDCore;
-import ND.modules.metacyc.Javacyc;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import com.csvreader.CsvReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.xml.XMLNode;
 
 /**
@@ -336,10 +324,10 @@ public class AddInfoTask extends AbstractTask {
 
     }
 
-    private static enum RelTypes implements RelationshipType {
+ /*   private static enum RelTypes implements RelationshipType {
 
         ISREACTAN, ISPRODUCT, BELONGTOPATHWAY, HASREACTION, ISINCOMPARTMENT, HASCOMPARTMENT
-    }
+    }*/
 
     private void processLine(String[] line, Model m, String[] header) {
         String id = line[0];

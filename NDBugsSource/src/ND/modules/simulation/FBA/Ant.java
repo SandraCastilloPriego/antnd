@@ -91,7 +91,7 @@ public class Ant {
     }
 
     public String toString() {
-        String path = null;
+        String path = "";
         for (String p : this.path.keySet()) {
             path += " - " + p.split(" - ")[0];
         }

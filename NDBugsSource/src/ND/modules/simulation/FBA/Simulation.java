@@ -257,7 +257,7 @@ public class Simulation {
                 List<Ant> com = new ArrayList<>();
                 for (String s : toBeRemoved) {
                     SpeciesFA spfa = this.compounds.get(s);
-                    if (spfa.getAnt() != null && !this.cofactors.contains(s)) {
+                    if (spfa.getAnt() != null/* && !this.cofactors.contains(s)*/) {
                         com.add(spfa.getAnt());
                     }
 

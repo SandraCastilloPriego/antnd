@@ -164,4 +164,8 @@ public class SpeciesFA {
     public double getFlux() {
         return 0.0;
     }
+
+    public void setAnt(Ant ant) {
+        this.shortestAnt = ant;
+    }
 }
