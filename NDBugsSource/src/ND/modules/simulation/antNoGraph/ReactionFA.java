@@ -224,7 +224,7 @@ public class ReactionFA {
     }
 
     public double getFlux() {
-        double min = Double.MAX_VALUE;
+        /*double min = Double.MAX_VALUE;
         for (String sp : this.flux.keySet()) {
             Double spflux = this.flux.get(sp);
             if (spflux != -1 && spflux < min) {
@@ -232,7 +232,8 @@ public class ReactionFA {
             }
         }
         //setStatus();
-        return min;
+        return min;*/
+        return this.finalFlux;
     }
 
     private void setStatus() {
@@ -285,5 +286,10 @@ public class ReactionFA {
             if(!this.path.contains(p))
             this.path.add(p);
         }
+    }
+    
+    public void resetFlux(){
+        this.flux.clear();
+        this.finalFlux = -1;
     }
 }

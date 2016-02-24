@@ -17,22 +17,17 @@
  */
 package ND.modules.simulation.FBA;
 
-import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.data.network.Edge;
-import ND.desktop.impl.PrintPaths;
 import ND.main.NDCore;
 import ND.data.network.Graph;
 import ND.data.network.Node;
-import ND.data.parser.impl.BasicFilesParserSBML;
 import ND.modules.configuration.general.GetInfoAndTools;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import java.awt.Dimension;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,9 +37,6 @@ import java.util.Random;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.Species;
 
 /**
  *
@@ -185,7 +177,7 @@ public class AntFBATask extends AbstractTask {
         for (String compound : simulation.getCompounds().keySet()) {
             SpeciesFA specie = simulation.getCompounds().get(compound);
             if (specie.getAnt() != null) {
-                simulation.getFlux(specie.getAnt(), compound, true, false);
+             //   simulation.getFlux(specie.getAnt(), compound, true, false);
             }
         }
         
@@ -203,7 +195,9 @@ public class AntFBATask extends AbstractTask {
 //        this.networkDS.addInfo(results);
         this.networkDS.setPaths(simulation.getCompounds());
         this.networkDS.setReactionsFA(simulation.getReactions());
-
+        this.networkDS.setCofactors(simulation.getCofactors());
+        this.networkDS.setSourcesMap(simulation.getSourceMap());
+        
          this.analyzeResults();
 //        if (getStatus() == TaskStatus.PROCESSING) {
 //
@@ -330,7 +324,7 @@ public class AntFBATask extends AbstractTask {
         for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
             if (compoundr.getAnt() != null) {
-                results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/ + "\n";
+         //       results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/ + "\n";
             } else {
                 results += c + " : " + compoundr.getName() + "\n";
             }

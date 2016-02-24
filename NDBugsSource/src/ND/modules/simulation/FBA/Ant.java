@@ -150,7 +150,7 @@ public class Ant {
     }
 
     public void setFlux(double flux) {
-        this.flux = flux;
+        this.flux = flux;  
     }
 
 }

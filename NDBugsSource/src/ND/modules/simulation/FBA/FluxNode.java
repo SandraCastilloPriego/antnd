@@ -194,11 +194,11 @@ public class FluxNode {
         for (ReactionFA r : this.inReactions) {
             if (r.getFlux() > 0.0 /*&& !r.isInPath(id)*/) {
                 sumFlux += r.getFlux() * Math.abs(r.getStoichiometry(id));
-                if (!this.isCofactor) {
-                    for (String p : r.getPath()) {
-                   //     this.path.add(p);
-                    }
-                }
+//                if (!this.isCofactor) {
+//                    for (String p : r.getPath()) {
+//                   //     this.path.add(p);
+//                    }
+//                }
             }
         }
         return sumFlux;

@@ -156,4 +156,12 @@ public interface Dataset {
         public void setReactionsFA(Map<String, ReactionFA> reactions);
         
         public HashMap<String, ReactionFA> getReactionsFA();
+        
+        public void setSourcesMap(Map<String, Double[]> sources);
+        
+        public Map<String, Double[]> getSourcesMap();
+        
+        public void setCofactors(List<String> cofactor);
+        
+        public List<String> getCofactors();
 }

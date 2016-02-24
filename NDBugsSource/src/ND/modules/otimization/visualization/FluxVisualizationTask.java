@@ -24,6 +24,8 @@ import ND.data.network.Node;
 import ND.desktop.impl.PrintPaths;
 import ND.main.NDCore;
 import ND.modules.configuration.general.GetInfoAndTools;
+import ND.modules.simulation.FBA.Ant;
+import ND.modules.simulation.FBA.LP.FBA;
 import ND.modules.simulation.FBA.SpeciesFA;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.modules.simulation.antNoGraph.uniqueId;
@@ -31,7 +33,9 @@ import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
@@ -54,6 +58,8 @@ public class FluxVisualizationTask extends AbstractTask {
     private final double finishedPercentage = 0.0f;
     private HashMap<String, ReactionFA> reactions;
     private final HashMap<String, SpeciesFA> compounds;
+    private final Map<String,Double[]> sourcesMap;
+    private final List<String> cofactors;
     private final String objective;
     private final GetInfoAndTools tools;
     private final JInternalFrame frame;
@@ -65,6 +71,9 @@ public class FluxVisualizationTask extends AbstractTask {
         this.objective = parameters.getParameter(FluxVisualizationParameters.objective).getValue();
         this.reactions = this.networkDS.getReactionsFA();
         this.compounds = this.networkDS.getPaths();
+        this.cofactors = this.networkDS.getCofactors();
+        this.sourcesMap = this.networkDS.getSourcesMap();
+        
         if (reactions == null) {
             System.out.println("Creating reactions");
             createReactions();
@@ -98,8 +107,22 @@ public class FluxVisualizationTask extends AbstractTask {
     @Override
     public void run() {
         try {
+            String reactionObjective = null;
             setStatus(TaskStatus.PROCESSING);
-            Graph g = createGraph(this.compounds.get(this.objective).getAnt().getPath());           
+            Map<String,Boolean> path = this.compounds.get(this.objective).getAnt().getPath();
+            for(String p : path.keySet()){
+                if(this.reactions.containsKey(p)){
+                    ReactionFA r = this.reactions.get(p);
+                    if(r.hasProduct(this.objective)|| r.hasReactant(this.objective)){
+                        reactionObjective = r.getId();
+                    }
+                }
+            }
+            
+            if(reactionObjective != null) this.getFlux(this.compounds.get(this.objective).getAnt(), reactionObjective);
+            
+            Graph g = createGraph(path);   
+            
 
             this.tools.createDataFile(g, networkDS, this.objective, this.networkDS.getSources(), false);
 
@@ -163,6 +186,22 @@ public class FluxVisualizationTask extends AbstractTask {
         return g;
     }
 
+     
+    public double getFlux(Ant ant, String objective) {
+        FBA fba = new FBA();
+        fba.setModel(ant, objective, this.reactions, this.cofactors, this.sourcesMap);
+        try {
+            Map<String, Double> soln = fba.run();           
+            for(String r : soln.keySet()){
+                 if(this.reactions.containsKey(r))this.reactions.get(r).setFlux(soln.get(r));
+            }
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+        return fba.getMaxObj();
+    }
+
+    
     private void createReactions() {
         SBMLDocument doc = this.networkDS.getDocument();
         this.reactions = new HashMap<>();
@@ -214,4 +253,5 @@ public class FluxVisualizationTask extends AbstractTask {
         }
     }
 
+   
 }

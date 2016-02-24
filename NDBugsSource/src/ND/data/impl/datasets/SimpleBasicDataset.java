@@ -52,6 +52,8 @@ public class SimpleBasicDataset implements Dataset {
     private boolean isCluster = false;
     private HashMap<String, ReactionFA> reactions;
     private HashMap<String, SpeciesFA> compounds;
+    private List<String> cofactors;
+    private Map<String, Double[]> sourcesMap;
 
     /**
      *
@@ -238,6 +240,27 @@ public class SimpleBasicDataset implements Dataset {
     @Override
     public HashMap<String, ReactionFA> getReactionsFA() {
         return this.reactions;
+    }
+
+    @Override
+    public void setSourcesMap(Map<String, Double[]> sources) {
+        this.sourcesMap = sources;
+    
+    }
+
+    @Override
+    public Map<String, Double[]> getSourcesMap() {
+        return this.sourcesMap;
+    }
+
+    @Override
+    public void setCofactors(List<String> cofactor) {
+        this.cofactors = cofactor;
+    }
+
+    @Override
+    public List<String> getCofactors() {
+        return this.cofactors;
     }
 
 }

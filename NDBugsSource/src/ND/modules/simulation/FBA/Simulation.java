@@ -18,6 +18,7 @@
 package ND.modules.simulation.FBA;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.modules.simulation.FBA.LP.FBA;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +58,11 @@ public class Simulation {
         this.cofactors2 = cofactors2;
         this.objectives = new ArrayList();
         this.bounds = bounds;
-        this.sources = sources;
+        if (sources == null) {
+            this.sources = new HashMap<>();
+        } else {
+            this.sources = sources;
+        }
         this.sourcesList = sourcesList;
         this.objective = objective;
 
@@ -139,8 +144,28 @@ public class Simulation {
                     System.out.println(sp.getId());
                 }
             }
+
+            if (r.getListOfProducts().isEmpty()) {
+                for (SpeciesReference s : r.getListOfReactants()) {
+                    Species sp = s.getSpeciesInstance();
+                    SpeciesFA specie = this.compounds.get(sp.getId());
+                    if (specie.getAnt() == null) {
+                        Ant ant = new Ant(specie.getId());
+                        Double[] sb = new Double[2];
+                        sb[0] = reaction.getlb();
+                        sb[1] = reaction.getub();
+                        if (sb[0] > 0.0 && sb[1] > 0.0) {
+                            ant.initAnt(Math.abs(reaction.getlb()));
+                            specie.addAnt(ant);
+                            this.sourcesList.add(sp.getId());
+                            this.sources.put(sp.getId(), sb);
+                        }
+                    }
+                }
+            }
             this.reactions.put(r.getId(), reaction);
         }
+
         List<String> toBeRemoved = new ArrayList<>();
         for (String compound : compounds.keySet()) {
             if (compounds.get(compound).getReactions().isEmpty()) {
@@ -285,18 +310,24 @@ public class Simulation {
                     Ant newAnt = superAnt.clone();
                     if (/*!this.objective.equals(s) || this.objective.equals(s) && */!hasOutput(newAnt, spfa)) {
                         newAnt.setLocation(compound);
-                        double flux = this.getFlux(newAnt, s, false, false);
-                        //System.out.println(s + "-> "+ flux);
+                        //  double flux = this.getFlux(newAnt, s, false, false);
+                        double flux = this.getFlux(newAnt, reactionChoosen);
+                        System.out.println(s + "-> " + flux);
+                        this.fixPath(newAnt);
                         newAnt.setFlux(flux);
-                        /* Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());
-                         double combinedFlux = this.getFlux(combinedAnt, s, true, false);
-                         combinedAnt.setFlux(combinedFlux);
-                         if (flux > combinedFlux) {
+                        
+                       /* Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());
+                        double combinedFlux = this.getFlux(combinedAnt, reactionChoosen);
+                        combinedAnt.setFlux(combinedFlux);
+                        if (flux > combinedFlux) {
+                            //this.fixPath(newAnt);
+                            spfa.addAnt(newAnt);
+                            
+                        } else {
+                           // this.fixPath(combinedAnt);
+                            spfa.addAnt(combinedAnt);
+                        }*/
                          spfa.addAnt(newAnt);
-                         } else {
-                         spfa.addAnt(combinedAnt);
-                         }*/
-                        spfa.addAnt(newAnt);
                     }
                     /* if ((newAnt.contains("r_1054"))) {
                      if (spfa.getAnt() == null) {
@@ -326,9 +357,9 @@ public class Simulation {
             if (reactions.containsKey(r)) {
                 ReactionFA reaction = this.reactions.get(r);
                 if ((ant.getPath().get(r) && reaction.hasReactant(sp.getId())) || (!ant.getPath().get(r) && reaction.hasProduct(sp.getId()))) {
-                    if (!reaction.isBidirecctional()) {
-                        hasOutput = true;
-                    }
+                    //if (!reaction.isBidirecctional()) {
+                    hasOutput = true;
+                    //}
 
                 }
             }
@@ -438,104 +469,115 @@ public class Simulation {
      }
         
      }*/
-    /* public double getFlux(Ant ant){
-     FBA fba = new FBA();
-     fba.loadSbmlNetwork(this.networkDS.getDocument());
-     return 0.0;
-     }*/
-    public double getFlux(Ant ant, String objective, boolean real, boolean verbose) {
-        this.doneReactions.clear();
-        Map<String, Boolean> path = ant.clone().getPath();
-        Map<String, FluxNode> fluxes = new HashMap<>();
-        //this.step(sourcesList, path, fluxes);
-        List<String> species = this.createMiniWorld(path, fluxes, real, verbose);
-        for (int i = 0; i < 50; i++) {
-            this.MiniCicle(species, fluxes, verbose);
+    public double getFlux(Ant ant, String objective) {
+        FBA fba = new FBA();
+        fba.setModel(ant, objective, this.reactions, this.cofactors, this.sources);
+        try {
+            Map<String, Double> soln = fba.run();
+            if(objective.contains("r_0962")&&fba.getMaxObj()>0){
+            for(String r : soln.keySet()){
+                 if(this.reactions.containsKey(r))this.reactions.get(r).setFlux(soln.get(r));
+            }}
+        } catch (Exception ex) {
+            System.out.println(ex);
         }
-        if (fluxes.get(objective) == null) {
-            return 0.0;
-        }
-        return fluxes.get(objective).getFlux();
-
+        return fba.getMaxObj();
     }
 
-    private List<String> createMiniWorld(Map<String, Boolean> path, Map<String, FluxNode> fluxes, boolean real, boolean verbose) {
-        List<String> species = new ArrayList<>();
-
-        for (String s : path.keySet()) {
-            if (this.sources.containsKey(s)) {
-                FluxNode n = this.initFluxNode(s, path, "initialReaction", Math.abs(this.sources.get(s)[0]));
-                fluxes.put(s, n);
-                species.add(s);
-            }
-
-            if (this.reactions.containsKey(s)) {
-                ReactionFA reaction = this.reactions.get(s);
-                for (String reactants : reaction.getReactants()) {
-                    if (!species.contains(reactants)) {
-                        FluxNode n = this.initFluxNode(reactants, path, null, 0.0);
-                        fluxes.put(reactants, n);
-                        species.add(reactants);
-                    }
-                    /* FluxNode n = fluxes.get(reactants);
-                     if (path.get(s)) {
-                     n.setOutReactions(reaction);
-                     } else {
-                     n.setInReactions(reaction);
-                     }*/
-                    // if(verbose)n.print();
-                }
-                for (String products : reaction.getProducts()) {
-                    if (!species.contains(products)) {
-                        FluxNode n = this.initFluxNode(products, path, null, 0.0);
-                        fluxes.put(products, n);
-                        species.add(products);
-                    }
-                    /* FluxNode n = fluxes.get(products);
-                     if (!path.get(s)) {
-                     n.setOutReactions(reaction);
-                     } else {
-                     n.setInReactions(reaction);
-                     }**/
-                    // if(verbose)n.print();
-                }
-            }
-        }
-
-        for (String c : this.cofactors) {
-            FluxNode n;
-            n = this.initFluxNode(c, path, "cofactor", -1);
-            if (!real) {                
-                if (this.cofactors.contains(c)) {
-                    n.setBalancedFlux();
-                }
-            } 
-            fluxes.put(c, n);
-            species.add(c);
-        }
-        return species;
-    }
-
-    private FluxNode initFluxNode(String specie, Map<String, Boolean> path, String initReaction, double flux) {
-
-        FluxNode n;
-        if (initReaction == null) {
-            n = new FluxNode(specie);
-        } else {
-            n = new FluxNode(specie, initReaction, flux);
-        }
-        n.setOutReactions(this.getConnectedOutReactions2(path, specie));
-        n.setInReactions(this.getConnectedInReactions(path, specie));
-
-        return n;
-    }
-
-    private void MiniCicle(List<String> species, Map<String, FluxNode> fluxes, boolean verbose) {
-        for (String specie : species) {
-            fluxes.get(specie).updateFlux(verbose);
-        }
-    }
-
+//    public double getFlux(Ant ant, String objective, boolean real, boolean verbose) {
+//        this.doneReactions.clear();
+//        Map<String, Boolean> path = ant.clone().getPath();
+//        Map<String, FluxNode> fluxes = new HashMap<>();
+//        //this.step(sourcesList, path, fluxes);
+//        List<String> species = this.createMiniWorld(path, fluxes, real, verbose);
+//        for (int i = 0; i < 50; i++) {
+//            this.MiniCicle(species, fluxes, verbose);
+//        }
+//        if (fluxes.get(objective) == null) {
+//            return 0.0;
+//        }
+//        return fluxes.get(objective).getFlux();
+//
+//    }
+//
+//    private List<String> createMiniWorld(Map<String, Boolean> path, Map<String, FluxNode> fluxes, boolean real, boolean verbose) {
+//        List<String> species = new ArrayList<>();
+//
+//        for (String s : path.keySet()) {
+//            if (this.sources.containsKey(s)) {
+//                FluxNode n = this.initFluxNode(s, path, "initialReaction", Math.abs(this.sources.get(s)[0]));
+//                fluxes.put(s, n);
+//                species.add(s);
+//            }
+//
+//            if (this.reactions.containsKey(s)) {
+//                ReactionFA reaction = this.reactions.get(s);
+//                reaction.resetFlux();
+//                for (String reactants : reaction.getReactants()) {
+//                    if (!species.contains(reactants)) {
+//                        FluxNode n = this.initFluxNode(reactants, path, null, 0.0);
+//                        fluxes.put(reactants, n);
+//                        species.add(reactants);
+//                    }
+//                    /* FluxNode n = fluxes.get(reactants);
+//                     if (path.get(s)) {
+//                     n.setOutReactions(reaction);
+//                     } else {
+//                     n.setInReactions(reaction);
+//                     }*/
+//                    // if(verbose)n.print();
+//                }
+//                for (String products : reaction.getProducts()) {
+//                    if (!species.contains(products)) {
+//                        FluxNode n = this.initFluxNode(products, path, null, 0.0);
+//                        fluxes.put(products, n);
+//                        species.add(products);
+//                    }
+//                    /* FluxNode n = fluxes.get(products);
+//                     if (!path.get(s)) {
+//                     n.setOutReactions(reaction);
+//                     } else {
+//                     n.setInReactions(reaction);
+//                     }**/
+//                    // if(verbose)n.print();
+//                }
+//            }
+//        }
+//
+//        for (String c : this.cofactors) {
+//            FluxNode n;
+//            n = this.initFluxNode(c, path, "cofactor", -1);
+//            if (!real) {
+//                if (this.cofactors.contains(c)) {
+//                    n.setBalancedFlux();
+//                }
+//            }
+//            fluxes.put(c, n);
+//            species.add(c);
+//        }
+//        return species;
+//    }
+//
+//    private FluxNode initFluxNode(String specie, Map<String, Boolean> path, String initReaction, double flux) {
+//
+//        FluxNode n;
+//        if (initReaction == null) {
+//            n = new FluxNode(specie);
+//        } else {
+//            n = new FluxNode(specie, initReaction, flux);
+//        }
+//        n.setOutReactions(this.getConnectedOutReactions2(path, specie));
+//        n.setInReactions(this.getConnectedInReactions(path, specie));
+//
+//        return n;
+//    }
+//
+//    private void MiniCicle(List<String> species, Map<String, FluxNode> fluxes, boolean verbose) {
+//        for (String specie : species) {
+//            fluxes.get(specie).updateFlux(verbose);
+//        }
+//    }
+//
     private Ant combineFluxes(Ant newAnt, Ant ant) {
         int size = 0;
         Ant combinedAnt = new Ant(null);
@@ -567,63 +609,84 @@ public class Simulation {
         combinedAnt.setPathSize(size);
         return combinedAnt;
     }
+//
+//    private List<ReactionFA> getConnectedInReactions(Map<String, Boolean> path, String specie) {
+//        List<ReactionFA> possibleReactions = new ArrayList<>();
+//        for (String reaction : this.compounds.get(specie).getReactions()) {
+//            boolean isPossible = true;
+//            if (path.containsKey(reaction)) {
+//                ReactionFA reactionFA = this.reactions.get(reaction);
+//                if (reactionFA.hasReactant(specie)) {
+//                    if (reactionFA.getlb() == 0 || path.get(reaction)) {
+//                        isPossible = false;
+//                    }
+//                }
+//                if (reactionFA.hasProduct(specie)) {
+//                    if (reactionFA.getub() == 0 || !path.get(reaction)) {
+//                        isPossible = false;
+//                    }
+//
+//                }
+//                if (isPossible) {
+//                    possibleReactions.add(reactionFA);
+//                    //in++;
+//                }
+//            }
+//        }
+//        return possibleReactions;
+//    }
+//
+//    private List<ReactionFA> getConnectedOutReactions2(Map<String, Boolean> path, String specie) {
+//        if (this.compounds.get(specie) == null) {
+//            System.out.println(specie);
+//        }
+//        List<ReactionFA> possibleReactions = new ArrayList<>();
+//        for (String reaction : this.compounds.get(specie).getReactions()) {
+//            if (path.containsKey(reaction)) {
+//                boolean isPossible = true;
+//                ReactionFA reactionFA = this.reactions.get(reaction);
+//                if (reactionFA.hasReactant(specie)) {
+//                    if (reactionFA.getub() == 0 || !path.get(reaction)) {
+//                        isPossible = false;
+//                    }
+//
+//                }
+//                if (reactionFA.hasProduct(specie)) {
+//                    if (reactionFA.getlb() == 0 || path.get(reaction)) {
+//                        isPossible = false;
+//                    }
+//                }
+//
+//                if (isPossible) {
+//                    //out += reactionFA.getStoichiometry(specie);
+//                    if (!possibleReactions.contains(reactionFA)) {
+//                        possibleReactions.add(reactionFA);
+//                    }
+//                }
+//            }
+//        }
+//        return possibleReactions;
+//    }
 
-    private List<ReactionFA> getConnectedInReactions(Map<String, Boolean> path, String specie) {
-        List<ReactionFA> possibleReactions = new ArrayList<>();
-        for (String reaction : this.compounds.get(specie).getReactions()) {
-            boolean isPossible = true;
-            if (path.containsKey(reaction)) {
-                ReactionFA reactionFA = this.reactions.get(reaction);
-                if (reactionFA.hasReactant(specie)) {
-                    if (reactionFA.getlb() == 0 || path.get(reaction)) {
-                        isPossible = false;
-                    }
-                }
-                if (reactionFA.hasProduct(specie)) {
-                    if (reactionFA.getub() == 0 || !path.get(reaction)) {
-                        isPossible = false;
-                    }
-
-                }
-                if (isPossible) {
-                    possibleReactions.add(reactionFA);
-                    //in++;
-                }
+    private void fixPath(Ant newAnt) {
+        List<String> toBeRemoved = new ArrayList<>();
+        for (String p : newAnt.getPath().keySet()) {
+            ReactionFA reaction = reactions.get(p);
+            if (reaction != null && Math.abs(reaction.getFlux()) < 0.00000001) {
+                toBeRemoved.add(p);
             }
         }
-        return possibleReactions;
+        for (String p : toBeRemoved) {
+            newAnt.getPath().remove(p);
+        }
     }
 
-    private List<ReactionFA> getConnectedOutReactions2(Map<String, Boolean> path, String specie) {
-        if (this.compounds.get(specie) == null) {
-            System.out.println(specie);
-        }
-        List<ReactionFA> possibleReactions = new ArrayList<>();
-        for (String reaction : this.compounds.get(specie).getReactions()) {
-            if (path.containsKey(reaction)) {
-                boolean isPossible = true;
-                ReactionFA reactionFA = this.reactions.get(reaction);
-                if (reactionFA.hasReactant(specie)) {
-                    if (reactionFA.getub() == 0 || !path.get(reaction)) {
-                        isPossible = false;
-                    }
-
-                }
-                if (reactionFA.hasProduct(specie)) {
-                    if (reactionFA.getlb() == 0 || path.get(reaction)) {
-                        isPossible = false;
-                    }
-                }
-
-                if (isPossible) {
-                    //out += reactionFA.getStoichiometry(specie);
-                    if (!possibleReactions.contains(reactionFA)) {
-                        possibleReactions.add(reactionFA);
-                    }
-                }
-            }
-        }
-        return possibleReactions;
+    
+    public List<String> getCofactors(){
+        return this.cofactors;
     }
-
+    
+    public Map<String, Double[]> getSourceMap(){
+        return this.sources;
+    }
 }
