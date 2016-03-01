@@ -142,7 +142,7 @@ public class PrintPaths implements KeyListener {
 
                 String name = id.split(" - ")[0];
                 String r = id.split(" : ")[0];
-                if (m.getReaction(r.trim()) != null && m.getReaction(name.trim()) == null) {
+                if (m.getReaction(r.trim()) != null && m.getReaction(name.trim()) != null) {
                     return new Color(102,194,164);
                 } else if (id.contains("H+") || id.contains("H2O") || id.contains(" : phosphate ") || id.contains(" : ADP")
                     || id.contains(" : ATP") || id.contains(" : NAD") || id.contains(" : CO2") || id.contains(" : oxygen")
