@@ -44,8 +44,6 @@ public class Simulation {
     private final List<String> sourcesList;
     private final List<String> objectives;
     private final List<String> cofactors;
-    private final List<String> cofactors2;
-    private final String objective;
 
     private HashMap<String, ReactionFA> reactions;
     private HashMap<String, SpeciesFA> compounds;
@@ -55,7 +53,6 @@ public class Simulation {
     public Simulation(SimpleBasicDataset networkDS, List<String> cofactors, List<String> cofactors2, HashMap<String, String[]> bounds, Map<String, Double[]> sources, List<String> sourcesList, String objective) {
         this.networkDS = networkDS;
         this.cofactors = cofactors;
-        this.cofactors2 = cofactors2;
         this.objectives = new ArrayList();
         this.bounds = bounds;
         if (sources == null) {
@@ -64,8 +61,7 @@ public class Simulation {
             this.sources = sources;
         }
         this.sourcesList = sourcesList;
-        this.objective = objective;
-
+        
         this.reactions = new HashMap<>();
         this.compounds = new HashMap<>();
         this.doneReactions = new ArrayList<>();
