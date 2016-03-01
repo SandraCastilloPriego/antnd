@@ -162,7 +162,10 @@ public class OpenProjectTask extends AbstractTask {
                                 nodeName = nodeName.split(" // ")[0];
                             }
                             String id = nodeName.split(" : ")[0];
-                            String name = nodeName.split(" : ")[1];
+                            String name = "";
+                            try{
+                                 name = nodeName.split(" : ")[1];
+                            }catch(Exception e){}                     
                             Node n = new Node(id, name);
                             if (position != null) {
                                 String[] point = position.split(" , ");
@@ -232,7 +235,6 @@ public class OpenProjectTask extends AbstractTask {
                     }
                     //Close the input stream
                     in.close();
-                    compounds.get("s_1399").getAnt().print();
                     data.setPaths(compounds);
                 }
             }

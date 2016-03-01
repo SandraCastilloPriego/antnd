@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
@@ -62,7 +63,7 @@ public class AntBetweenModuleTask extends AbstractTask {
     private final JScrollPane panel;
     private final JPanel pn;
     private int shortestPath = Integer.MAX_VALUE;
-    private Graph graph;
+    private Ant ant;
     private final GetInfoAndTools tools;
     private Model m;
 
@@ -87,7 +88,7 @@ public class AntBetweenModuleTask extends AbstractTask {
 
         this.tools = new GetInfoAndTools();
 
-                // Initialize the random number generator using the
+        // Initialize the random number generator using the
         // time from above.
         rand.setSeed(time);
 
@@ -139,15 +140,16 @@ public class AntBetweenModuleTask extends AbstractTask {
                 }
             }
             if (getStatus() == TaskStatus.PROCESSING) {
-                this.tools.createDataFile(graph, networkDS, biomassID, sourcesList, false);
+                Graph g = this.createGraph(ant.getPath());
+                this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false);
                 PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID, this.tools.getModel());
                 try {
-                    this.pn.add(print.printPathwayInFrame(this.graph));
+                    this.pn.add(print.printPathwayInFrame(g));
                 } catch (NullPointerException ex) {
                     System.out.println(ex.toString());
                 }
             }
-            if (this.graph == null) {
+            if (this.ant == null) {
                 NDCore.getDesktop().displayMessage("No path was found.");
             }
 
@@ -165,7 +167,7 @@ public class AntBetweenModuleTask extends AbstractTask {
 
         for (Species s : m.getListOfSpecies()) {
             SpeciesFA specie = new SpeciesFA(s.getId());
-                        //add the number of initial ants using the sources.. and add them
+            //add the number of initial ants using the sources.. and add them
             // in the list of nodes with ants
             if (s.getId() == null ? this.sourceID == null : s.getId().equals(this.sourceID)) {
                 System.out.println(s.getId());
@@ -235,7 +237,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                     toBeRemoved = rc.getProducts();
                 }
 
-                                // get the ants that must be removed from the reactants ..
+                // get the ants that must be removed from the reactants ..
                 // creates a superAnt with all the paths until this reaction joined..
                 Ant superAnt = new Ant(null);
                 HashMap<Ant, String> combinedAnts = new HashMap<>();
@@ -252,7 +254,7 @@ public class AntBetweenModuleTask extends AbstractTask {
 
                 superAnt.joinGraphs(reactionChoosen, combinedAnts);
 
-                                //if (!superAnt.isLost()) {
+                //if (!superAnt.isLost()) {
                 // move the ants to the products...   
                 for (String s : toBeAdded) {
                     SpeciesFA spfa = this.compounds.get(s);
@@ -266,7 +268,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                     spfa.addAnt(newAnt);
                 }
 
-                                // }
+                // }
                 // When the ants arrive to the biomass
                 if (toBeAdded.contains(this.biomassID)) {
 
@@ -277,13 +279,14 @@ public class AntBetweenModuleTask extends AbstractTask {
                         // saving the shortest path
                         if (a.getPathSize() < shortestPath) {
                             this.shortestPath = a.getPathSize();
-                            this.graph = a.getGraph();
                             Species biomassSp = m.getSpecies(this.biomassID);
                             Node biomass = new Node(this.biomassID + " : " + biomassSp.getName());
-                            this.graph.addNode(biomass);
-                            Node lastNode = this.graph.getNode(reactionChoosen);
+                            a.getGraph().addNode(biomass);
+
+                            Node lastNode = a.getGraph().getNode(reactionChoosen);
                             Edge edge = new Edge(this.biomassID, lastNode, biomass);
-                            this.graph.addEdge(edge);
+                            a.getGraph().addEdge(edge);
+                            this.ant = a;
                             a.print();
                         }
                     }
@@ -371,4 +374,51 @@ public class AntBetweenModuleTask extends AbstractTask {
         return false;
     }
 
+    private Graph createGraph(List<String> path) {
+        Model model = this.networkDS.getDocument().getModel();
+        Graph g = new Graph(null, null);
+        for (String p : path) {
+            System.out.println(p);
+            String r = p.split(" - ")[0];
+            ReactionFA reaction = reactions.get(r);
+            if (reaction != null) {
+                Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFlux()));
+                if(g.IsInNodes(reaction.getId()))continue;
+                g.addNode2(reactionNode);
+                for (String reactant : reaction.getReactants()) {
+                    Node reactantNode = g.getNode(reactant);
+                    if (reactantNode == null) {
+                        reactantNode = new Node(reactant, model.getSpecies(reactant).getName());
+                    }
+                    g.addNode2(reactantNode);
+                    Edge e = null;
+                    if (reaction.isBidirecctional()) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode, true);
+                    } else if (reaction.getlb() < 0) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+                    } else if (reaction.getub() > 0) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    }
+                    g.addEdge(e);
+                }
+                for (String product : reaction.getProducts()) {
+                    Node reactantNode = g.getNode(product);
+                    if (reactantNode == null) {                        
+                        reactantNode = new Node(product, model.getSpecies(product).getName());
+                    }
+                    g.addNode2(reactantNode);
+                    Edge e= null;
+                    if (reaction.isBidirecctional()) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode, true);
+                    } else if (reaction.getlb() < 0) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+                    } else if (reaction.getub() > 0) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    }
+                    g.addEdge(e);
+                }
+            }
+        }
+        return g;
+    }
 }

@@ -313,7 +313,7 @@ public class Simulation {
                         //  double flux = this.getFlux(newAnt, s, false, false);
                         double flux = this.getFlux(newAnt, reactionChoosen);
                         System.out.println(s + "-> " + flux);
-                        this.fixPath(newAnt);
+                        //this.fixPath(newAnt);
                         newAnt.setFlux(flux);
                         
                        /* Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());

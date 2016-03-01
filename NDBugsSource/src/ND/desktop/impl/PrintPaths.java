@@ -33,10 +33,15 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
+import edu.uci.ics.jung.visualization.RenderContext;
+import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +49,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -132,7 +141,10 @@ public class PrintPaths implements KeyListener {
             public Paint transform(String id) {
 
                 String name = id.split(" - ")[0];
-                if (id.contains("H+") || id.contains("H2O") || id.contains(" : phosphate ") || id.contains(" : ADP")
+                String r = id.split(" : ")[0];
+                if (m.getReaction(r.trim()) != null && m.getReaction(name.trim()) == null) {
+                    return new Color(102,194,164);
+                } else if (id.contains("H+") || id.contains("H2O") || id.contains(" : phosphate ") || id.contains(" : ADP")
                     || id.contains(" : ATP") || id.contains(" : NAD") || id.contains(" : CO2") || id.contains(" : oxygen")
                     || id.contains(": AMP") || id.contains(" : diphosphate ") || id.contains(" : carbon dioxide ") || id.contains(" : potassium ")) {
                     return Color.ORANGE;
@@ -150,6 +162,19 @@ public class PrintPaths implements KeyListener {
 
                 return new Color(156, 244, 125);
 
+            }
+        };
+
+        Transformer<String, Shape> vertexShape = new Transformer<String, Shape>() {
+            public Shape transform(String v) {
+                String r = v.split(" : ")[0];
+                if (m.getReaction(r) != null) {
+                    Rectangle2D circle = new Rectangle2D.Double(-15.0, -15.0, 60.0, 30.0);
+                    return circle;
+                } else {
+                    Ellipse2D circle = new Ellipse2D.Double(-15, -15, 30, 30);
+                    return circle;
+                }
             }
         };
 
@@ -272,7 +297,9 @@ public class PrintPaths implements KeyListener {
         vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
         vv.getRenderContext().getEdgeLabelRenderer().setRotateEdgeLabels(false);
         vv.getRenderContext().setEdgeLabelTransformer(labelTransformer);
+        vv.getRenderContext().setVertexShapeTransformer(vertexShape);
         vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+
         DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
         gm.setMode(ModalGraphMouse.Mode.PICKING);
         vv.setGraphMouse(gm);
@@ -775,4 +802,5 @@ public class PrintPaths implements KeyListener {
         }
         m.addReaction(r);
     }
+
 }

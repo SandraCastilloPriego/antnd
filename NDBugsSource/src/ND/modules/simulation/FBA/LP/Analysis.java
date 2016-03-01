@@ -23,9 +23,18 @@ public abstract class Analysis {
     ModelCompressor compressor;
 
     protected void setVars() {
+        Map<String, Boolean> path = this.ant.getPath();
         for (ReactionFA r : reactionsList) {
             String varName = r.getId();
-            this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+            if (path.containsKey(varName)) {
+                if (path.get(varName)) {
+                    this.getSolver().setVar(varName, VarType.CONTINUOUS, 0, 1000);
+                } else {
+                    this.getSolver().setVar(varName, VarType.CONTINUOUS, -1000, 0);
+                }
+            } else {
+                this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+            }
         }
     }
 
@@ -36,14 +45,6 @@ public abstract class Analysis {
     protected void setConstraints(ConType conType, double bValue) {
 
         ArrayList< Map< Integer, Double>> sMatrix = this.getSMatrix();
-        /*compressor = new ModelCompressor();
-         compressor.setsMatrix(sMatrix);
-         compressor.setReactions(reactionsList);
-         // compressor.compressNet();
-         sMatrix = compressor.getsMatrix();*/
-        if (sMatrix == null) {
-            System.out.println("Oh noo! it is null");
-        }
         for (int i = 0; i < sMatrix.size(); i++) {
             this.getSolver().addConstraint(sMatrix.get(i), conType, bValue);
         }
@@ -59,23 +60,21 @@ public abstract class Analysis {
             sMatrix.add(sRow);
         }
 
-        Map<String, Boolean> path = this.ant.getPath();
-
         for (ReactionFA reaction : this.reactionsList) {
             for (String reactant : reaction.getReactants()) {
-                double sto = reaction.getStoichiometry(reactant);
-                if (path.containsKey(reaction.getId()) && path.get(reaction.getId()) && sto > 0) {
-                    sto = sto * -1;
+                if (this.metabolitesList.contains(reactant)) {
+                    double sto = reaction.getStoichiometry(reactant);
+                    sto = Math.abs(sto) * -1;
+                    sMatrix.get(this.metabolitePositionMap.get(reactant)).put(this.reactionPositionMap.get(reaction.getId()), sto);
                 }
-                sMatrix.get(this.metabolitePositionMap.get(reactant)).put(this.reactionPositionMap.get(reaction.getId()), sto);
             }
 
             for (String product : reaction.getProducts()) {
-                double sto = reaction.getStoichiometry(product);
-                if (path.containsKey(reaction.getId()) && !path.get(reaction.getId()) && sto > 0) {
-                    sto = sto * -1;
+                if (this.metabolitesList.contains(product)) {
+                    double sto = reaction.getStoichiometry(product);
+                    sto = Math.abs(sto);
+                    sMatrix.get(this.metabolitePositionMap.get(product)).put(this.reactionPositionMap.get(reaction.getId()), sto);
                 }
-                sMatrix.get(this.metabolitePositionMap.get(product)).put(this.reactionPositionMap.get(reaction.getId()), sto);
             }
         }
 
@@ -114,7 +113,7 @@ public abstract class Analysis {
         for (ReactionFA reaction : this.reactionsList) {
             fluxesMap.put(reaction.getId(), fluxes.get(i));
             reaction.setFlux(fluxes.get(i));
-             System.out.print(reaction.getId() + " -> " + fluxes.get(i) + " ,");
+            System.out.print(reaction.getId() + " -> " + fluxes.get(i) + " ,");
             i++;
         }
         //System.out.println("\n");
@@ -134,67 +133,62 @@ public abstract class Analysis {
         this.objectiveList = new ArrayList<>();
 
         for (String reaction : this.ant.getPath().keySet()) {
-            System.out.print(reaction + " - ");
+            // System.out.print(reaction + " - ");
             if (reactions.containsKey(reaction)) {
                 ReactionFA r = reactions.get(reaction);
                 this.reactionsList.add(r);
 
                 for (String reactant : r.getReactants()) {
-                    if (!metabolitesList.contains(reactant)) {
+                    if (!metabolitesList.contains(reactant) /*&& !cofactors.contains(reactant)*/) {
                         this.metabolitesList.add(reactant);
                     }
                 }
                 for (String product : r.getProducts()) {
-                    if (!metabolitesList.contains(product)) {
+                    if (!metabolitesList.contains(product)/*&& !cofactors.contains(product)*/) {
                         this.metabolitesList.add(product);
                     }
                 }
-            }     
+            }
+
         }
-         System.out.print("\n");
+        //  System.out.print("\n");
 
         for (String source : sources.keySet()) {
             if (metabolitesList.contains(source)) {
-                // String sourceb = source + "[boundary]";
-                // this.metabolitesList.add(sourceb);
                 ReactionFA Source = new ReactionFA("ExS" + source);
                 Source.addReactant(source, -1.0);
-                // Source.addProduct(sourceb, 1.0);
-                System.out.println(source + ": " +sources.get(source)[0]);
                 Source.setBounds(sources.get(source)[0], sources.get(source)[1]);
                 this.reactionsList.add(Source);
             }
         }
-
         
-
         List<String> deadEnd = this.getDeadEnds();
+        //  this.fixCofactorIssue(deadEnd, cofactors);
         for (String metabolite : deadEnd) {
-            if (!cofactors.contains(metabolite) && !sources.containsKey(metabolite)) {
-                ReactionFA exchange = new ReactionFA("Ex_" + metabolite);
+            if (!cofactors.contains(metabolite) && !sources.containsKey(metabolite) && !cofactors.contains(metabolite)) {
+                /*ReactionFA exchange = new ReactionFA("Ex_" + metabolite);
                 exchange.addReactant(metabolite, -1.0);
                 exchange.setBounds(0, 1000);
-                this.reactionsList.add(exchange);
-            } else if (cofactors.contains(metabolite)) {
+                this.reactionsList.add(exchange);*/
+            } else if (cofactors.contains(metabolite) && this.metabolitesList.contains(metabolite)) {
                 ReactionFA newCofactor = new ReactionFA("ExC_" + metabolite);
                 newCofactor.addReactant(metabolite, -1.0);
-                newCofactor.setBounds(-0.01, Double.POSITIVE_INFINITY);
+                newCofactor.setBounds(-0.1, Double.POSITIVE_INFINITY);
                 this.reactionsList.add(newCofactor);
+                //this.metabolitesList.remove(metabolite);
             }
+
         }
-        
-       /* for (String cofactor : cofactors) {
-            if (metabolitesList.contains(cofactor)&& !deadEnd.contains(cofactor)) {
-         //   String cofactorb = cofactor + "[boundary]";
-                //  this.metabolitesList.add(cofactorb);
+
+        for (String cofactor : cofactors) {
+            if (metabolitesList.contains(cofactor) && !deadEnd.contains(cofactor)) {
                 ReactionFA newCofactor = new ReactionFA("ExC_" + cofactor);
-                newCofactor.addReactant(cofactor, -1.0);
-                // newCofactor.addProduct(cofactorb, 1.0);
+                newCofactor.addReactant(cofactor, 1.0);
                 newCofactor.setBounds(0, Double.POSITIVE_INFINITY);
                 this.reactionsList.add(newCofactor);
+                //  this.metabolitesList.remove(cofactor);
             }
-        }*/
-
+        }
         int i = 0;
         for (ReactionFA reaction : this.reactionsList) {
             // System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
@@ -207,6 +201,7 @@ public abstract class Analysis {
             }
             this.reactionPositionMap.put(reaction.getId(), i++);
         }
+
     }
 
     private List<String> getDeadEnds() {
@@ -232,5 +227,39 @@ public abstract class Analysis {
             }
         }
         return deadEnd;
+    }
+
+    private void fixCofactorIssue(List<String> deadEnd, List<String> cofactors) {
+        for (String cofactor : cofactors) {
+            if (deadEnd.contains(cofactor)) {
+                for (ReactionFA reaction : this.reactionsList) {
+                    if (reaction.hasReactant(cofactor)) {
+                        for (String product : reaction.getProducts()) {
+                            if (cofactors.contains(product)) {
+                                if (deadEnd.contains(product)) {
+                                    //   if (cofactor.equals("C00003")) {
+                                    this.metabolitesList.remove(cofactor);
+                                    this.metabolitesList.remove(product);
+                                    //    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (reaction.hasProduct(cofactor)) {
+                        for (String reactant : reaction.getReactants()) {
+                            if (cofactors.contains(reactant)) {
+                                if (deadEnd.contains(reactant)) {
+                                    //    if (cofactor.equals("C00003")) {
+                                    this.metabolitesList.remove(cofactor);
+                                    this.metabolitesList.remove(reactant);
+                                    //    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
