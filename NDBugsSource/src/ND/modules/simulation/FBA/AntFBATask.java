@@ -174,13 +174,13 @@ public class AntFBATask extends AbstractTask {
                 break;
             }
         }
-        for (String compound : simulation.getCompounds().keySet()) {
+      /*  for (String compound : simulation.getCompounds().keySet()) {
             SpeciesFA specie = simulation.getCompounds().get(compound);
             if (specie.getAnt() != null) {
              //   simulation.getFlux(specie.getAnt(), compound, true, false);
             }
         }
-        
+        */
        // simulation.getFlux(simulation.getCompounds().get("s_0075").getAnt(), "s_0075", true, true);
         
 //        String results = "";
@@ -324,7 +324,7 @@ public class AntFBATask extends AbstractTask {
         for (String c : compounds.keySet()) {
             SpeciesFA compoundr = compounds.get(c);
             if (compoundr.getAnt() != null) {
-         //       results += c + " : " + compoundr.getName() + " --> " + simulation.getFlux(compoundr.getAnt(), compoundr.getId(), true, false) /* compound.getAnt().getFlux()*/ + "\n";
+                results += c + " : " + compoundr.getName() + " --> " +/* simulation.getFlux(compoundr.getAnt(), compoundr.getId(), true, false) */ compoundr.getAnt().getFlux() + "\n";
             } else {
                 results += c + " : " + compoundr.getName() + "\n";
             }

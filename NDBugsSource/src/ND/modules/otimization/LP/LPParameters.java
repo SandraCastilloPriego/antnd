@@ -25,14 +25,8 @@ public class LPParameters extends SimpleParameterSet {
        
         public static final StringParameter objective = new StringParameter(
                 "Objective", "Reaction that will be optimized", "");
-       /* public static final BooleanParameter maximize = new BooleanParameter(
-                "Maximize", "If this option is not selected the objective fluxes will be minimized ", true);
-        public static final BooleanParameter sources = new BooleanParameter(
-                "Add sources", "Add sources as an exchange reaction ", true);
-        public static final BooleanParameter compounds = new BooleanParameter(
-                "Add compounds", "Add rest of compounds as an exchange reaction ", true);*/
       
         public LPParameters() {
-                super(new Parameter[]{objective, /*maximize, sources, compounds*/});
+                super(new Parameter[]{objective});
         }
 }

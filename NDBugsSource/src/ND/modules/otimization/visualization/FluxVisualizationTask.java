@@ -208,10 +208,8 @@ public class FluxVisualizationTask extends AbstractTask {
         Model m = doc.getModel();
 
         for (Reaction r : m.getListOfReactions()) {
-            boolean biomass = false;
 
             ReactionFA reaction = new ReactionFA(r.getId());
-            String[] b = null;
 
             try {
                 KineticLaw law = r.getKineticLaw();
@@ -227,27 +225,11 @@ public class FluxVisualizationTask extends AbstractTask {
                 Species sp = s.getSpeciesInstance();
 
                 reaction.addReactant(sp.getId(), sp.getName(), s.getStoichiometry());
-                SpeciesFA spFA = this.compounds.get(sp.getId());
-                if (biomass) {
-                    spFA.setPool(Math.abs(s.getStoichiometry()));
-                }
-                if (spFA != null) {
-                    spFA.addReaction(r.getId());
-                } else {
-                    System.out.println(sp.getId());
-                }
             }
 
             for (SpeciesReference s : r.getListOfProducts()) {
                 Species sp = s.getSpeciesInstance();
-
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
-                SpeciesFA spFA = this.compounds.get(sp.getId());
-                if (spFA != null) {
-                    spFA.addReaction(r.getId());
-                } else {
-                    System.out.println(sp.getId());
-                }
             }
             this.reactions.put(r.getId(), reaction);
         }

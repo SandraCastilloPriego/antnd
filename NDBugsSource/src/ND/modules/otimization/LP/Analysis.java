@@ -1,0 +1,158 @@
+package ND.modules.otimization.LP;
+
+import ND.modules.simulation.FBA.LP.ConType;
+import ND.modules.simulation.FBA.LP.ModelCompressor;
+import ND.modules.simulation.FBA.LP.ObjType;
+import ND.modules.simulation.FBA.LP.Solver;
+import ND.modules.simulation.FBA.LP.VarType;
+import ND.modules.simulation.antNoGraph.ReactionFA;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public abstract class Analysis {
+
+    protected double maxObj = Double.NaN;
+    private String objective;
+    List< Double> objectiveList;
+    private Map<String, Integer> reactionPositionMap;
+    private Map<String, Integer> metabolitePositionMap;
+    List<ReactionFA> reactionsList;
+    List<String> metabolitesList;
+    ModelCompressor compressor;
+
+    protected void setVars() {
+        for (ReactionFA r : reactionsList) {
+            String varName = r.getId();
+            this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+        }
+    }
+
+    protected void setConstraints() {
+        setConstraints(ConType.EQUAL, 0.0);
+    }
+
+    protected void setConstraints(ConType conType, double bValue) {
+
+        ArrayList< Map< Integer, Double>> sMatrix = this.getSMatrix();
+        for (int i = 0; i < sMatrix.size(); i++) {
+            this.getSolver().addConstraint(sMatrix.get(i), conType, bValue);
+        }
+    }
+
+    protected ArrayList< Map< Integer, Double>> getSMatrix() {
+        this.metabolitePositionMap = new HashMap<>();
+        ArrayList< Map< Integer, Double>> sMatrix = new ArrayList<>(
+            this.metabolitesList.size());
+        for (int i = 0; i < this.metabolitesList.size(); i++) {
+            this.metabolitePositionMap.put(this.metabolitesList.get(i), i);
+            Map< Integer, Double> sRow = new HashMap<>();
+            sMatrix.add(sRow);
+        }
+
+        for (ReactionFA reaction : this.reactionsList) {
+            for (String reactant : reaction.getReactants()) {
+                if (this.metabolitesList.contains(reactant)) {
+                    double sto = reaction.getStoichiometry(reactant);
+                    sto = Math.abs(sto) * -1;
+                    sMatrix.get(this.metabolitePositionMap.get(reactant)).put(this.reactionPositionMap.get(reaction.getId()), sto);
+                }
+            }
+
+            for (String product : reaction.getProducts()) {
+                if (this.metabolitesList.contains(product)) {
+                    double sto = reaction.getStoichiometry(product);
+                    sto = Math.abs(sto);
+                    sMatrix.get(this.metabolitePositionMap.get(product)).put(this.reactionPositionMap.get(reaction.getId()), sto);
+                }
+            }
+        }
+
+        return sMatrix;
+    }
+
+    protected void setObjective() {
+        this.getSolver().setObjType(ObjType.Maximize);
+        Map< Integer, Double> map = new HashMap< Integer, Double>();
+        for (int i = 0; i < objectiveList.size(); i++) {
+            if (objectiveList.get(i) != 0.0) {
+                map.put(i, objectiveList.get(i));
+            }
+        }
+        this.getSolver().setObj(map);
+    }
+
+    public void setModel(String Objective, HashMap<String, ReactionFA> reactions) {
+        this.objective = Objective;
+        this.prepareReactions(reactions);
+    }
+
+    public void setSolverParameters() {
+        this.setVars();
+        this.setConstraints();
+        this.setObjective();
+    }
+
+    public Map<String, Double> run() throws Exception {
+        this.setSolverParameters();
+        this.maxObj = this.getSolver().optimize();
+        ArrayList<Double> fluxes = this.getSolver().getSoln();
+        int i = 0;
+        Map<String, Double> fluxesMap = new HashMap<>();
+        for (ReactionFA reaction : this.reactionsList) {
+            fluxesMap.put(reaction.getId(), fluxes.get(i));
+            reaction.setFlux(fluxes.get(i));
+            System.out.print(reaction.getId() + " -> " + fluxes.get(i) + " ,");
+            i++;
+        }
+        //System.out.println("\n");
+        return fluxesMap;
+    }
+
+    public abstract Solver getSolver();
+
+    public double getMaxObj() {
+        return this.maxObj;
+    }
+
+    private void prepareReactions(HashMap<String, ReactionFA> reactions) {
+        this.reactionsList = new ArrayList<>();
+        this.metabolitesList = new ArrayList<>();
+        this.reactionPositionMap = new HashMap<>();
+        this.objectiveList = new ArrayList<>();
+
+        for (String reaction : reactions.keySet()) {
+            // System.out.print(reaction + " - ");
+            ReactionFA r = reactions.get(reaction);
+            this.reactionsList.add(r);
+
+            for (String reactant : r.getReactants()) {
+                if (!metabolitesList.contains(reactant)) {
+                    this.metabolitesList.add(reactant);
+                }
+            }
+            for (String product : r.getProducts()) {
+                if (!metabolitesList.contains(product)) {
+                    this.metabolitesList.add(product);
+                }
+            }
+
+        }
+
+        int i = 0;
+        for (ReactionFA reaction : this.reactionsList) {
+            // System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
+            if (reaction.getId().equals(this.objective)) {
+                this.objectiveList.add(1.0);
+                //   System.out.println("Objective 1");
+            } else {
+                this.objectiveList.add(0.0);
+                //    System.out.println("Objective 0");
+            }
+            this.reactionPositionMap.put(reaction.getId(), i++);
+        }
+
+    }
+
+}

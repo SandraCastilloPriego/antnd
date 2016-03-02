@@ -18,36 +18,28 @@
 package ND.modules.otimization.LP;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
-import ND.desktop.impl.ItemSelector;
-import ND.main.NDCore;
 import ND.modules.configuration.general.GetInfoAndTools;
 import ND.data.network.Edge;
 import ND.data.network.Graph;
 import ND.data.network.Node;
+import ND.desktop.impl.PrintPaths;
+import ND.main.NDCore;
+import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.awt.Dimension;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.stream.XMLStreamException;
-import org.rosuda.JRI.REXP;
-import org.rosuda.JRI.Rengine;
-import org.sbml.jsbml.ListOf;
+import javax.swing.JInternalFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import org.sbml.jsbml.KineticLaw;
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLException;
-import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.SpeciesReference;
 
@@ -57,336 +49,160 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class LPTask extends AbstractTask {
 
-        private final SimpleBasicDataset networkDS;
-        private double finishedPercentage = 0.0f;
-        private final String objectiveSpecie;
-        // private final boolean maximize, sourcesEx, compoundsEx;
-        private final Map<String, Double[]> exchange;
-        private final GetInfoAndTools tools;
+    private final SimpleBasicDataset networkDS;
+    private double finishedPercentage = 0.0f;
+    private final String objectiveSpecie;
+    
+    private final GetInfoAndTools tools;
+    private final JInternalFrame frame;
+    private final JScrollPane panel;
+    private final JPanel pn;
+    private Double objective; 
 
-        public LPTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
-                this.networkDS = dataset;
-                this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
-                //   this.maximize = parameters.getParameter(LPParameters.maximize).getValue();
-                //   this.sourcesEx = parameters.getParameter(LPParameters.sources).getValue();
-                //   this.compoundsEx = parameters.getParameter(LPParameters.compounds).getValue();            
+    private HashMap<String, ReactionFA> reactions;
 
-                this.tools = new GetInfoAndTools();
-                this.exchange = this.tools.GetSourcesInfo();
+    public LPTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+        this.networkDS = dataset;
+        this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
+        this.tools = new GetInfoAndTools();
+
+        this.frame = new JInternalFrame("Result", true, true, true, true);
+        this.pn = new JPanel();
+        this.panel = new JScrollPane(pn);
+    }
+
+    @Override
+    public String getTaskDescription() {
+        return "Starting LP optimization... ";
+    }
+
+    @Override
+    public double getFinishedPercentage() {
+        return finishedPercentage;
+    }
+
+    @Override
+    public void cancel() {
+        setStatus(TaskStatus.CANCELED);
+    }
+
+    @Override
+    public void run() {
+        setStatus(TaskStatus.PROCESSING);
+        finishedPercentage = 0.1f;
+        Graph g = optimize();
+        if (g != null) {
+            this.tools.createDataFile(g, networkDS, this.objectiveSpecie, this.networkDS.getSources(), false);
+            String info = "Objective value of " + this.objectiveSpecie + ": "+ this.objective;
+            this.networkDS.addInfo(info);
+           /* frame.setSize(new Dimension(700, 500));
+            frame.add(this.panel);
+            NDCore.getDesktop().addInternalFrame(frame);
+
+            PrintPaths print = new PrintPaths(this.networkDS.getSources(), this.objectiveSpecie, this.tools.getModel());
+            try {
+                System.out.println("Final graph: " + g.toString());
+                this.pn.add(print.printPathwayInFrame(g));
+            } catch (NullPointerException ex) {
+                System.out.println("Imprimendo: " + ex.toString());
+            }*/
         }
+        finishedPercentage = 1f;
+        setStatus(TaskStatus.FINISHED);
+    }
 
-        @Override
-        public String getTaskDescription() {
-                return "Starting LP optimization... ";
+    private Graph optimize() {
+        createReactions();
+        objective = this.getFlux(objectiveSpecie);
+       
+        if (objective > 0.0) {
+            Graph g = createGraph();
+            return g;
         }
+        return null;
 
-        @Override
-        public double getFinishedPercentage() {
-                return finishedPercentage;
+    }
+
+    private Graph createGraph() {
+        Model m = this.networkDS.getDocument().getModel();
+        Graph g = new Graph(null, null);
+        for (String r : reactions.keySet()) {
+            ReactionFA reaction = reactions.get(r);
+            if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000001) {
+                Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFlux()));
+                g.addNode2(reactionNode);
+                for (String reactant : reaction.getReactants()) {
+                    String name = m.getSpecies(reactant).getName();
+                    Node reactantNode = g.getNode(reactant);
+                    if (reactantNode == null) {
+                        reactantNode = new Node(reactant, name);
+                    }
+                    g.addNode2(reactantNode);
+                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+
+                    g.addEdge(e);
+                }
+                for (String product : reaction.getProducts()) {
+                    String name = m.getSpecies(product).getName();
+                    Node reactantNode = g.getNode(product);
+                    if (reactantNode == null) {
+                        reactantNode = new Node(product, name);
+                    }
+                    g.addNode2(reactantNode);
+                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+
+                    g.addEdge(e);
+                }
+            }
         }
+        return g;
+    }
 
-        @Override
-        public void cancel() {
-                setStatus(TaskStatus.CANCELED);
+    public double getFlux(String objective) {
+        FBA fba = new FBA();
+        fba.setModel(objective, this.reactions);
+        try {
+            Map<String, Double> soln = fba.run();
+            for (String r : soln.keySet()) {
+                if (this.reactions.containsKey(r)) {
+                    this.reactions.get(r).setFlux(soln.get(r));
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println(ex);
         }
+        return fba.getMaxObj();
+    }
 
-        @Override
-        public void run() {
-                try {
-                        setStatus(TaskStatus.PROCESSING);
-                        finishedPercentage = 0.1f;
-                        optimize();
-                        finishedPercentage = 1f;
-                        setStatus(TaskStatus.FINISHED);
-                } catch (IOException e) {
-                        System.out.println(e.toString());
-                        setStatus(TaskStatus.ERROR);
-                }
+    private void createReactions() {
+        SBMLDocument doc = this.networkDS.getDocument();
+        this.reactions = new HashMap<>();
+        Model m = doc.getModel();
+
+        for (Reaction r : m.getListOfReactions()) {
+            ReactionFA reaction = new ReactionFA(r.getId());
+
+            try {
+                KineticLaw law = r.getKineticLaw();
+                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                reaction.setBounds(lbound.getValue(), ubound.getValue());
+            } catch (Exception ex) {
+                reaction.setBounds(-1000, 1000);
+            }
+
+            for (SpeciesReference s : r.getListOfReactants()) {
+
+                Species sp = s.getSpeciesInstance();
+                reaction.addReactant(sp.getId(), sp.getName(), s.getStoichiometry());
+            }
+
+            for (SpeciesReference s : r.getListOfProducts()) {
+                Species sp = s.getSpeciesInstance();
+                reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
+            }
+            this.reactions.put(r.getId(), reaction);
         }
-
-        private void createDataFile(Map<String, Double> solution, double objective) {
-
-                SBMLDocument newDoc = this.networkDS.getDocument().clone();
-                Model m = this.networkDS.getDocument().getModel();
-                Model newModel = newDoc.getModel();
-
-                for (Reaction reaction : m.getListOfReactions()) {
-                        if (solution.containsKey(reaction.getId()) && Math.abs(solution.get(reaction.getId())) < 0.0000001) {
-                                newModel.removeReaction(reaction.getId());
-                        }
-                }
-
-                for (Species sp : m.getListOfSpecies()) {
-                        if (!this.isInReactions(newModel.getListOfReactions(), sp)) {
-                                newModel.removeSpecies(sp.getId());
-                        }
-                }
-
-                SimpleBasicDataset dataset = new SimpleBasicDataset();
-
-                dataset.setDocument(newDoc);
-                dataset.setDatasetName("LPOptimization  - " + this.objectiveSpecie + " - " + newModel.getId() + ".sbml");
-                dataset.addInfo("LP Optimization:" + "\nOjective: " + objective + "\nSolution: " + solution + "\n---------------------------");
-                Path path = Paths.get(this.networkDS.getPath());
-                Path fileName = path.getFileName();
-                String name = fileName.toString();
-                String p = this.networkDS.getPath().replace(name, "");
-                p = p + dataset.getDatasetName();
-                dataset.setPath(p);
-                finishedPercentage = 0.75f;
-                NDCore.getDesktop().AddNewFile(dataset);
-
-                dataset.setGraph(createGraph(solution, newModel, objective));
-                finishedPercentage = 0.9f;
-
-                if (this.networkDS.getSources() != null) {
-                        dataset.setSources(this.networkDS.getSources());
-                } else {
-                        List<String> sources = new ArrayList<>();
-                        for (String s : this.exchange.keySet()) {
-                                sources.add(s);
-                        }
-                        dataset.setSources(sources);
-                }
-                dataset.setBiomass(this.objectiveSpecie);
-
-        }
-
-        private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
-                for (Reaction r : listOfReactions) {
-                        if (r.hasProduct(sp) || r.hasReactant(sp)) {
-                                return true;
-                        }
-                }
-                return false;
-        }
-
-        private Graph createGraph(Map<String, Double> solution, Model newModel, double objective) {
-                List<Node> nodes = new ArrayList<>();
-                List<Edge> edges = new ArrayList<>();
-                for (Reaction r : newModel.getListOfReactions()) {
-                        Node n = new Node(r.getId() + " - " + solution.get(r.getId()));
-                        nodes.add(n);
-                }
-                for (Reaction r : newModel.getListOfReactions()) {
-                        Node n = getNode(nodes, r.getId());
-                        List<SpeciesReference> reactants;
-                        List<SpeciesReference> products;
-                        if (solution.get(r.getId()) > 0) {
-                                reactants = r.getListOfReactants();
-                                products = r.getListOfProducts();
-                        } else {
-                                products = r.getListOfReactants();
-                                reactants = r.getListOfProducts();
-                        }
-
-                        for (SpeciesReference sp : reactants) {
-                                String specie = sp.getSpeciesInstance().getId();
-                                if (this.exchange.containsKey(specie)) {
-                                        Node exchangeNode = getNode(nodes, specie);
-                                        if (exchangeNode == null) {
-                                                exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
-                                        }
-                                        nodes.add(exchangeNode);
-                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), exchangeNode, n);
-                                        if (!edgeExist(edge, edges)) {
-                                                edges.add(edge);
-                                        }
-                                } else if (specie.equals(this.objectiveSpecie)) {
-                                        Node objectiveNode = getNode(nodes, specie);
-                                        if (objectiveNode == null) {
-                                                objectiveNode = new Node(specie + " - " + objective);
-                                        }
-                                        nodes.add(objectiveNode);
-                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), objectiveNode, n);
-                                        if (!edgeExist(edge, edges)) {
-                                                edges.add(edge);
-                                        }
-                                } else {
-                                        List<String> reactions = getReactionFromProducts(sp, newModel, solution);
-                                        for (String reaction : reactions) {
-                                                if (reaction.equals(r.getId())) {
-                                                        continue;
-                                                }
-                                                Node newNode = getNode(nodes, reaction);
-                                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), newNode, n);
-                                                if (!edgeExist(edge, edges)) {
-                                                        edges.add(edge);
-                                                }
-                                        }
-                                }
-                        }
-
-                        for (SpeciesReference sp : products) {
-                                String specie = sp.getSpeciesInstance().getId();
-                                if (this.exchange.containsKey(specie)) {
-                                        Node exchangeNode = getNode(nodes, specie);
-                                        if (exchangeNode == null) {
-                                                exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
-                                        }
-                                        nodes.add(exchangeNode);
-                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), n, exchangeNode);
-                                        if (!edgeExist(edge, edges)) {
-                                                edges.add(edge);
-                                        }
-                                } else if (specie.equals(this.objectiveSpecie)) {
-                                        Node objectiveNode = getNode(nodes, specie);
-                                        if (objectiveNode == null) {
-                                                objectiveNode = new Node(specie + " - " + objective);
-                                        }
-                                        nodes.add(objectiveNode);
-                                        Edge edge = new Edge(specie + " - " + uniqueId.nextId(), n, objectiveNode);
-                                        if (!edgeExist(edge, edges)) {
-                                                edges.add(edge);
-                                        }
-                                } else {
-                                        List<String> reactions = getReactionFromReactants(sp, newModel, solution);                                       
-                                        for (String reaction : reactions) {
-                                                if (reaction.equals(r.getId())) {
-                                                        continue;
-                                                }
-                                                Node newNode = getNode(nodes, reaction);
-                                                Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), n, newNode);
-                                                if (!edgeExist(edge, edges)) {
-                                                        edges.add(edge);
-                                                }
-                                        }
-                                }
-
-                        }
-
-                }
-
-                return new Graph(nodes, edges);
-        }
-
-        private Node getNode(List<Node> nodes, String s) {
-                for (Node n : nodes) {
-                        if (n.getId().contains(s)) {
-                                return n;
-                        }
-                }
-                return null;
-        }
-
-        public void optimize() throws IOException {
-                final Rengine rEngine;
-                try {
-                        if (!Rengine.versionCheck()) {
-                                System.err.println("** Version mismatch - Java files don't match library version.");
-                                System.exit(1);
-                        }
-                        rEngine = RUtilities.getREngine();
-                        if (!rEngine.waitForR()) {
-                                System.out.println("Cannot load R");
-                                return;
-                        }
-                } catch (Throwable t) {
-                        throw new IllegalStateException(
-                                "LP requires R but it couldn't be loaded (" + t.getMessage() + ')');
-                }
-
-                synchronized (RUtilities.R_SEMAPHORE) {
-                        rEngine.eval("source(\"conf/FBA.R\")");
-                        File tempFile = File.createTempFile(this.networkDS.getDatasetName(), ".tmp");
-                        SBMLWriter writer = new SBMLWriter("AntND", "1.0");
-                        try {
-                                writer.write(this.networkDS.getDocument(), tempFile.getAbsolutePath());
-                        } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
-                                Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-
-                        System.out.println("solution <- FBA(\"" + tempFile.getAbsolutePath() + "\", \"" + this.networkDS.getDatasetName()+ "\", \"" + this.tools.getBoundsFile().getAbsolutePath() + "\", \"" + this.tools.getSourcesFile().getAbsolutePath() + "\" , \"" + this.objectiveSpecie + "\")");
-
-                        rEngine.eval("solution <- FBA(\"" + tempFile.getAbsolutePath() + "\", \"" + this.networkDS.getDatasetName()+ "\", \"" + this.tools.getBoundsFile().getAbsolutePath() + "\", \"" + this.tools.getSourcesFile().getAbsolutePath() + "\" , \"" + this.objectiveSpecie + "\")");
-
-                        this.finishedPercentage = 0.4f;
-
-                        rEngine.eval("opt <-solution[[1]]");
-                        rEngine.eval("objective <-opt@lp_obj");
-                        rEngine.eval("print(objective)");
-                        long e = rEngine.rniParse("objective", 1);
-                        long r = rEngine.rniEval(e, 0);
-                        REXP x = new REXP(rEngine, r);
-                        double v = x.asDouble();
-                        rEngine.eval("fluxes <- solution[[2]]");
-                        rEngine.eval("fluxesNames <- as.vector(fluxes[,2])");
-                        System.out.println(x = rEngine.eval("fluxesNames"));
-                        String[] fluxesNames = x.asStringArray();
-                        rEngine.eval("fluxesValues <- as.vector(fluxes[,1])");
-                        System.out.println(x = rEngine.eval("fluxesValues"));
-                        String[] fluxesValue = x.asStringArray();
-                        Map<String, Double> solutionMap = new HashMap<>();
-                        for (int i = 0; i < fluxesNames.length; i++) {
-                                solutionMap.put(fluxesNames[i], Double.valueOf(fluxesValue[i]));
-                        }
-                        createDataFile(solutionMap, v);
-                        tempFile.delete();
-                }
-        }
-
-        private boolean edgeExist(Edge edge, List<Edge> edges) {
-                for (Edge e : edges) {
-                        try {
-                                if (e.getSource().getId().contains(edge.getSource().getId())
-                                        && e.getDestination().getId().contains(edge.getDestination().getId())) {
-                                        return true;
-                                }
-                        } catch (NullPointerException ex) {
-                                return false;
-                        }
-                }
-                return false;
-        }      
-
-        private List<String> getReactionFromProducts(SpeciesReference sp, Model model, Map<String, Double> solution) {
-                List<String> reactions = new ArrayList<>();
-                for (Reaction r : model.getListOfReactions()) {
-                        try{
-                        List<SpeciesReference> products;
-                        if (solution.get(r.getId()) > 0) {
-                                products = r.getListOfProducts();
-                        } else {
-                                products = r.getListOfReactants();
-                        }
-                        if (compoundExists(products, sp)) {
-                                reactions.add(r.getId());
-                        }
-                        }catch(Exception e){
-                                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
-                        }
-                }
-                return reactions;
-        }
-
-        private List<String> getReactionFromReactants(SpeciesReference sp, Model model, Map<String, Double> solution) {
-                List<String> reactions = new ArrayList<>();               
-                for (Reaction r : model.getListOfReactions()) {
-                         try{
-                        List<SpeciesReference> reactants;
-                        if (solution.get(r.getId()) > 0) {
-                                reactants = r.getListOfReactants();
-                        } else {
-                                reactants = r.getListOfProducts();
-                        }
-
-                        if (compoundExists(reactants, sp)) {                               
-                                reactions.add(r.getId());
-                        }
-                        }catch(Exception e){
-                                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
-                        }
-                }
-                return reactions;
-        }
-        
-        private boolean compoundExists(List<SpeciesReference> reactants, SpeciesReference sp){
-                for(SpeciesReference reactant: reactants){
-                        if(reactant.getSpeciesInstance().getId().contains(sp.getSpeciesInstance().getId())){
-                                return true;
-                        }
-                }
-                return false;
-        }
+    }
 
 }

@@ -170,10 +170,10 @@ public class PrintPaths implements KeyListener {
                 String name = v.split(" - ")[0];
                 String r = v.split(" : ")[0];
                 if (m.getReaction(r.trim()) != null || m.getReaction(name.trim()) != null) {
-                    Rectangle2D circle = new Rectangle2D.Double(-15.0, -15.0, 60.0, 30.0);
+                    Rectangle2D circle = new Rectangle2D.Double(-15.0, -15.0, 50.0, 25.0);
                     return circle;
                 } else {
-                    Ellipse2D circle = new Ellipse2D.Double(-15, -15, 30, 30);
+                    Ellipse2D circle = new Ellipse2D.Double(-15, -15, 20, 20);
                     return circle;
                 }
             }

@@ -42,18 +42,15 @@ public class Simulation {
     private final Map<String, Double[]> sources;
     private final SimpleBasicDataset networkDS;
     private final List<String> sourcesList;
-    private final List<String> objectives;
     private final List<String> cofactors;
 
-    private HashMap<String, ReactionFA> reactions;
-    private HashMap<String, SpeciesFA> compounds;
+    private final HashMap<String, ReactionFA> reactions;
+    private final HashMap<String, SpeciesFA> compounds;
     private Ant antResult;
-    private List<String> doneReactions;
 
     public Simulation(SimpleBasicDataset networkDS, List<String> cofactors, List<String> cofactors2, HashMap<String, String[]> bounds, Map<String, Double[]> sources, List<String> sourcesList, String objective) {
         this.networkDS = networkDS;
         this.cofactors = cofactors;
-        this.objectives = new ArrayList();
         this.bounds = bounds;
         if (sources == null) {
             this.sources = new HashMap<>();
@@ -61,10 +58,9 @@ public class Simulation {
             this.sources = sources;
         }
         this.sourcesList = sourcesList;
-        
+
         this.reactions = new HashMap<>();
         this.compounds = new HashMap<>();
-        this.doneReactions = new ArrayList<>();
     }
 
     public void createWorld() {
@@ -311,19 +307,19 @@ public class Simulation {
                         System.out.println(s + "-> " + flux);
                         //this.fixPath(newAnt);
                         newAnt.setFlux(flux);
-                        
-                       /* Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());
-                        double combinedFlux = this.getFlux(combinedAnt, reactionChoosen);
-                        combinedAnt.setFlux(combinedFlux);
-                        if (flux > combinedFlux) {
-                            //this.fixPath(newAnt);
-                            spfa.addAnt(newAnt);
-                            
-                        } else {
-                           // this.fixPath(combinedAnt);
-                            spfa.addAnt(combinedAnt);
-                        }*/
+
+                        /* Ant combinedAnt = this.combineFluxes(newAnt, spfa.getAnt());
+                         double combinedFlux = this.getFlux(combinedAnt, reactionChoosen);
+                         combinedAnt.setFlux(combinedFlux);
+                         if (flux > combinedFlux) {
+                         //this.fixPath(newAnt);
                          spfa.addAnt(newAnt);
+                            
+                         } else {
+                         // this.fixPath(combinedAnt);
+                         spfa.addAnt(combinedAnt);
+                         }*/
+                        spfa.addAnt(newAnt);
                     }
                     /* if ((newAnt.contains("r_1054"))) {
                      if (spfa.getAnt() == null) {
@@ -432,16 +428,14 @@ public class Simulation {
         Ant ant = s.getAnt();
         if (ant != null) {
             return !ant.contains(reaction);
+            //return true;
         } else if (cofactors.contains(species)) {
-            //this.objectives.add(species);
             return true;
         }
         return false;
     }
 
-    public List<String> getNewObjectives() {
-        return this.objectives;
-    }
+    
 
     public Ant getResult() {
         return this.antResult;
@@ -470,10 +464,13 @@ public class Simulation {
         fba.setModel(ant, objective, this.reactions, this.cofactors, this.sources);
         try {
             Map<String, Double> soln = fba.run();
-            if(objective.contains("r_0962")&&fba.getMaxObj()>0){
-            for(String r : soln.keySet()){
-                 if(this.reactions.containsKey(r))this.reactions.get(r).setFlux(soln.get(r));
-            }}
+            if (fba.getMaxObj() > 0) {
+                for (String r : soln.keySet()) {
+                    if (this.reactions.containsKey(r)) {
+                        this.reactions.get(r).setFlux(soln.get(r));
+                    }
+                }
+            }
         } catch (Exception ex) {
             System.out.println(ex);
         }
@@ -677,12 +674,11 @@ public class Simulation {
         }
     }
 
-    
-    public List<String> getCofactors(){
+    public List<String> getCofactors() {
         return this.cofactors;
     }
-    
-    public Map<String, Double[]> getSourceMap(){
+
+    public Map<String, Double[]> getSourceMap() {
         return this.sources;
     }
 }
