@@ -300,7 +300,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                         PrintPaths print = new PrintPaths(file.getSources(), file.getBiomassId(), file.getDocument().getModel());
                         try {
                                 if (file.isCluster()) {
-                                        pn.add(print.printClusteredPathwayInFrame(file.getGraph()));
+                                       // pn.add(print.printClusteredPathwayInFrame(file.getGraph()));
                                 } else {
                                         System.out.println("Visualize");
                                         pn.add(print.printPathwayInFrame(file.getGraph()));

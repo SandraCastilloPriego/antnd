@@ -139,7 +139,7 @@ public class FluxAnalysisTask extends AbstractTask {
             dataset.setPath(p);
 
             NDCore.getDesktop().AddNewFile(dataset);
-            this.createWorld(dataset.getDocument(),fluxes);
+            this.createWorld(dataset.getDocument(), fluxes);
             dataset.setGraph(this.createGraph());
             dataset.setSources(this.networkDS.getSources());
 
@@ -182,7 +182,7 @@ public class FluxAnalysisTask extends AbstractTask {
         }
     }
 
-    public void createWorld(SBMLDocument doc,Map<String, Double> fluxes) {
+    public void createWorld(SBMLDocument doc, Map<String, Double> fluxes) {
         Model m = doc.getModel();
         for (Species s : m.getListOfSpecies()) {
             SpeciesFA specie = new SpeciesFA(s.getId(), s.getName());
@@ -298,6 +298,9 @@ public class FluxAnalysisTask extends AbstractTask {
         List<Edge> edges = new ArrayList<>();
         for (Reaction r : newModel.getListOfReactions()) {
             Node n = new Node(r.getId() + " - " + solution.get(r.getId()));
+            if (this.color.containsKey(r.getId())) {
+                n.setColor(this.color.get(r.getId()));
+            }
             nodes.add(n);
         }
         for (Reaction r : newModel.getListOfReactions()) {
@@ -318,6 +321,9 @@ public class FluxAnalysisTask extends AbstractTask {
                     Node exchangeNode = getNode(nodes, specie);
                     if (exchangeNode == null) {
                         exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
+                        if (this.color.containsKey(specie)) {
+                            exchangeNode.setColor(this.color.get(specie));
+                        }
                     }
                     nodes.add(exchangeNode);
                     Edge edge = new Edge(specie + " - " + uniqueId.nextId(), exchangeNode, n);
@@ -331,6 +337,9 @@ public class FluxAnalysisTask extends AbstractTask {
                             continue;
                         }
                         Node newNode = getNode(nodes, reaction);
+                        if (this.color.containsKey(specie)) {
+                            newNode.setColor(this.color.get(specie));
+                        }
                         Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), newNode, n);
                         if (!edgeExist(edge, edges)) {
                             edges.add(edge);
@@ -345,6 +354,9 @@ public class FluxAnalysisTask extends AbstractTask {
                     Node exchangeNode = getNode(nodes, specie);
                     if (exchangeNode == null) {
                         exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
+                        if (this.color.containsKey(specie)) {
+                            exchangeNode.setColor(this.color.get(specie));
+                        }
                     }
                     nodes.add(exchangeNode);
                     Edge edge = new Edge(specie + " - " + uniqueId.nextId(), n, exchangeNode);
@@ -358,6 +370,9 @@ public class FluxAnalysisTask extends AbstractTask {
                             continue;
                         }
                         Node newNode = getNode(nodes, reaction);
+                        if (this.color.containsKey(specie)) {
+                            newNode.setColor(this.color.get(specie));
+                        }
                         Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), n, newNode);
                         if (!edgeExist(edge, edges)) {
                             edges.add(edge);
@@ -369,7 +384,7 @@ public class FluxAnalysisTask extends AbstractTask {
 
         }
 
-        return new Graph(nodes, edges, color);
+        return new Graph(nodes, edges);
     }
 
     private Node getNode(List<Node> nodes, String s) {

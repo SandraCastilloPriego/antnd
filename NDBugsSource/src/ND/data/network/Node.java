@@ -17,6 +17,7 @@
  */
 package ND.data.network;
 
+import java.awt.Color;
 import java.awt.geom.Point2D;
 
 /**
@@ -29,13 +30,16 @@ public class Node {
     private String id;
     private String name;
     private Point2D position;
+    private Color color;
 
     public Node(String id) {
         this.id = id;
+        this.color = new Color(156, 244, 125);
     }
     public Node(String id, String name) {
         this.id = id;
         this.name = name;
+        this.color = new Color(156, 244, 125);
     }
 
     public String getId() {
@@ -68,6 +72,12 @@ public class Node {
     public Point2D getPosition() {
         return this.position;
     }
+    
+    public void setColor(Color color){
+        this.color = color;
+    }
 
-
+    public Color getColor(){
+        return this.color;
+    }
 }
