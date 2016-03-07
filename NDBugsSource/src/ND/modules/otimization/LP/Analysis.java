@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.sbml.jsbml.Model;
 
 public abstract class Analysis {
 
@@ -24,7 +25,9 @@ public abstract class Analysis {
 
     protected void setVars() {
         for (ReactionFA r : reactionsList) {
-            String varName = r.getId();
+            String varName = Integer.toString(this.reactionPositionMap.get(r.getId()));
+            System.out.println(r.getId() + ": " + varName + ": " + r.getlb() + " ," + r.getub());
+
             this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
         }
     }
@@ -74,18 +77,18 @@ public abstract class Analysis {
 
     protected void setObjective() {
         this.getSolver().setObjType(ObjType.Maximize);
-        Map< Integer, Double> map = new HashMap< Integer, Double>();
+        Map< Integer, Double> map = new HashMap<>();
         for (int i = 0; i < objectiveList.size(); i++) {
             if (objectiveList.get(i) != 0.0) {
-                map.put(i, objectiveList.get(i));
+                map.put(this.reactionPositionMap.get(this.reactionsList.get(i).getId()), 1.0);
             }
         }
         this.getSolver().setObj(map);
     }
 
-    public void setModel(String Objective, HashMap<String, ReactionFA> reactions) {
+    public void setModel(String Objective, HashMap<String, ReactionFA> reactions, Model model) {
         this.objective = Objective;
-        this.prepareReactions(reactions);
+        this.prepareReactions(reactions,model);       
     }
 
     public void setSolverParameters() {
@@ -98,13 +101,10 @@ public abstract class Analysis {
         this.setSolverParameters();
         this.maxObj = this.getSolver().optimize();
         ArrayList<Double> fluxes = this.getSolver().getSoln();
-        int i = 0;
         Map<String, Double> fluxesMap = new HashMap<>();
         for (ReactionFA reaction : this.reactionsList) {
-            fluxesMap.put(reaction.getId(), fluxes.get(i));
-            reaction.setFlux(fluxes.get(i));
-            System.out.print(reaction.getId() + " -> " + fluxes.get(i) + " ,");
-            i++;
+            fluxesMap.put(reaction.getId(), fluxes.get(this.reactionPositionMap.get(reaction.getId())));
+            reaction.setFlux(fluxes.get(this.reactionPositionMap.get(reaction.getId())));
         }
         //System.out.println("\n");
         return fluxesMap;
@@ -116,7 +116,7 @@ public abstract class Analysis {
         return this.maxObj;
     }
 
-    private void prepareReactions(HashMap<String, ReactionFA> reactions) {
+    private void prepareReactions(HashMap<String, ReactionFA> reactions, Model model) {
         this.reactionsList = new ArrayList<>();
         this.metabolitesList = new ArrayList<>();
         this.reactionPositionMap = new HashMap<>();
@@ -133,7 +133,8 @@ public abstract class Analysis {
                 }
             }
             for (String product : r.getProducts()) {
-                if (!metabolitesList.contains(product)) {
+                 String sp = model.getSpecies(product).getName();
+                if (!metabolitesList.contains(product)&& !sp.contains("boundary")) {
                     this.metabolitesList.add(product);
                 }
             }
@@ -142,13 +143,13 @@ public abstract class Analysis {
 
         int i = 0;
         for (ReactionFA reaction : this.reactionsList) {
-            // System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
+            //   System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
             if (reaction.getId().equals(this.objective)) {
                 this.objectiveList.add(1.0);
-                //   System.out.println("Objective 1");
+                System.out.println("Objective 1");
             } else {
                 this.objectiveList.add(0.0);
-                //    System.out.println("Objective 0");
+                System.out.println("Objective 0");
             }
             this.reactionPositionMap.put(reaction.getId(), i++);
         }

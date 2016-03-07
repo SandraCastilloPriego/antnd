@@ -22,19 +22,13 @@ import ND.modules.configuration.general.GetInfoAndTools;
 import ND.data.network.Edge;
 import ND.data.network.Graph;
 import ND.data.network.Node;
-import ND.desktop.impl.PrintPaths;
-import ND.main.NDCore;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JInternalFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
@@ -54,9 +48,6 @@ public class LPTask extends AbstractTask {
     private final String objectiveSpecie;
     
     private final GetInfoAndTools tools;
-    private final JInternalFrame frame;
-    private final JScrollPane panel;
-    private final JPanel pn;
     private Double objective; 
 
     private HashMap<String, ReactionFA> reactions;
@@ -66,9 +57,6 @@ public class LPTask extends AbstractTask {
         this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
         this.tools = new GetInfoAndTools();
 
-        this.frame = new JInternalFrame("Result", true, true, true, true);
-        this.pn = new JPanel();
-        this.panel = new JScrollPane(pn);
     }
 
     @Override
@@ -94,18 +82,7 @@ public class LPTask extends AbstractTask {
         if (g != null) {
             this.tools.createDataFile(g, networkDS, this.objectiveSpecie, this.networkDS.getSources(), false);
             String info = "Objective value of " + this.objectiveSpecie + ": "+ this.objective;
-            this.networkDS.addInfo(info);
-           /* frame.setSize(new Dimension(700, 500));
-            frame.add(this.panel);
-            NDCore.getDesktop().addInternalFrame(frame);
-
-            PrintPaths print = new PrintPaths(this.networkDS.getSources(), this.objectiveSpecie, this.tools.getModel());
-            try {
-                System.out.println("Final graph: " + g.toString());
-                this.pn.add(print.printPathwayInFrame(g));
-            } catch (NullPointerException ex) {
-                System.out.println("Imprimendo: " + ex.toString());
-            }*/
+            this.networkDS.addInfo(info);           
         }
         finishedPercentage = 1f;
         setStatus(TaskStatus.FINISHED);
@@ -129,7 +106,7 @@ public class LPTask extends AbstractTask {
         for (String r : reactions.keySet()) {
             ReactionFA reaction = reactions.get(r);
             if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000001) {
-                Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFlux()));
+                Node reactionNode = new Node(reaction.getId(), String.format("%.3g%n",reaction.getFlux()));
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
                     String name = m.getSpecies(reactant).getName();
@@ -160,7 +137,11 @@ public class LPTask extends AbstractTask {
 
     public double getFlux(String objective) {
         FBA fba = new FBA();
-        fba.setModel(objective, this.reactions);
+        ReactionFA objectiveReaction = new ReactionFA("objective");
+        objectiveReaction.addReactant(objective, 1.0);
+        objectiveReaction.setBounds(0, 1000);
+        this.reactions.put("objective", objectiveReaction);
+        fba.setModel("objective", this.reactions,this.networkDS.getDocument().getModel());
         try {
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {

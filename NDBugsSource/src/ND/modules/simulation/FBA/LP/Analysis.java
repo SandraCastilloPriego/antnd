@@ -1,14 +1,12 @@
 package ND.modules.simulation.FBA.LP;
 
 import ND.modules.simulation.FBA.Ant;
+import ND.modules.simulation.FBA.SpeciesFA;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
 
 public abstract class Analysis {
 
@@ -25,16 +23,16 @@ public abstract class Analysis {
     protected void setVars() {
         Map<String, Boolean> path = this.ant.getPath();
         for (ReactionFA r : reactionsList) {
-            String varName = r.getId();
-            if (path.containsKey(varName)) {
-                if (path.get(varName)) {
-                    this.getSolver().setVar(varName, VarType.CONTINUOUS, 0.0, 1000.0);
-                } else {
-                    this.getSolver().setVar(varName, VarType.CONTINUOUS, -1000.0, 0.0);
-                }
-            } else {
-                this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
-            }
+            String varName = Integer.toString(this.reactionPositionMap.get(r.getId()));
+            /*if (path.containsKey(r.getId())) {
+             if (path.get(r.getId())) {
+             this.getSolver().setVar(varName, VarType.CONTINUOUS, 0.0, 1000.0);
+             } else {
+             this.getSolver().setVar(varName, VarType.CONTINUOUS, -1000.0, 0.0);
+             }
+             } else {*/
+            this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+            // }
         }
     }
 
@@ -52,7 +50,7 @@ public abstract class Analysis {
 
     protected ArrayList< Map< Integer, Double>> getSMatrix() {
         this.metabolitePositionMap = new HashMap<>();
-        ArrayList< Map< Integer, Double>> sMatrix = new ArrayList< >(
+        ArrayList< Map< Integer, Double>> sMatrix = new ArrayList<>(
             this.metabolitesList.size());
         for (int i = 0; i < this.metabolitesList.size(); i++) {
             this.metabolitePositionMap.put(this.metabolitesList.get(i), i);
@@ -83,19 +81,19 @@ public abstract class Analysis {
 
     protected void setObjective() {
         this.getSolver().setObjType(ObjType.Maximize);
-        Map< Integer, Double> map = new HashMap< Integer, Double>();
+        Map< Integer, Double> map = new HashMap<>();
         for (int i = 0; i < objectiveList.size(); i++) {
             if (objectiveList.get(i) != 0.0) {
-                map.put(i, objectiveList.get(i));
+                map.put(this.reactionPositionMap.get(this.reactionsList.get(i).getId()), 1.0);
             }
         }
         this.getSolver().setObj(map);
     }
 
-    public void setModel(Ant m, String Objective, HashMap<String, ReactionFA> reactions, List<String> cofactors, Map<String, Double[]> sources) {
+    public void setModel(Ant m, String Objective, HashMap<String, ReactionFA> reactions, List<String> cofactors, Map<String, Double[]> sources, Map<String, SpeciesFA> species, boolean f) {
         this.ant = m;
         this.objective = Objective;
-        this.prepareReactions(cofactors, reactions, sources);
+        this.prepareReactions(cofactors, reactions, sources, species, f);
     }
 
     public void setSolverParameters() {
@@ -111,9 +109,8 @@ public abstract class Analysis {
         int i = 0;
         Map<String, Double> fluxesMap = new HashMap<>();
         for (ReactionFA reaction : this.reactionsList) {
-            fluxesMap.put(reaction.getId(), fluxes.get(i));
-            reaction.setFlux(fluxes.get(i));
-            System.out.print(reaction.getId() + " -> " + fluxes.get(i) + " ,");
+            fluxesMap.put(reaction.getId(), fluxes.get(this.reactionPositionMap.get(reaction.getId())));
+            reaction.setFlux(fluxes.get(this.reactionPositionMap.get(reaction.getId())));
             i++;
         }
         //System.out.println("\n");
@@ -126,7 +123,7 @@ public abstract class Analysis {
         return this.maxObj;
     }
 
-    private void prepareReactions(List<String> cofactors, HashMap<String, ReactionFA> reactions, Map<String, Double[]> sources) {
+    private void prepareReactions(List<String> cofactors, HashMap<String, ReactionFA> reactions, Map<String, Double[]> sources, Map<String, SpeciesFA> species, boolean f) {
         this.reactionsList = new ArrayList<>();
         this.metabolitesList = new ArrayList<>();
         this.reactionPositionMap = new HashMap<>();
@@ -137,69 +134,82 @@ public abstract class Analysis {
             if (reactions.containsKey(reaction)) {
                 ReactionFA r = reactions.get(reaction);
                 this.reactionsList.add(r);
+                if (f) {
+                    for (String reactant : r.getReactants()) {
+                        if (!metabolitesList.contains(reactant) && !cofactors.contains(reactant)) {
+                            this.metabolitesList.add(reactant);
+                        }
+                    }
+                    for (String product : r.getProducts()) {
+                        if (!metabolitesList.contains(product) && !cofactors.contains(product) && !species.get(product).getName().contains("boundary")) {
+                            this.metabolitesList.add(product);
+                        }
+                    }
+                } else {
+                    for (String reactant : r.getReactants()) {
+                        if (!metabolitesList.contains(reactant)) {
+                            this.metabolitesList.add(reactant);
+                        }
+                    }
+                    for (String product : r.getProducts()) {
+                        if (!metabolitesList.contains(product) && !species.get(product).getName().contains("boundary")) {
+                            this.metabolitesList.add(product);
+                        }
+                    }
+                }
+            }
 
+        }
+
+        for (String reaction : reactions.keySet()) {
+            ReactionFA r = reactions.get(reaction);
+            if (r.getId().contains("Ex") && (r.getub() > 0 || r.getlb() < 0)) {
+                this.reactionsList.add(r);
                 for (String reactant : r.getReactants()) {
                     if (!metabolitesList.contains(reactant) && !cofactors.contains(reactant)) {
                         this.metabolitesList.add(reactant);
                     }
                 }
-                for (String product : r.getProducts()) {
-                    if (!metabolitesList.contains(product)&& !cofactors.contains(product)) {
-                        this.metabolitesList.add(product);
-                    }
-                }
-            }
-
-        }
-        //  System.out.print("\n");
-
-        for (String source : sources.keySet()) {
-           // System.out.println("Hay "+source);
-            if (metabolitesList.contains(source)) {
-                ReactionFA Source = new ReactionFA("ExS" + source);
-                Source.addReactant(source, -1.0);
-                Source.setBounds(sources.get(source)[0], sources.get(source)[1]);
-              //  System.out.println(source + " : " + sources.get(source)[0]+ " - "+ sources.get(source)[1]);
-                this.reactionsList.add(Source);
             }
         }
-        
-       // List<String> deadEnd = this.getDeadEnds();
-        //  this.fixCofactorIssue(deadEnd, cofactors);
-        for (String metabolite : this.metabolitesList) {
-            if (/*!cofactors.contains(metabolite) && */!sources.containsKey(metabolite)) {
+        this.reactionsList.add(reactions.get("objective"));
+
+       
+        List<String> deadEnd = this.getDeadEnds();
+      //   this.fixCofactorIssue(deadEnd, cofactors);
+        for (String metabolite : deadEnd) {
+            if (!cofactors.contains(metabolite) && !sources.containsKey(metabolite)) {
                 ReactionFA exchange = new ReactionFA("Ex_" + metabolite);
                 exchange.addReactant(metabolite, -1.0);
                 exchange.setBounds(0.0, 1000.0);
                 this.reactionsList.add(exchange);
-            } /*else if (cofactors.contains(metabolite) && this.metabolitesList.contains(metabolite)) {
+            } else if (cofactors.contains(metabolite) && this.metabolitesList.contains(metabolite) && !f) {
                 ReactionFA newCofactor = new ReactionFA("ExC_" + metabolite);
                 newCofactor.addReactant(metabolite, -1.0);
                 newCofactor.setBounds(-0.1, Double.POSITIVE_INFINITY);
                 this.reactionsList.add(newCofactor);
-               // this.metabolitesList.remove(metabolite);
-            }*/
+            }
 
         }
-
-        /*for (String cofactor : cofactors) {
-            if (metabolitesList.contains(cofactor) && !deadEnd.contains(cofactor)) {
-                ReactionFA newCofactor = new ReactionFA("ExC_" + cofactor);
-                newCofactor.addReactant(cofactor, 1.0);
-                newCofactor.setBounds(0, Double.POSITIVE_INFINITY);
-                this.reactionsList.add(newCofactor);
-                //  this.metabolitesList.remove(cofactor);
+        if (f) {
+            for (String cofactor : cofactors) {
+                if (metabolitesList.contains(cofactor) && !deadEnd.contains(cofactor)) {
+                    ReactionFA newCofactor = new ReactionFA("ExC_" + cofactor);
+                    newCofactor.addReactant(cofactor, 1.0);
+                    newCofactor.setBounds(0, Double.POSITIVE_INFINITY);
+                    this.reactionsList.add(newCofactor);
+                }
             }
-        }*/
+        }
         int i = 0;
         for (ReactionFA reaction : this.reactionsList) {
             // System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
             if (reaction.getId().equals(this.objective)) {
                 this.objectiveList.add(1.0);
-                //   System.out.println("Objective 1");
+                //     System.out.println("Objective 1");
             } else {
                 this.objectiveList.add(0.0);
-                //    System.out.println("Objective 0");
+                //   System.out.println("Objective 0");
             }
             this.reactionPositionMap.put(reaction.getId(), i++);
         }

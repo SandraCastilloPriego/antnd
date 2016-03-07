@@ -107,19 +107,10 @@ public class FluxVisualizationTask extends AbstractTask {
     @Override
     public void run() {
         try {
-            String reactionObjective = null;
             setStatus(TaskStatus.PROCESSING);
-            Map<String,Boolean> path = this.compounds.get(this.objective).getAnt().getPath();
-            for(String p : path.keySet()){
-                if(this.reactions.containsKey(p)){
-                    ReactionFA r = this.reactions.get(p);
-                    if(r.hasProduct(this.objective)|| r.hasReactant(this.objective)){
-                        reactionObjective = r.getId();
-                    }
-                }
-            }
+            Map<String,Boolean> path = this.compounds.get(this.objective).getAnt().getPath();            
             
-            if(reactionObjective != null) this.getFlux(this.compounds.get(this.objective).getAnt(), reactionObjective);
+           this.getFlux(this.compounds.get(this.objective).getAnt(), this.objective);
             
             Graph g = createGraph(path);   
             
@@ -148,8 +139,9 @@ public class FluxVisualizationTask extends AbstractTask {
         Graph g = new Graph(null, null);
         for (String r : path.keySet()) {
             ReactionFA reaction = reactions.get(r);
-            if (reaction != null) {
-                Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFlux()));
+         
+            if (reaction != null&&Math.abs(reaction.getFlux())>0) {
+                Node reactionNode = new Node(reaction.getId(),String.format("%.3g%n",reaction.getFlux()));
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
                     SpeciesFA sp = compounds.get(reactant);
@@ -189,7 +181,11 @@ public class FluxVisualizationTask extends AbstractTask {
      
     public double getFlux(Ant ant, String objective) {
         FBA fba = new FBA();
-        fba.setModel(ant, objective, this.reactions, this.cofactors, this.sourcesMap);
+        ReactionFA objectiveReaction = new ReactionFA("objective");
+        objectiveReaction.addReactant(objective, -1.0);
+        objectiveReaction.setBounds(0, 1000);
+        this.reactions.put("objective", objectiveReaction);
+        fba.setModel(ant, "objective", this.reactions, this.cofactors, this.sourcesMap, this.compounds, true);
         try {
             Map<String, Double> soln = fba.run();           
             for(String r : soln.keySet()){
@@ -198,6 +194,7 @@ public class FluxVisualizationTask extends AbstractTask {
         } catch (Exception ex) {
             System.out.println(ex);
         }
+       // this.reactions.remove("objective");
         return fba.getMaxObj();
     }
 
