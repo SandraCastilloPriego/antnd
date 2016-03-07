@@ -113,7 +113,7 @@ public class ShowPatwaysTask extends AbstractTask {
                 } else {
                     Graph graph = createGraph(possibleReactions);
                     this.tools.createDataFile(graph, networkDS, this.pathwayName, null, false);
-                    PrintPaths print = new PrintPaths(null, this.pathwayName, this.tools.getModel());
+                    PrintPaths print = new PrintPaths(this.tools.getModel());
                     try {
                         this.pn.add(print.printPathwayInFrame(graph));
                         frame.setSize(new Dimension(700, 500));

@@ -22,25 +22,22 @@ import ND.data.network.Graph;
 import ND.data.network.Node;
 import ND.main.NDCore;
 import ND.modules.simulation.antNoGraph.uniqueId;
-import edu.uci.ics.jung.algorithms.layout.KKLayout;
+import ND.util.GUIUtils;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.RenderContext;
-import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -49,18 +46,18 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
 import org.sbml.jsbml.KineticLaw;
@@ -74,28 +71,24 @@ import org.sbml.jsbml.SpeciesReference;
  *
  * @author scsandra
  */
-public class PrintPaths implements KeyListener {
+public class PrintPaths implements KeyListener, GraphMouseListener, ActionListener {
 
-    private final List<String> initialIds;
-    private final String finalId;
-    private Model m;
+    private final Model m;
     private TransFrame transFrame = null;
-    private List<String> selectedNode;
+    private final List<String> selectedNode;
     private edu.uci.ics.jung.graph.Graph<String, String> g;
     Map<String, Color> clusters;
     private boolean showInfo = false;
     private Graph graph;
-    private JPanel pn;
     private VisualizationViewer<String, String> vv;
     SpringLayout layout;
+    private JPopupMenu popupMenu;
 
-    public PrintPaths(List<String> initialIds, String finalId, Model m) {
+    public PrintPaths(Model m) {
         this.m = m;
-        this.initialIds = initialIds;
-        this.finalId = finalId;
         this.clusters = new HashMap<>();
         this.selectedNode = new ArrayList<>();
-
+        this.popupMenu = new JPopupMenu();
     }
 
     public VisualizationViewer printPathwayInFrame(final Graph graph) {
@@ -175,6 +168,7 @@ public class PrintPaths implements KeyListener {
         pickedState.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
+
                 Object subject = e.getItem();
                 if (subject instanceof String) {
                     String vertex = (String) subject;
@@ -298,6 +292,7 @@ public class PrintPaths implements KeyListener {
         vv.setGraphMouse(gm);
 
         vv.addKeyListener(this);
+        vv.addGraphMouseListener(this);
 
         JPanel panel = new JPanel();
         final JButton button = new JButton("Show Node Info");
@@ -521,7 +516,9 @@ public class PrintPaths implements KeyListener {
             }
         }
         if (e.getKeyChar() == 'e') {
-            showReactions(this.selectedNode.get(0));
+            if (!this.selectedNode.isEmpty()) {
+                showReactions(this.selectedNode.get(0), null);
+            }
         }
 
         if (e.getKeyChar() == 'c') {
@@ -543,7 +540,7 @@ public class PrintPaths implements KeyListener {
 
     }
 
-    private void showReactions(String initialStringNode) {
+    private void showReactions(String initialStringNode, String reaction) {
         Collection<String> V = g.getVertices();
 
         // Gets the selected model. It is the source model for the reactions
@@ -562,7 +559,7 @@ public class PrintPaths implements KeyListener {
         }
 
         for (Reaction r : mInit.getListOfReactions()) {
-
+            if(reaction != null && !reaction.contains(r.getId())) continue;
 //            if (r.getId().contains("Ex")) {
 //                continue;
 //            }
@@ -793,6 +790,61 @@ public class PrintPaths implements KeyListener {
             }
         }
         m.addReaction(r);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        Runtime.getRuntime().freeMemory();
+        String command = ae.getActionCommand();
+        if (command.equals("All")) {
+            if (!this.selectedNode.isEmpty()) {
+                showReactions(this.selectedNode.get(0), null);
+            }
+        }else{
+            if (!this.selectedNode.isEmpty()) {
+                showReactions(this.selectedNode.get(0), command);
+            }
+        }
+    }
+
+    @Override
+    public void graphClicked(Object v, MouseEvent me) {
+
+    }
+
+    @Override
+    public void graphPressed(Object v, MouseEvent me) {
+        if (me.isPopupTrigger()) {
+            popupMenu = new JPopupMenu();
+            Model mInit = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
+            String spID = (String) v;
+
+            if (spID.contains(" : ")) {
+                spID = spID.split(" : ")[0];
+            }
+            Species sp = mInit.getSpecies(spID);
+            if(sp == null) return;
+            GUIUtils.addMenuItem(popupMenu, "All", this, "All");
+            int i = 0;
+            for (Reaction r : mInit.getListOfReactions()) {
+                if (r.hasReactant(sp) || r.hasProduct(sp)) {
+                    GUIUtils.addMenuItem(popupMenu, r.getId(), this, r.getId());
+                    i++;
+                }
+                if(i> 25){
+                    GUIUtils.addMenuItem(popupMenu, "...", this, "...");
+                    break;
+                }
+            }
+
+            popupMenu.show(me.getComponent(), me.getX(), me.getY());
+            System.out.println(v);
+        }
+    }
+
+    @Override
+    public void graphReleased(Object v, MouseEvent me) {
+
     }
 
 }

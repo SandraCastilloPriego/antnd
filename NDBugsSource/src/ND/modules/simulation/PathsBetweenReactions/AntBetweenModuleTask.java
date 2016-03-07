@@ -148,7 +148,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                 this.ant = this.compounds.get(this.biomassID).getAnt();
                 Graph g = this.createGraph(ant.getPath());
                 this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false);
-                PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID, this.tools.getModel());
+                PrintPaths print = new PrintPaths(this.tools.getModel());
                 try {
                     this.pn.add(print.printPathwayInFrame(g));
                 } catch (NullPointerException ex) {

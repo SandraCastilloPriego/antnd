@@ -297,7 +297,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                         frame.add(panel);
                         NDCore.getDesktop().addInternalFrame(frame);
 
-                        PrintPaths print = new PrintPaths(file.getSources(), file.getBiomassId(), file.getDocument().getModel());
+                        PrintPaths print = new PrintPaths(file.getDocument().getModel());
                         try {
                                 if (file.isCluster()) {
                                        // pn.add(print.printClusteredPathwayInFrame(file.getGraph()));

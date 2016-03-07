@@ -121,7 +121,7 @@ public class FluxVisualizationTask extends AbstractTask {
             frame.add(this.panel);
             NDCore.getDesktop().addInternalFrame(frame);
 
-            PrintPaths print = new PrintPaths(this.networkDS.getSources(), this.objective, this.tools.getModel());
+            PrintPaths print = new PrintPaths(this.tools.getModel());
             try {
                 System.out.println("Final graph: " + g.toString());
                 this.pn.add(print.printPathwayInFrame(g));

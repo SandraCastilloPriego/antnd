@@ -159,7 +159,7 @@ public class SomePathsTask extends AbstractTask {
                 frame.add(this.panel);
                 if (getStatus() == TaskStatus.PROCESSING) {
                     this.tools.createDataFile(graph, networkDS, biomassID, sourcesList, false);
-                    PrintPaths print = new PrintPaths(this.sourcesList, this.biomassID, this.tools.getModel());
+                    PrintPaths print = new PrintPaths(this.tools.getModel());
                     try {
                         this.pn.add(print.printPathwayInFrame(g));
                         NDCore.getDesktop().addInternalFrame(frame);
