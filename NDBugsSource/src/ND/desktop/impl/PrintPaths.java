@@ -38,6 +38,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -55,9 +56,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
+import javax.swing.text.BadLocationException;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
 import org.sbml.jsbml.KineticLaw;
@@ -559,7 +564,9 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
         }
 
         for (Reaction r : mInit.getListOfReactions()) {
-            if(reaction != null && !reaction.contains(r.getId())) continue;
+            if (reaction != null && !reaction.contains(r.getId())) {
+                continue;
+            }
 //            if (r.getId().contains("Ex")) {
 //                continue;
 //            }
@@ -800,7 +807,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
             if (!this.selectedNode.isEmpty()) {
                 showReactions(this.selectedNode.get(0), null);
             }
-        }else{
+        } else {
             if (!this.selectedNode.isEmpty()) {
                 showReactions(this.selectedNode.get(0), command);
             }
@@ -823,7 +830,9 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                 spID = spID.split(" : ")[0];
             }
             Species sp = mInit.getSpecies(spID);
-            if(sp == null) return;
+            if (sp == null) {
+                return;
+            }
             GUIUtils.addMenuItem(popupMenu, "All", this, "All");
             int i = 0;
             for (Reaction r : mInit.getListOfReactions()) {
@@ -831,7 +840,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                     GUIUtils.addMenuItem(popupMenu, r.getId(), this, r.getId());
                     i++;
                 }
-                if(i> 25){
+                if(i> 35){
                     GUIUtils.addMenuItem(popupMenu, "...", this, "...");
                     break;
                 }
