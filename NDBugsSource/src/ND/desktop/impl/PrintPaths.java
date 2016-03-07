@@ -103,7 +103,7 @@ public class PrintPaths implements KeyListener {
         this.graph = graph;
         List<Node> nodes = graph.getNodes();
         List<Edge> edges = graph.getEdges();
-        final Map<String, Color> colors = graph.getColors();
+        Map<String, Color> colors = new HashMap<>();
         layout = new SpringLayout<>(g);
 
         //layout = new KKLayout(g);       
@@ -119,6 +119,7 @@ public class PrintPaths implements KeyListener {
                     // System.out.println("Position: " + name + " : " + node.getPosition().toString());
                     vv.getGraphLayout().lock(name, true);
                 }
+                colors.put(name, node.getColor());
             }
         }
 
@@ -143,24 +144,15 @@ public class PrintPaths implements KeyListener {
                 String name = id.split(" - ")[0];
                 String r = id.split(" : ")[0];
                 if (m.getReaction(r.trim()) != null || m.getReaction(name.trim()) != null) {
-                    return new Color(102,194,164);
+                    return new Color(102, 194, 164);
                 } else if (id.contains("H+") || id.contains("H2O") || id.contains(" : phosphate ") || id.contains(" : ADP")
                     || id.contains(" : ATP") || id.contains(" : NAD") || id.contains(" : CO2") || id.contains(" : oxygen")
                     || id.contains(": AMP") || id.contains(" : diphosphate ") || id.contains(" : carbon dioxide ") || id.contains(" : potassium ")) {
                     return Color.ORANGE;
-                } else if (id.contains("Ex_")) {
-                    return new Color(29, 140, 243);
-                } else if (colors.containsKey(name)) {
-                    return colors.get(name);
-                } else if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
-                    return new Color(29, 140, 243);
-                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
-                    return new Color(255, 0, 0);
-                } else if (id.contains("sp:")) {
-                    return Color.RED;
-                }
+                } else {
+                    return colors.get(id);
 
-                return new Color(156, 244, 125);
+                }
 
             }
         };
@@ -330,185 +322,184 @@ public class PrintPaths implements KeyListener {
         return vv;
     }
 
-    public VisualizationViewer printClusteredPathwayInFrame(Graph graph) {
-        g = new SparseMultigraph<>();
-
-        List<Node> nodes = graph.getNodes();
-        List<Edge> edges = graph.getEdges();
-        System.out.println("Number of nodes: " + nodes.size() + " - " + edges.size());
-
-        for (Node node : nodes) {
-            if (node != null) {
-                g.addVertex(node.getId());
-            }
-        }
-
-        for (Edge edge : edges) {
-            if (edge != null) {
-                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
-            }
-        }
-
-        Layout<String, String> layout = new KKLayout(g);
-        layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
-        vv = new VisualizationViewer<>(layout);
-        vv.setPreferredSize(new Dimension(1400, 1000));
-        Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
-            @Override
-            public Paint transform(String id) {
-                if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
-                    return new Color(29, 140, 243);
-                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
-                    return new Color(255, 0, 0);
-                } else {
-
-                    Random rand = new Random();
-                    String cluster = id.split(" - ")[2];
-                    if (cluster != null) {
-                        if (clusters.containsKey(cluster)) {
-                            return clusters.get(cluster);
-                        } else {
-                            float r = rand.nextFloat();
-                            float g = rand.nextFloat();
-                            float b = rand.nextFloat();
-                            Color randomColor = new Color(r, g, b);
-                            clusters.put(cluster, randomColor);
-                            return randomColor;
-                        }
-                    }
-
-                }
-                return new Color(255, 255, 255);
-            }
-        };
-
-        final PickedState<String> pickedState = vv.getPickedVertexState();
-        pickedState.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                Object subject = e.getItem();
-                if (subject instanceof String) {
-                    String vertex = (String) subject;
-
-                    if (pickedState.isPicked(vertex)) {
-                        selectedNode.add(vertex);
-                        if (m != null && showInfo) {
-                            if (vertex.contains(" / ")) {
-                                vertex = vertex.split(" / ")[0];
-                            }
-                            transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
-                        } else {
-                            System.out.println("Vertex " + vertex
-                                + " is now selected");
-                        }
-                    } else {
-                        selectedNode.remove(vertex);
-                        if (transFrame != null && showInfo) {
-                            transFrame.setVisible(false);
-                            transFrame.dispose();
-                        } else {
-                            System.out.println("Vertex " + vertex
-                                + " no longer selected");
-                        }
-                    }
-                }
-            }
-        });
-
-        final PickedState<String> pickedEdgeState = vv.getPickedEdgeState();
-        pickedEdgeState.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                Object subject = e.getItem();
-                if (subject instanceof String) {
-                    String edge = (String) subject;
-
-                    if (pickedEdgeState.isPicked(edge)) {
-                        selectedNode.add(edge);
-                        if (m != null && showInfo) {
-                            transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
-                        } else {
-                            System.out.println("Edge " + edge
-                                + " is now selected");
-                        }
-                    } else {
-                        selectedNode.remove(edge);
-                        if (transFrame != null && showInfo) {
-                            transFrame.setVisible(false);
-                            transFrame.dispose();
-                        } else {
-                            System.out.println("Edge " + edge
-                                + " no longer selected");
-                        }
-                    }
-                }
-            }
-        });
-
-        float dash[] = {1.0f};
-        final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
-        Transformer<String, Stroke> edgeStrokeTransformer
-            = new Transformer<String, Stroke>() {
-                @Override
-                public Stroke transform(String s) {
-                    return edgeStroke;
-                }
-            };
-
-        Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
-            new ToStringLabeller<>(),
-            new Transformer<String, String>() {
-                @Override
-                public String transform(String input) {
-                    String name = input.split(" - ")[0];
-                    return "<html><b><font color=\"red\">" + name;
-                }
-            }});
-        Transformer labelTransformer2 = new ChainedTransformer<>(new Transformer[]{
-            new ToStringLabeller<>(),
-            new Transformer<String, String>() {
-                @Override
-                public String transform(String input) {
-                    String name = input.split(" - ")[0];
-                    return "<html><b><font color=\"black\">" + name;
-                }
-            }});
-
-        vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
-        vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
-        vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
-        vv.getRenderContext().getEdgeLabelRenderer().setRotateEdgeLabels(false);
-        vv.getRenderContext().setEdgeLabelTransformer(labelTransformer);
-        vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
-        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
-        gm.setMode(ModalGraphMouse.Mode.PICKING);
-        vv.setGraphMouse(gm);
-        vv.addKeyListener(this);
-
-        JPanel panel = new JPanel();
-        final JButton button = new JButton("Show Node Info");
-        button.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (showInfo == false) {
-                    showInfo = true;
-                    button.setText("Hide Node Info");
-                } else {
-                    showInfo = false;
-                    button.setText("Show Node Info");
-                }
-            }
-        });
-        panel.add(button);
-        panel.setPreferredSize(new Dimension(150, 40));
-        panel.setBackground(Color.WHITE);
-        vv.add(panel);
-        vv.setBackground(Color.WHITE);
-        return vv;
-    }
-
+//    public VisualizationViewer printClusteredPathwayInFrame(Graph graph) {
+//        g = new SparseMultigraph<>();
+//
+//        List<Node> nodes = graph.getNodes();
+//        List<Edge> edges = graph.getEdges();
+//        System.out.println("Number of nodes: " + nodes.size() + " - " + edges.size());
+//
+//        for (Node node : nodes) {
+//            if (node != null) {
+//                g.addVertex(node.getId());
+//            }
+//        }
+//
+//        for (Edge edge : edges) {
+//            if (edge != null) {
+//                g.addEdge(edge.getId(), edge.getSource().getId(), edge.getDestination().getId(), EdgeType.DIRECTED);
+//            }
+//        }
+//
+//        Layout<String, String> layout = new KKLayout(g);
+//        layout.setSize(new Dimension(1400, 900)); // sets the initial size of the space
+//        vv = new VisualizationViewer<>(layout);
+//        vv.setPreferredSize(new Dimension(1400, 1000));
+//        Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
+//            @Override
+//            public Paint transform(String id) {
+//                if (initialIds != null && initialIds.contains(id.replace("sp:", "").split(" - ")[0])) {
+//                    return new Color(29, 140, 243);
+//                } else if (finalId != null && id.split("-")[0].contains(finalId)) {
+//                    return new Color(255, 0, 0);
+//                } else {
+//
+//                    Random rand = new Random();
+//                    String cluster = id.split(" - ")[2];
+//                    if (cluster != null) {
+//                        if (clusters.containsKey(cluster)) {
+//                            return clusters.get(cluster);
+//                        } else {
+//                            float r = rand.nextFloat();
+//                            float g = rand.nextFloat();
+//                            float b = rand.nextFloat();
+//                            Color randomColor = new Color(r, g, b);
+//                            clusters.put(cluster, randomColor);
+//                            return randomColor;
+//                        }
+//                    }
+//
+//                }
+//                return new Color(255, 255, 255);
+//            }
+//        };
+//
+//        final PickedState<String> pickedState = vv.getPickedVertexState();
+//        pickedState.addItemListener(new ItemListener() {
+//            @Override
+//            public void itemStateChanged(ItemEvent e) {
+//                Object subject = e.getItem();
+//                if (subject instanceof String) {
+//                    String vertex = (String) subject;
+//
+//                    if (pickedState.isPicked(vertex)) {
+//                        selectedNode.add(vertex);
+//                        if (m != null && showInfo) {
+//                            if (vertex.contains(" / ")) {
+//                                vertex = vertex.split(" / ")[0];
+//                            }
+//                            transFrame = new TransFrame(vertex.replace("sp:", "").split(" - ")[0]);
+//                        } else {
+//                            System.out.println("Vertex " + vertex
+//                                + " is now selected");
+//                        }
+//                    } else {
+//                        selectedNode.remove(vertex);
+//                        if (transFrame != null && showInfo) {
+//                            transFrame.setVisible(false);
+//                            transFrame.dispose();
+//                        } else {
+//                            System.out.println("Vertex " + vertex
+//                                + " no longer selected");
+//                        }
+//                    }
+//                }
+//            }
+//        });
+//
+//        final PickedState<String> pickedEdgeState = vv.getPickedEdgeState();
+//        pickedEdgeState.addItemListener(new ItemListener() {
+//            @Override
+//            public void itemStateChanged(ItemEvent e) {
+//                Object subject = e.getItem();
+//                if (subject instanceof String) {
+//                    String edge = (String) subject;
+//
+//                    if (pickedEdgeState.isPicked(edge)) {
+//                        selectedNode.add(edge);
+//                        if (m != null && showInfo) {
+//                            transFrame = new TransFrame(edge.replace("sp:", "").split(" - ")[0]);
+//                        } else {
+//                            System.out.println("Edge " + edge
+//                                + " is now selected");
+//                        }
+//                    } else {
+//                        selectedNode.remove(edge);
+//                        if (transFrame != null && showInfo) {
+//                            transFrame.setVisible(false);
+//                            transFrame.dispose();
+//                        } else {
+//                            System.out.println("Edge " + edge
+//                                + " no longer selected");
+//                        }
+//                    }
+//                }
+//            }
+//        });
+//
+//        float dash[] = {1.0f};
+//        final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
+//            BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+//        Transformer<String, Stroke> edgeStrokeTransformer
+//            = new Transformer<String, Stroke>() {
+//                @Override
+//                public Stroke transform(String s) {
+//                    return edgeStroke;
+//                }
+//            };
+//
+//        Transformer labelTransformer = new ChainedTransformer<>(new Transformer[]{
+//            new ToStringLabeller<>(),
+//            new Transformer<String, String>() {
+//                @Override
+//                public String transform(String input) {
+//                    String name = input.split(" - ")[0];
+//                    return "<html><b><font color=\"red\">" + name;
+//                }
+//            }});
+//        Transformer labelTransformer2 = new ChainedTransformer<>(new Transformer[]{
+//            new ToStringLabeller<>(),
+//            new Transformer<String, String>() {
+//                @Override
+//                public String transform(String input) {
+//                    String name = input.split(" - ")[0];
+//                    return "<html><b><font color=\"black\">" + name;
+//                }
+//            }});
+//
+//        vv.getRenderContext().setVertexLabelTransformer(labelTransformer2);
+//        vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
+//        vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
+//        vv.getRenderContext().getEdgeLabelRenderer().setRotateEdgeLabels(false);
+//        vv.getRenderContext().setEdgeLabelTransformer(labelTransformer);
+//        vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+//        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+//        gm.setMode(ModalGraphMouse.Mode.PICKING);
+//        vv.setGraphMouse(gm);
+//        vv.addKeyListener(this);
+//
+//        JPanel panel = new JPanel();
+//        final JButton button = new JButton("Show Node Info");
+//        button.addActionListener(new ActionListener() {
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                if (showInfo == false) {
+//                    showInfo = true;
+//                    button.setText("Hide Node Info");
+//                } else {
+//                    showInfo = false;
+//                    button.setText("Show Node Info");
+//                }
+//            }
+//        });
+//        panel.add(button);
+//        panel.setPreferredSize(new Dimension(150, 40));
+//        panel.setBackground(Color.WHITE);
+//        vv.add(panel);
+//        vv.setBackground(Color.WHITE);
+//        return vv;
+//    }
     @Override
     public void keyTyped(KeyEvent e) {
         if (e.getKeyChar() == '\u0008' || e.getKeyChar() == '\u007F') {
