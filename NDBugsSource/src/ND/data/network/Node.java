@@ -26,7 +26,6 @@ import java.awt.geom.Point2D;
  */
 public class Node {
 
-
     private String id;
     private String name;
     private Point2D position;
@@ -36,6 +35,7 @@ public class Node {
         this.id = id;
         this.color = new Color(156, 244, 125);
     }
+
     public Node(String id, String name) {
         this.id = id;
         this.name = name;
@@ -45,11 +45,11 @@ public class Node {
     public String getId() {
         return id;
     }
-    
-    public String getCompleteId(){
+
+    public String getCompleteId() {
         return this.id + " : " + this.getName();
     }
-    
+
     public String getName() {
         return name;
     }
@@ -69,15 +69,21 @@ public class Node {
         this.position = new Point2D.Double(x, y);
     }
 
+    public void setPosition(Point2D position) {
+        if (position != null) {
+            this.position = (Point2D) position.clone();
+        }
+    }
+
     public Point2D getPosition() {
         return this.position;
     }
-    
-    public void setColor(Color color){
+
+    public void setColor(Color color) {
         this.color = color;
     }
 
-    public Color getColor(){
+    public Color getColor() {
         return this.color;
     }
 }

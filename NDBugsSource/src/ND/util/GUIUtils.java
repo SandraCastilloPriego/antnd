@@ -19,6 +19,10 @@ package ND.util;
 
 import ND.data.Dataset;
 import ND.main.NDCore;
+import ND.util.Tables.DataTable;
+import ND.util.Tables.DataTableModel;
+import ND.util.Tables.implement.PushableTable;
+import ND.util.components.FileUtils;
 import ND.util.internalframe.DataInternalFrame;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -491,9 +495,10 @@ public class GUIUtils {
          * @param dataset data set which will be shown
          */
         public static void showNewTable(Dataset dataset, boolean addDataset) {
-                SBMLDocument document = dataset.getDocument();
-
-                DataInternalFrame frame = new DataInternalFrame(dataset.getDatasetName(), new JTree(document), new Dimension(450, 450));
+                DataTableModel model = FileUtils.getTableModel(dataset);
+                DataTable table = new PushableTable(model);
+                table.formatNumbers(dataset.getType());
+                DataInternalFrame frame = new DataInternalFrame(dataset.getDatasetName(), table.getTable(), new Dimension(450, 450));
                 NDCore.getDesktop().addInternalFrame(frame);
                 if (addDataset) {
                         NDCore.getDesktop().AddNewFile(dataset);

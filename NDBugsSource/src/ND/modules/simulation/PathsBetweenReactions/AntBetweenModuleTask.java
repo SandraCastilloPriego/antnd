@@ -81,10 +81,9 @@ public class AntBetweenModuleTask extends AbstractTask {
 
         this.reactions = new HashMap<>();
         this.compounds = new HashMap<>();
-        
+
         this.sourcesList = new ArrayList<>();
         this.cofactors = new ArrayList<>();
-        
 
         this.frame = new JInternalFrame("Result", true, true, true, true);
         this.pn = new JPanel();
@@ -366,6 +365,7 @@ public class AntBetweenModuleTask extends AbstractTask {
 
                 if (r.getub() > 0) {
                     List<String> reactants = r.getReactants();
+                    boolean all = true;
                     for (String reactant : reactants) {
 
                         if (!allEnoughAnts(reactant, reaction)) {
@@ -373,8 +373,13 @@ public class AntBetweenModuleTask extends AbstractTask {
                             break;
                         }
 
+                        if (!cofactors.contains(reactant)) {
+                            all = false;
+                        }
                     }
-
+                    if (all) {
+                        isPossible = false;
+                    }
                 } else {
                     isPossible = false;
                 }
@@ -382,12 +387,19 @@ public class AntBetweenModuleTask extends AbstractTask {
             } else {
                 if (r.getlb() < 0) {
                     List<String> products = r.getProducts();
+                    boolean all = true;
                     for (String product : products) {
                         if (!allEnoughAnts(product, reaction)) {
                             isPossible = false;
                             break;
                         }
 
+                        if (!cofactors.contains(product)) {
+                            all = false;
+                        }
+                    }
+                    if (all) {
+                        isPossible = false;
                     }
                 } else {
                     isPossible = false;
@@ -409,62 +421,12 @@ public class AntBetweenModuleTask extends AbstractTask {
         if (ant != null) {
             return !ant.contains(reaction);
         } else if (cofactors.contains(species)) {
-            //this.objectives.add(species);
+            //this.objectives.add(species);           
             return true;
         }
         return false;
     }
 
-//    private Graph createGraph(List<String> path) {
-//        Model model = this.networkDS.getDocument().getModel();
-//        Graph g = new Graph(null, null);
-//        for (String p : path) {
-//            System.out.println(p);
-//            String r = p.split(" - ")[0];
-//            ReactionFA reaction = reactions.get(r);
-//            if (reaction != null) {
-//                Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFlux()));
-//                if (g.IsInNodes(reaction.getId())) {
-//                    continue;
-//                }
-//                g.addNode2(reactionNode);
-//                for (String reactant : reaction.getReactants()) {
-//                    Node reactantNode = g.getNode(reactant);
-//                    if (reactantNode == null) {
-//                        reactantNode = new Node(reactant, model.getSpecies(reactant).getName());
-//                    }
-//                    g.addNode2(reactantNode);
-//                    Edge e = null;
-//                    if (reaction.isBidirecctional()) {
-//                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode, true);
-//                    } else if (reaction.getlb() < 0) {
-//                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
-//                    } else if (reaction.getub() > 0) {
-//                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
-//                    }
-//                    g.addEdge(e);
-//                }
-//                for (String product : reaction.getProducts()) {
-//                    Node reactantNode = g.getNode(product);
-//                    if (reactantNode == null) {
-//                        reactantNode = new Node(product, model.getSpecies(product).getName());
-//                    }
-//                    g.addNode2(reactantNode);
-//                    Edge e = null;
-//                    if (reaction.isBidirecctional()) {
-//                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode, true);
-//                    } else if (reaction.getlb() < 0) {
-//                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
-//                    } else if (reaction.getub() > 0) {
-//                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
-//                    }
-//                    g.addEdge(e);
-//                }
-//            }
-//        }
-//        return g;
-//    }
-    
     private Graph createGraph(Map<String, Boolean> path) {
         Graph g = new Graph(null, null);
         for (String r : path.keySet()) {

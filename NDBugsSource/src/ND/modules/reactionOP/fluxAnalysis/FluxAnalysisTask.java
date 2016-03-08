@@ -194,6 +194,11 @@ public class FluxAnalysisTask extends AbstractTask {
 
             ReactionFA reaction = new ReactionFA(r.getId());
             reaction.setFlux(fluxes.get(r.getId()));
+            LocalParameter parameter = r.getKineticLaw().getLocalParameter("FLUX_VALUE");
+            if (parameter == null) {
+                parameter = r.getKineticLaw().createLocalParameter("FLUX_VALUE");
+            }
+            parameter.setValue(fluxes.get(r.getId()));
 
             try {
                 KineticLaw law = r.getKineticLaw();
@@ -259,10 +264,14 @@ public class FluxAnalysisTask extends AbstractTask {
 
     private Graph createGraph() {
         Graph g = new Graph(null, null);
+        Graph previousG = this.networkDS.getGraph();
         for (String r : reactions.keySet()) {
             ReactionFA reaction = reactions.get(r);
             if (reaction != null) {
                 Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFinalFlux()));
+                if (previousG != null) {
+                    reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());
+                }
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
                     SpeciesFA sp = compounds.get(reactant);
@@ -271,6 +280,9 @@ public class FluxAnalysisTask extends AbstractTask {
                         reactantNode = new Node(reactant, sp.getName());
                     }
                     g.addNode2(reactantNode);
+                    if (previousG != null) {
+                        reactantNode.setPosition(previousG.getNode(reactant).getPosition());
+                    }
                     Edge e;
                     e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
 
@@ -283,6 +295,9 @@ public class FluxAnalysisTask extends AbstractTask {
                         reactantNode = new Node(product, sp.getName());
                     }
                     g.addNode2(reactantNode);
+                    if (previousG != null) {
+                        reactantNode.setPosition(previousG.getNode(product).getPosition());
+                    }
                     Edge e;
                     e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
 
@@ -291,109 +306,6 @@ public class FluxAnalysisTask extends AbstractTask {
             }
         }
         return g;
-    }
-
-    private Graph createGraph(Map<String, Double> solution, Model newModel) {
-        List<Node> nodes = new ArrayList<>();
-        List<Edge> edges = new ArrayList<>();
-        for (Reaction r : newModel.getListOfReactions()) {
-            Node n = new Node(r.getId() + " - " + solution.get(r.getId()));
-            if (this.color.containsKey(r.getId())) {
-                n.setColor(this.color.get(r.getId()));
-            }
-            nodes.add(n);
-        }
-        for (Reaction r : newModel.getListOfReactions()) {
-            Node n = getNode(nodes, r.getId());
-            List<SpeciesReference> reactants;
-            List<SpeciesReference> products;
-            if (solution.get(r.getId()) > 0) {
-                reactants = r.getListOfReactants();
-                products = r.getListOfProducts();
-            } else {
-                products = r.getListOfReactants();
-                reactants = r.getListOfProducts();
-            }
-
-            for (SpeciesReference sp : reactants) {
-                String specie = sp.getSpeciesInstance().getId();
-                if (this.exchange.containsKey(specie)) {
-                    Node exchangeNode = getNode(nodes, specie);
-                    if (exchangeNode == null) {
-                        exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
-                        if (this.color.containsKey(specie)) {
-                            exchangeNode.setColor(this.color.get(specie));
-                        }
-                    }
-                    nodes.add(exchangeNode);
-                    Edge edge = new Edge(specie + " - " + uniqueId.nextId(), exchangeNode, n);
-                    if (!edgeExist(edge, edges)) {
-                        edges.add(edge);
-                    }
-                } else {
-                    List<String> reactions = getReactionFromProducts(sp, newModel, solution);
-                    for (String reaction : reactions) {
-                        if (reaction.equals(r.getId())) {
-                            continue;
-                        }
-                        Node newNode = getNode(nodes, reaction);
-                        if (this.color.containsKey(specie)) {
-                            newNode.setColor(this.color.get(specie));
-                        }
-                        Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), newNode, n);
-                        if (!edgeExist(edge, edges)) {
-                            edges.add(edge);
-                        }
-                    }
-                }
-            }
-
-            for (SpeciesReference sp : products) {
-                String specie = sp.getSpeciesInstance().getId();
-                if (this.exchange.containsKey(specie)) {
-                    Node exchangeNode = getNode(nodes, specie);
-                    if (exchangeNode == null) {
-                        exchangeNode = new Node(specie + " - " + this.exchange.get(specie)[0]);
-                        if (this.color.containsKey(specie)) {
-                            exchangeNode.setColor(this.color.get(specie));
-                        }
-                    }
-                    nodes.add(exchangeNode);
-                    Edge edge = new Edge(specie + " - " + uniqueId.nextId(), n, exchangeNode);
-                    if (!edgeExist(edge, edges)) {
-                        edges.add(edge);
-                    }
-                } else {
-                    List<String> reactions = getReactionFromReactants(sp, newModel, solution);
-                    for (String reaction : reactions) {
-                        if (reaction.equals(r.getId())) {
-                            continue;
-                        }
-                        Node newNode = getNode(nodes, reaction);
-                        if (this.color.containsKey(specie)) {
-                            newNode.setColor(this.color.get(specie));
-                        }
-                        Edge edge = new Edge(sp.getSpeciesInstance().getId() + " - " + uniqueId.nextId(), n, newNode);
-                        if (!edgeExist(edge, edges)) {
-                            edges.add(edge);
-                        }
-                    }
-                }
-
-            }
-
-        }
-
-        return new Graph(nodes, edges);
-    }
-
-    private Node getNode(List<Node> nodes, String s) {
-        for (Node n : nodes) {
-            if (n.getId().contains(s)) {
-                return n;
-            }
-        }
-        return null;
     }
 
     private boolean isInReactions(ListOf<Reaction> listOfReactions, Species sp) {
@@ -405,67 +317,4 @@ public class FluxAnalysisTask extends AbstractTask {
         return false;
     }
 
-    private boolean edgeExist(Edge edge, List<Edge> edges) {
-        for (Edge e : edges) {
-            try {
-                if (e.getSource().getId().contains(edge.getSource().getId())
-                    && e.getDestination().getId().contains(edge.getDestination().getId())) {
-                    return true;
-                }
-            } catch (NullPointerException ex) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    private List<String> getReactionFromProducts(SpeciesReference sp, Model model, Map<String, Double> solution) {
-        List<String> reactions = new ArrayList<>();
-        for (Reaction r : model.getListOfReactions()) {
-            try {
-                List<SpeciesReference> products;
-                if (solution.get(r.getId()) > 0) {
-                    products = r.getListOfProducts();
-                } else {
-                    products = r.getListOfReactants();
-                }
-                if (compoundExists(products, sp)) {
-                    reactions.add(r.getId());
-                }
-            } catch (Exception e) {
-                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
-            }
-        }
-        return reactions;
-    }
-
-    private List<String> getReactionFromReactants(SpeciesReference sp, Model model, Map<String, Double> solution) {
-        List<String> reactions = new ArrayList<>();
-        for (Reaction r : model.getListOfReactions()) {
-            try {
-                List<SpeciesReference> reactants;
-                if (solution.get(r.getId()) > 0) {
-                    reactants = r.getListOfReactants();
-                } else {
-                    reactants = r.getListOfProducts();
-                }
-
-                if (compoundExists(reactants, sp)) {
-                    reactions.add(r.getId());
-                }
-            } catch (Exception e) {
-                System.out.println(e.toString() + " , " + sp.getSpeciesInstance().getName());
-            }
-        }
-        return reactions;
-    }
-
-    private boolean compoundExists(List<SpeciesReference> reactants, SpeciesReference sp) {
-        for (SpeciesReference reactant : reactants) {
-            if (reactant.getSpeciesInstance().getId().contains(sp.getSpeciesInstance().getId())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

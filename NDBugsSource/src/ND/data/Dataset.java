@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JTextArea;
+import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 
 /**
@@ -164,4 +165,8 @@ public interface Dataset {
         public void setCofactors(List<String> cofactor);
         
         public List<String> getCofactors();
+
+        public boolean isSelected(Reaction reaction);
+        
+        public void setSelectionMode(String reaction);
 }

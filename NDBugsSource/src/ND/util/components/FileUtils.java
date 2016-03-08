@@ -19,6 +19,8 @@ package ND.util.components;
 
 import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.data.models.DatasetDataModel;
+import ND.util.Tables.DataTableModel;
 
 /**
  *
@@ -36,6 +38,11 @@ public class FileUtils {
         }
         newDataset.setType(dataset.getType());
         return newDataset;
+    }
+    
+    public static DataTableModel getTableModel(Dataset dataset) {            
+        return new DatasetDataModel(dataset);
+       
     }
    
 }

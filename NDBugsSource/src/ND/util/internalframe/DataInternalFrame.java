@@ -20,7 +20,7 @@ package ND.util.internalframe;
 import java.awt.Dimension;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
+import javax.swing.JTable;
 
 /**
  * Internal frame which will contain a table with the data set.
@@ -29,25 +29,26 @@ import javax.swing.JTree;
  */
 public class DataInternalFrame extends JInternalFrame {
 
-        JTree table;
+        JTable table;
 
-        public DataInternalFrame(String name, JTree tree, Dimension size) {
+        public DataInternalFrame(String name, JTable table, Dimension size) {
                 super(name, true, true, true, true);
-                this.table = tree;
+                this.table = table;
                 setSize(size);
-                setTree(tree);
+                setTable(table);
         }
 
-        public JTree getTable() {
+        public JTable getTable() {
                 return table;
         }
 
-        private void setTree(JTree table) {
+       public void setTable(JTable table) {
                 try {
                         JScrollPane scrollPanel = new JScrollPane(table);
                         scrollPanel.setPreferredSize(new Dimension(this.getWidth() - 330, this.getHeight() - 90));
                         this.add(scrollPanel);
                 } catch (Exception e) {
+                        e.printStackTrace();
                 }
         }
 }

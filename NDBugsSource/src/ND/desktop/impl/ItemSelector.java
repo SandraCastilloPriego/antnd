@@ -85,7 +85,7 @@ public class ItemSelector extends JPanel implements ActionListener,
                 add(rawDataPanel, BorderLayout.CENTER);
 
                 dataFilePopupMenu = new JPopupMenu();
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Show Tree Model", this, "SHOW_DATASET");
+                GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
                 GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
