@@ -46,9 +46,9 @@ public class LPTask extends AbstractTask {
     private final SimpleBasicDataset networkDS;
     private double finishedPercentage = 0.0f;
     private final String objectiveSpecie;
-    
+
     private final GetInfoAndTools tools;
-    private Double objective; 
+    private Double objective;
 
     private HashMap<String, ReactionFA> reactions;
 
@@ -81,8 +81,8 @@ public class LPTask extends AbstractTask {
         Graph g = optimize();
         if (g != null) {
             this.tools.createDataFile(g, networkDS, this.objectiveSpecie, this.networkDS.getSources(), false);
-            String info = "Objective value of " + this.objectiveSpecie + ": "+ this.objective;
-            this.networkDS.addInfo(info);           
+            String info = "Objective value of " + this.objectiveSpecie + ": " + this.objective;
+            this.networkDS.addInfo(info);
         }
         finishedPercentage = 1f;
         setStatus(TaskStatus.FINISHED);
@@ -91,7 +91,7 @@ public class LPTask extends AbstractTask {
     private Graph optimize() {
         createReactions();
         objective = this.getFlux(objectiveSpecie);
-       
+
         if (objective > 0.0) {
             Graph g = createGraph();
             return g;
@@ -103,10 +103,14 @@ public class LPTask extends AbstractTask {
     private Graph createGraph() {
         Model m = this.networkDS.getDocument().getModel();
         Graph g = new Graph(null, null);
+        Graph previousG = this.networkDS.getGraph();
         for (String r : reactions.keySet()) {
             ReactionFA reaction = reactions.get(r);
             if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000001) {
-                Node reactionNode = new Node(reaction.getId(), String.format("%.3g%n",reaction.getFlux()));
+                Node reactionNode = new Node(reaction.getId(), String.format("%.3g%n", reaction.getFlux()));
+                if (previousG != null) {
+                    reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());
+                }
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
                     String name = m.getSpecies(reactant).getName();
@@ -115,6 +119,9 @@ public class LPTask extends AbstractTask {
                         reactantNode = new Node(reactant, name);
                     }
                     g.addNode2(reactantNode);
+                    if (previousG != null) {
+                        reactantNode.setPosition(previousG.getNode(reactant).getPosition());
+                    }
                     Edge e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
 
                     g.addEdge(e);
@@ -124,6 +131,9 @@ public class LPTask extends AbstractTask {
                     Node reactantNode = g.getNode(product);
                     if (reactantNode == null) {
                         reactantNode = new Node(product, name);
+                    }
+                    if (previousG != null) {
+                        reactantNode.setPosition(previousG.getNode(product).getPosition());
                     }
                     g.addNode2(reactantNode);
                     Edge e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
@@ -141,7 +151,7 @@ public class LPTask extends AbstractTask {
         objectiveReaction.addReactant(objective, 1.0);
         objectiveReaction.setBounds(0, 1000);
         this.reactions.put("objective", objectiveReaction);
-        fba.setModel("objective", this.reactions,this.networkDS.getDocument().getModel());
+        fba.setModel("objective", this.reactions, this.networkDS.getDocument().getModel());
         try {
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {

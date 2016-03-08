@@ -429,16 +429,24 @@ public class AntBetweenModuleTask extends AbstractTask {
 
     private Graph createGraph(Map<String, Boolean> path) {
         Graph g = new Graph(null, null);
+        Graph previousG = this.networkDS.getGraph();
+
         for (String r : path.keySet()) {
             ReactionFA reaction = reactions.get(r);
             if (reaction != null) {
                 Node reactionNode = new Node(reaction.getId(), String.valueOf(reaction.getFlux()));
+                if (previousG != null) {
+                    reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());
+                }
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
                     ND.modules.simulation.FBA.SpeciesFA sp = compounds.get(reactant);
                     Node reactantNode = g.getNode(reactant);
                     if (reactantNode == null) {
                         reactantNode = new Node(reactant, sp.getName());
+                    }
+                    if (previousG != null) {
+                        reactantNode.setPosition(previousG.getNode(reactant).getPosition());
                     }
                     g.addNode2(reactantNode);
                     Edge e;
@@ -454,6 +462,9 @@ public class AntBetweenModuleTask extends AbstractTask {
                     Node reactantNode = g.getNode(product);
                     if (reactantNode == null) {
                         reactantNode = new Node(product, sp.getName());
+                    }
+                    if (previousG != null) {
+                        reactantNode.setPosition(previousG.getNode(product).getPosition());
                     }
                     g.addNode2(reactantNode);
                     Edge e;

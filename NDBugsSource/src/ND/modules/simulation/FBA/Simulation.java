@@ -53,7 +53,7 @@ public class Simulation {
         this.cofactors = cofactors;
         this.bounds = bounds;
         this.sources = new HashMap<>();
-       
+
         this.sourcesList = sourcesList;
 
         this.reactions = new HashMap<>();
@@ -126,7 +126,7 @@ public class Simulation {
                     System.out.println(sp.getId());
                 }
             }
-           
+
             if (r.getListOfProducts().isEmpty()) {
                 for (SpeciesReference s : r.getListOfReactants()) {
                     Species sp = s.getSpeciesInstance();
@@ -253,13 +253,20 @@ public class Simulation {
 
                 if (r.getub() > 0) {
                     List<String> reactants = r.getReactants();
+                    boolean all = true;
                     for (String reactant : reactants) {
 
                         if (!allEnoughAnts(reactant, reaction)) {
                             isPossible = false;
                             break;
                         }
+                        if (!cofactors.contains(reactant)) {
+                            all = false;
+                        }
 
+                    }
+                    if (all) {
+                        isPossible = false;
                     }
 
                 } else {
@@ -269,12 +276,19 @@ public class Simulation {
             } else {
                 if (r.getlb() < 0) {
                     List<String> products = r.getProducts();
+                    boolean all = true;
                     for (String product : products) {
                         if (!allEnoughAnts(product, reaction)) {
                             isPossible = false;
                             break;
                         }
+                        if (!cofactors.contains(product)) {
+                            all = false;
+                        }
 
+                    }
+                    if (all) {
+                        isPossible = false;
                     }
                 } else {
                     isPossible = false;
