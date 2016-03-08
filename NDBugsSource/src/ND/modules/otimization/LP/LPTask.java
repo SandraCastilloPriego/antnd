@@ -108,7 +108,7 @@ public class LPTask extends AbstractTask {
             ReactionFA reaction = reactions.get(r);
             if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000001) {
                 Node reactionNode = new Node(reaction.getId(), String.format("%.3g%n", reaction.getFlux()));
-                if (previousG != null) {
+                if (previousG != null && previousG.getNode(reaction.getId()) !=null ) {
                     reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());
                 }
                 g.addNode2(reactionNode);
@@ -119,7 +119,7 @@ public class LPTask extends AbstractTask {
                         reactantNode = new Node(reactant, name);
                     }
                     g.addNode2(reactantNode);
-                    if (previousG != null) {
+                    if (previousG != null&& previousG.getNode(reactant) !=null) {
                         reactantNode.setPosition(previousG.getNode(reactant).getPosition());
                     }
                     Edge e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
@@ -132,7 +132,7 @@ public class LPTask extends AbstractTask {
                     if (reactantNode == null) {
                         reactantNode = new Node(product, name);
                     }
-                    if (previousG != null) {
+                    if (previousG != null&& previousG.getNode(product) !=null) {
                         reactantNode.setPosition(previousG.getNode(product).getPosition());
                     }
                     g.addNode2(reactantNode);
