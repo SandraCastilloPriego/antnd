@@ -48,318 +48,316 @@ import org.sbml.jsbml.SBMLWriter;
  * @author Taken from MZmine2 http://mzmine.sourceforge.net/
  */
 public class ItemSelector extends JPanel implements ActionListener,
-        MouseListener, ListSelectionListener {
+    MouseListener, ListSelectionListener {
 
-        public static final String DATA_FILES_LABEL = "SBML Files";
-        private final DragOrderedJList DatasetFiles;
-        private final List<Dataset> DatasetFilesModel = new ArrayList<>();
-        private final DefaultListModel DatasetNamesModel = new DefaultListModel();
-        private final JPopupMenu dataFilePopupMenu;
-        private int copies = 0;
+    public static final String DATA_FILES_LABEL = "SBML Files";
+    private final DragOrderedJList DatasetFiles;
+    private final List<Dataset> DatasetFilesModel = new ArrayList<>();
+    private final DefaultListModel DatasetNamesModel = new DefaultListModel();
+    private final JPopupMenu dataFilePopupMenu;
+    private int copies = 0;
 
-        /**
-         * Constructor
-         *
-         * @param desktop
-         */
-        public ItemSelector(Desktop desktop) {
+    /**
+     * Constructor
+     *
+     * @param desktop
+     */
+    public ItemSelector(Desktop desktop) {
 
-                // Create panel for raw data objects
-                JPanel rawDataPanel = new JPanel();
-                rawDataPanel.setBackground(new Color(119, 186, 155));
-                JLabel rawDataTitle = new JLabel(DATA_FILES_LABEL);
+        // Create panel for raw data objects
+        JPanel rawDataPanel = new JPanel();
+        rawDataPanel.setBackground(new Color(119, 186, 155));
+        JLabel rawDataTitle = new JLabel(DATA_FILES_LABEL);
 
-                DatasetFiles = new DragOrderedJList(DatasetNamesModel);
-                DatasetFiles.setCellRenderer(new ItemSelectorListRenderer());
-                DatasetFiles.addMouseListener(this);
-                DatasetFiles.addListSelectionListener(this);
-                JScrollPane rawDataScroll = new JScrollPane(DatasetFiles);
-                rawDataPanel.setLayout(new BorderLayout());
-                rawDataPanel.add(rawDataTitle, BorderLayout.NORTH);
-                rawDataPanel.add(rawDataScroll, BorderLayout.CENTER);
-                rawDataPanel.setMinimumSize(new Dimension(150, 10));
+        DatasetFiles = new DragOrderedJList(DatasetNamesModel);
+        DatasetFiles.setCellRenderer(new ItemSelectorListRenderer());
+        DatasetFiles.addMouseListener(this);
+        DatasetFiles.addListSelectionListener(this);
+        JScrollPane rawDataScroll = new JScrollPane(DatasetFiles);
+        rawDataPanel.setLayout(new BorderLayout());
+        rawDataPanel.add(rawDataTitle, BorderLayout.NORTH);
+        rawDataPanel.add(rawDataScroll, BorderLayout.CENTER);
+        rawDataPanel.setMinimumSize(new Dimension(150, 10));
 
-                // Add panels to a split and put split on the main panel
-                setPreferredSize(new Dimension(200, 10));
-                setLayout(new BorderLayout());
-                add(rawDataPanel, BorderLayout.CENTER);
+        // Add panels to a split and put split on the main panel
+        setPreferredSize(new Dimension(200, 10));
+        setLayout(new BorderLayout());
+        add(rawDataPanel, BorderLayout.CENTER);
 
-                dataFilePopupMenu = new JPopupMenu();
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
-                GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
+        dataFilePopupMenu = new JPopupMenu();
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
 
+    }
+
+    void addSelectionListener(ListSelectionListener listener) {
+        DatasetFiles.addListSelectionListener(listener);
+    }
+
+    // Implementation of action listener interface
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Runtime.getRuntime().freeMemory();
+        String command = e.getActionCommand();
+        if (command.equals("REMOVE_FILE")) {
+            removeData();
         }
 
-        void addSelectionListener(ListSelectionListener listener) {
-                DatasetFiles.addListSelectionListener(listener);
+        if (command.equals("SHOW_DATASET")) {
+            showData();
         }
 
-        // Implementation of action listener interface
-        @Override
-        public void actionPerformed(ActionEvent e) {
-                Runtime.getRuntime().freeMemory();
-                String command = e.getActionCommand();
-                if (command.equals("REMOVE_FILE")) {
-                        removeData();
-                }
-
-                if (command.equals("SHOW_DATASET")) {
-                        showData();
-                }
-
-                if (command.equals("SAVE_DATASET")) {
-                        saveData();
-                }
-                if (command.equals("SHOW_INFO")) {
-                        writeInfo();
-                }
-                if (command.equals("VISUALIZE")) {
-                        visualize();
-                }
-                if (command.equals("COMBINE")) {
-                        combine();
-                }
-
+        if (command.equals("SAVE_DATASET")) {
+            saveData();
+        }
+        if (command.equals("SHOW_INFO")) {
+            writeInfo();
+        }
+        if (command.equals("VISUALIZE")) {
+            visualize();
+        }
+        if (command.equals("COMBINE")) {
+            combine();
         }
 
-        private void showData() {
-                Dataset[] selectedFiles = getSelectedDatasets();
-                for (Dataset file : selectedFiles) {
-                        if (file != null) {
-                                GUIUtils.showNewTable(file, false);
-                        }
+    }
+
+    private void showData() {
+        Dataset[] selectedFiles = getSelectedDatasets();
+        for (Dataset file : selectedFiles) {
+            if (file != null) {
+                GUIUtils.showNewTable(file, false);
+            }
+        }
+    }
+
+    private void removeData() {
+        Dataset[] selectedFiles = getSelectedDatasets();
+
+        for (Dataset file : selectedFiles) {
+            if (file != null) {
+                DatasetFilesModel.remove(file);
+                DatasetNamesModel.removeElement(file.getDatasetName());
+            }
+        }
+    }
+
+    public void removeData(Dataset file) {
+        if (file != null) {
+            DatasetFilesModel.remove(file);
+            DatasetNamesModel.removeElement(file.getDatasetName());
+        }
+
+    }
+
+    /**
+     * Returns selected raw data objects in an array
+     */
+    public Dataset[] getSelectedDatasets() {
+
+        Object o[] = DatasetFiles.getSelectedValues();
+
+        Dataset res[] = new Dataset[o.length];
+
+        for (int i = 0; i < o.length; i++) {
+            for (Dataset dataset : DatasetFilesModel) {
+                if (dataset.getDatasetName().compareTo((String) o[i]) == 0) {
+                    res[i] = dataset;
                 }
+            }
         }
 
-        private void removeData() {
-                Dataset[] selectedFiles = getSelectedDatasets();
+        return res;
 
-                for (Dataset file : selectedFiles) {
-                        if (file != null) {
-                                DatasetFilesModel.remove(file);
-                                DatasetNamesModel.removeElement(file.getDatasetName());
-                        }
-                }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+        if ((e.getClickCount() == 2) && (e.getButton() == MouseEvent.BUTTON1)) {
+            showData();
         }
 
-        public void removeData(Dataset file) {
-                if (file != null) {
-                        DatasetFilesModel.remove(file);
-                        DatasetNamesModel.removeElement(file.getDatasetName());
-                }
+    }
 
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // ignore
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // ignore
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+        if (e.isPopupTrigger()) {
+            if (e.getSource() == DatasetFiles) {
+                dataFilePopupMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
         }
 
-        /**
-         * Returns selected raw data objects in an array
-         */
-        public Dataset[] getSelectedDatasets() {
+    }
 
-                Object o[] = DatasetFiles.getSelectedValues();
-
-                Dataset res[] = new Dataset[o.length];
-
-                for (int i = 0; i < o.length; i++) {
-                        for (Dataset dataset : DatasetFilesModel) {
-                                if (dataset.getDatasetName().compareTo((String) o[i]) == 0) {
-                                        res[i] = dataset;
-                                }
-                        }
-                }
-
-                return res;
-
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            if (e.getSource() == DatasetFiles) {
+                dataFilePopupMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
         }
+    }
 
-        @Override
-        public void mouseClicked(MouseEvent e) {
+    @Override
+    public void valueChanged(ListSelectionEvent event) {
 
-                if ((e.getClickCount() == 2) && (e.getButton() == MouseEvent.BUTTON1)) {
-                        showData();
-                }
-
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-                // ignore
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-                // ignore
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-
-                if (e.isPopupTrigger()) {
-                        if (e.getSource() == DatasetFiles) {
-                                dataFilePopupMenu.show(e.getComponent(), e.getX(), e.getY());
-                        }
-                }
-
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                        if (e.getSource() == DatasetFiles) {
-                                dataFilePopupMenu.show(e.getComponent(), e.getX(), e.getY());
-                        }
-                }
-        }
-
-        @Override
-        public void valueChanged(ListSelectionEvent event) {
-
-                Object src = event.getSource();
+        Object src = event.getSource();
 
                 // Update the highlighting of peak list list in case raw data list
-                // selection has changed and vice versa.
-                if (src == DatasetFiles) {
-                        DatasetFiles.revalidate();
-                }
-
+        // selection has changed and vice versa.
+        if (src == DatasetFiles) {
+            DatasetFiles.revalidate();
         }
 
-        public void addNewFile(Dataset dataset) {
-                for (int i = 0; i < DatasetNamesModel.getSize(); i++) {
-                        if (dataset.getDatasetName().matches(DatasetNamesModel.getElementAt(i).toString())) {
-                                String name = dataset.getDatasetName();
-                                name = name.split("\\.")[0];
-                                dataset.setDatasetName(name + "_" + ++copies + ".sbml");
-                        }
-                }
-                this.DatasetFilesModel.add(dataset);
-                DatasetNamesModel.addElement(dataset.getDatasetName());
-                this.DatasetFiles.revalidate();
+    }
 
+    public void addNewFile(Dataset dataset) {
+        for (int i = 0; i < DatasetNamesModel.getSize(); i++) {
+            if (dataset.getDatasetName().matches(DatasetNamesModel.getElementAt(i).toString())) {
+                String name = dataset.getDatasetName();
+                name = name.split("\\.")[0];
+                dataset.setDatasetName(name + "_" + ++copies + ".sbml");
+            }
         }
+        this.DatasetFilesModel.add(dataset);
+        DatasetNamesModel.addElement(dataset.getDatasetName());
+        this.DatasetFiles.revalidate();
 
-        private void saveData() {
-                Dataset[] selectedFiles = getSelectedDatasets();
+    }
 
-                for (final Dataset file : selectedFiles) {
-                        if (file != null) {
+    private void saveData() {
+        Dataset[] selectedFiles = getSelectedDatasets();
 
-                                System.out.println(file.getPath());
-                                final JInternalFrame frame = new JInternalFrame("Result", true, true, true, true);
-                                JPanel pn = new JPanel();
-                                JLabel label = new JLabel("File path: ");
-                                final JTextField field = new JTextField(file.getPath());
-                                JButton accept = new JButton("Accept");
-                                JButton cancel = new JButton("Cancel");
-                                pn.add(label);
-                                pn.add(field);
-                                pn.add(accept);
-                                pn.add(cancel);
-                                accept.addActionListener(new ActionListener() {
-                                        @Override
-                                        public void actionPerformed(ActionEvent e) {
-                                                SBMLWriter writer = new SBMLWriter("AntND", "1.0");
-                                                try {
-                                                        writer.write(file.getDocument(), field.getText());
-                                                } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
-                                                        Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);
-                                                }
-                                                frame.doDefaultCloseAction();
-                                        }
-                                });
+        for (final Dataset file : selectedFiles) {
+            if (file != null) {
 
-                                cancel.addActionListener(new ActionListener() {
-                                        @Override
-                                        public void actionPerformed(ActionEvent e) {
-                                                frame.doDefaultCloseAction();
-                                        }
-                                });
-                                frame.add(pn);
-                                frame.setSize(new Dimension(600, 100));
-                                NDCore.getDesktop().addInternalFrame(frame);
-                        }
-                }
-
-        }
-
-        private void visualize() {
-                Dataset[] selectedFiles = getSelectedDatasets();
-
-                for (Dataset file : selectedFiles) {
-                        JInternalFrame frame = new JInternalFrame(file.getDatasetName(), true, true, true, true);
-                        JPanel pn = new JPanel();
-                        JScrollPane panel = new JScrollPane(pn);
-
-                        frame.setSize(new Dimension(700, 500));
-                        frame.add(panel);
-                        NDCore.getDesktop().addInternalFrame(frame);
-
-                        PrintPaths print = new PrintPaths(file.getDocument().getModel());
+                System.out.println(file.getPath());
+                final JInternalFrame frame = new JInternalFrame("Result", true, true, true, true);
+                JPanel pn = new JPanel();
+                JLabel label = new JLabel("File path: ");
+                final JTextField field = new JTextField(file.getPath());
+                JButton accept = new JButton("Accept");
+                JButton cancel = new JButton("Cancel");
+                pn.add(label);
+                pn.add(field);
+                pn.add(accept);
+                pn.add(cancel);
+                accept.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        SBMLWriter writer = new SBMLWriter("AntND", "1.0");
                         try {
-                                if (file.isCluster()) {
-                                       // pn.add(print.printClusteredPathwayInFrame(file.getGraph()));
-                                } else {
-                                        System.out.println("Visualize");
-                                        pn.add(print.printPathwayInFrame(file.getGraph()));
-                                }
-                        } catch (NullPointerException ex) {
-                                System.out.println(ex.toString());
+                            writer.write(file.getDocument(), field.getText());
+                        } catch (XMLStreamException | FileNotFoundException | SBMLException ex) {
+                            Logger.getLogger(ItemSelector.class.getName()).log(Level.SEVERE, null, ex);
                         }
+                        frame.doDefaultCloseAction();
+                    }
+                });
+
+                cancel.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        frame.doDefaultCloseAction();
+                    }
+                });
+                frame.add(pn);
+                frame.setSize(new Dimension(600, 100));
+                NDCore.getDesktop().addInternalFrame(frame);
+            }
+        }
+
+    }
+
+    private void visualize() {
+        Dataset[] selectedFiles = getSelectedDatasets();
+
+        for (Dataset file : selectedFiles) {
+            JInternalFrame frame = new JInternalFrame(file.getDatasetName(), true, true, true, true);
+            JPanel pn = new JPanel();
+            JScrollPane panel = new JScrollPane(pn);
+
+            frame.setSize(new Dimension(700, 500));
+            frame.add(panel);
+            NDCore.getDesktop().addInternalFrame(frame);
+
+            PrintPaths print = new PrintPaths(file.getDocument().getModel());
+            try {
+
+                System.out.println("Visualize");
+                pn.add(print.printPathwayInFrame(file.getGraph()));
+
+            } catch (NullPointerException ex) {
+                System.out.println(ex.toString());
+            }
+        }
+    }
+
+    private void combine() {
+        CombineModelsModule combine = new CombineModelsModule();
+        combine.runModule(null);
+    }
+
+    public Dataset[] getAllDatasets() {
+        return DatasetFilesModel.toArray(new Dataset[0]);
+    }
+
+    private void writeInfo() {
+        final Dataset[] selectedFile = getSelectedDatasets();
+        if (selectedFile != null) {
+            final JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);
+            JPanel pn = new JPanel();
+            final JTextArea area = selectedFile[0].getInfo();
+
+            JButton accept = new JButton("Accept");
+            JButton cancel = new JButton("Cancel");
+            JPanel buttonPanel = new JPanel();
+
+            buttonPanel.add(accept);
+            buttonPanel.add(cancel);
+            buttonPanel.setBackground(Color.white);
+            buttonPanel.setPreferredSize(new Dimension(700, 50));
+
+            JScrollPane panel = new JScrollPane(area);
+            panel.setPreferredSize(new Dimension(650, 400));
+            pn.add(panel, BorderLayout.NORTH);
+            pn.add(buttonPanel, BorderLayout.SOUTH);
+            pn.setBackground(Color.white);
+            frame.setSize(new Dimension(700, 500));
+            frame.add(pn);
+            NDCore.getDesktop().addInternalFrame(frame);
+
+            accept.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    selectedFile[0].setInfo(area.getText());
+                    frame.doDefaultCloseAction();
                 }
-        }
+            });
 
-        private void combine() {
-                CombineModelsModule combine = new CombineModelsModule();
-                combine.runModule(null);
-        }
-
-        public Dataset[] getAllDatasets() {
-                return DatasetFilesModel.toArray(new Dataset[0]);
-        }
-
-        private void writeInfo() {
-                final Dataset[] selectedFile = getSelectedDatasets();
-                if (selectedFile != null) {
-                        final JInternalFrame frame = new JInternalFrame("Changes", true, true, true, true);
-                        JPanel pn = new JPanel();
-                        final JTextArea area = selectedFile[0].getInfo();
-
-                        JButton accept = new JButton("Accept");
-                        JButton cancel = new JButton("Cancel");
-                        JPanel buttonPanel = new JPanel();
-
-                        buttonPanel.add(accept);
-                        buttonPanel.add(cancel);
-                        buttonPanel.setBackground(Color.white);
-                        buttonPanel.setPreferredSize(new Dimension(700, 50));
-
-                        JScrollPane panel = new JScrollPane(area);
-                        panel.setPreferredSize(new Dimension(650, 400));
-                        pn.add(panel, BorderLayout.NORTH);
-                        pn.add(buttonPanel, BorderLayout.SOUTH);
-                        pn.setBackground(Color.white);
-                        frame.setSize(new Dimension(700, 500));
-                        frame.add(pn);
-                        NDCore.getDesktop().addInternalFrame(frame);
-
-                        accept.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                        selectedFile[0].setInfo(area.getText());
-                                        frame.doDefaultCloseAction();
-                                }
-                        });
-
-                        cancel.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                        frame.doDefaultCloseAction();
-                                }
-                        });
+            cancel.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    frame.doDefaultCloseAction();
                 }
-
+            });
         }
+
+    }
 }

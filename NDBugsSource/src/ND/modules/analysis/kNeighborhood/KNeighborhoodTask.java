@@ -105,7 +105,7 @@ public class KNeighborhoodTask extends AbstractTask {
 
                 for (Node node : nodes) {
                         if (node != null) {
-                                g.addVertex(node.getId());
+                                g.addVertex(node.getId() + ":" + node.getName());
                         }
                 }
 
@@ -134,7 +134,7 @@ public class KNeighborhoodTask extends AbstractTask {
                         edges.add(e);
                 }
                 Graph graph = new Graph(nodes, edges);
-                new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), false);
+                new GetInfoAndTools().createDataFile(graph, this.networkDS, "KNeighbourhood", this.networkDS.getSources(), false);
 
         }
 
