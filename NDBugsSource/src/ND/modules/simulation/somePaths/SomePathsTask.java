@@ -28,6 +28,7 @@ import ND.data.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,7 +58,7 @@ public class SomePathsTask extends AbstractTask {
     private final String biomassID;
     private final Random rand;
     private final HashMap<String, ReactionFA> reactions;
-    private final HashMap<String, ND.modules.simulation.FBA.SpeciesFA> compounds;
+    private final HashMap<String, SpeciesFA> compounds;
     private HashMap<String, String[]> bounds;
     private Map<String, Double[]> sources;
     private final List<String> sourcesList, cofactors;
@@ -67,12 +68,10 @@ public class SomePathsTask extends AbstractTask {
     private final List<Graph> graphs;
     private final int iterations;
     private int shortestPath = Integer.MAX_VALUE;
-    private final List<Reaction> reactionsRemoved;
     private Graph graph;
     private boolean removedReaction = false;
     private Model m = null;
     private final GetInfoAndTools tools;
-     private List<ND.modules.simulation.FBA.Ant> ant;
 
     public SomePathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
@@ -82,13 +81,13 @@ public class SomePathsTask extends AbstractTask {
         String excluded = parameters.getParameter(SomePathsParameters.excluded).getValue();
 
         this.sourcesList = new ArrayList<>();
+
+        this.sources = new HashMap<>();
         this.cofactors = new ArrayList<>();
-        this.ant = new ArrayList<>();
 
         String[] excludedCompounds = excluded.split(",");
         for (String cofactor : excludedCompounds) {
             this.cofactors.add(cofactor);
-           // this.sourcesList.add(cofactor);
         }
 
         this.rand = new Random();
@@ -99,7 +98,6 @@ public class SomePathsTask extends AbstractTask {
         this.compounds = new HashMap<>();
         this.bounds = new HashMap<>();
         this.graphs = new ArrayList<>();
-        this.reactionsRemoved = new ArrayList<>();
 
         this.frame = new JInternalFrame("Result", true, true, true, true);
         this.pn = new JPanel();
@@ -109,7 +107,6 @@ public class SomePathsTask extends AbstractTask {
         // Initialize the random number generator using the
         // time from above.
         rand.setSeed(time);
-        
 
     }
 
@@ -144,25 +141,26 @@ public class SomePathsTask extends AbstractTask {
             frame.add(this.panel);
             NDCore.getDesktop().addInternalFrame(frame);
 
-            for (int i = 0; i < 15; i++) {
+            for (int i = 0; i < this.iterations; i++) {
                 this.cicle();
-                finishedPercentage = (double) i / 15;
+                finishedPercentage = (double) i / this.iterations;
                 if (getStatus() == TaskStatus.CANCELED || getStatus() == TaskStatus.ERROR) {
                     break;
                 }
             }
             if (getStatus() == TaskStatus.PROCESSING) {
-            /*    Graph g = this.createGraph(ant.getPath());
+                ND.modules.simulation.FBA.Ant ant = this.compounds.get(this.biomassID).getAnt();
+                Graph g = this.createGraph(ant.getPath());
                 this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false);
                 PrintPaths print = new PrintPaths(this.tools.getModel());
                 try {
                     this.pn.add(print.printPathwayInFrame(g));
                 } catch (NullPointerException ex) {
                     System.out.println(ex.toString());
-                }*/
-            }
-            if (this.ant == null) {
-                NDCore.getDesktop().displayMessage("No path was found.");
+                }
+                if (ant == null) {
+                    NDCore.getDesktop().displayMessage("No path was found.");
+                }
             }
 
             setStatus(TaskStatus.FINISHED);
@@ -177,15 +175,8 @@ public class SomePathsTask extends AbstractTask {
         SBMLDocument doc = this.networkDS.getDocument();
         Model m = doc.getModel();
         for (Species s : m.getListOfSpecies()) {
-            ND.modules.simulation.FBA.SpeciesFA specie = new ND.modules.simulation.FBA.SpeciesFA(s.getId(), s.getName());
+            SpeciesFA specie = new SpeciesFA(s.getId(), s.getName());
             this.compounds.put(s.getId(), specie);
-
-            if (this.sourcesList.contains(s.getId())) {
-                ND.modules.simulation.FBA.Ant ant = new ND.modules.simulation.FBA.Ant(specie.getId());
-                ant.initAnt(-1);
-                specie.addAnt(ant);
-                this.sourcesList.add(s.getId());
-            }
         }
 
         for (Reaction r : m.getListOfReactions()) {
@@ -210,7 +201,7 @@ public class SomePathsTask extends AbstractTask {
                 Species sp = s.getSpeciesInstance();
 
                 reaction.addReactant(sp.getId(), sp.getName(), s.getStoichiometry());
-                ND.modules.simulation.FBA.SpeciesFA spFA = this.compounds.get(sp.getId());
+                SpeciesFA spFA = this.compounds.get(sp.getId());
                 if (biomass) {
                     spFA.setPool(Math.abs(s.getStoichiometry()));
                 }
@@ -225,7 +216,7 @@ public class SomePathsTask extends AbstractTask {
                 Species sp = s.getSpeciesInstance();
 
                 if (sp.getName().contains("boundary") && reaction.getlb() < 0) {
-                    ND.modules.simulation.FBA.SpeciesFA specie = this.compounds.get(sp.getId());
+                    SpeciesFA specie = this.compounds.get(sp.getId());
                     if (specie.getAnt() == null) {
                         ND.modules.simulation.FBA.Ant ant = new ND.modules.simulation.FBA.Ant(specie.getId());
                         Double[] sb = new Double[2];
@@ -234,11 +225,12 @@ public class SomePathsTask extends AbstractTask {
                         ant.initAnt(Math.abs(reaction.getlb()));
                         specie.addAnt(ant);
                         this.sourcesList.add(sp.getId());
+                        this.sources.put(sp.getId(), sb);
                     }
                 }
 
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
-                ND.modules.simulation.FBA.SpeciesFA spFA = this.compounds.get(sp.getId());
+                SpeciesFA spFA = this.compounds.get(sp.getId());
                 if (spFA != null) {
                     spFA.addReaction(r.getId());
                 } else {
@@ -249,16 +241,17 @@ public class SomePathsTask extends AbstractTask {
             if (r.getListOfProducts().isEmpty()) {
                 for (SpeciesReference s : r.getListOfReactants()) {
                     Species sp = s.getSpeciesInstance();
-                    ND.modules.simulation.FBA.SpeciesFA specie = this.compounds.get(sp.getId());
+                    SpeciesFA specie = this.compounds.get(sp.getId());
                     if (specie.getAnt() == null) {
                         ND.modules.simulation.FBA.Ant ant = new ND.modules.simulation.FBA.Ant(specie.getId());
                         Double[] sb = new Double[2];
                         sb[0] = reaction.getlb();
                         sb[1] = reaction.getub();
-                        if (sb[0] > 0.0 && sb[1] > 0.0) {
+                        if (reaction.getlb() < 0.0) {
                             ant.initAnt(Math.abs(reaction.getlb()));
                             specie.addAnt(ant);
                             this.sourcesList.add(sp.getId());
+                            this.sources.put(sp.getId(), sb);
                         }
                     }
                 }
@@ -305,7 +298,7 @@ public class SomePathsTask extends AbstractTask {
                 //  List<List<Ant>> paths = new ArrayList<>();
                 List<ND.modules.simulation.FBA.Ant> com = new ArrayList<>();
                 for (String s : toBeRemoved) {
-                    ND.modules.simulation.FBA.SpeciesFA spfa = this.compounds.get(s);
+                    SpeciesFA spfa = this.compounds.get(s);
                     if (spfa.getAnt() != null/* && !this.cofactors.contains(s)*/) {
                         com.add(spfa.getAnt());
                     }
@@ -317,7 +310,7 @@ public class SomePathsTask extends AbstractTask {
                 superAnt.joinGraphs(reactionChoosen, direction, com, rc);
 
                 for (String s : toBeAdded) {
-                    ND.modules.simulation.FBA.SpeciesFA spfa = this.compounds.get(s);
+                    SpeciesFA spfa = this.compounds.get(s);
                     ND.modules.simulation.FBA.Ant newAnt = superAnt.clone();
                     if (!hasOutput(newAnt, spfa)) {
                         newAnt.setLocation(compound);
@@ -329,7 +322,7 @@ public class SomePathsTask extends AbstractTask {
         }
     }
 
-    private boolean hasOutput(ND.modules.simulation.FBA.Ant ant, ND.modules.simulation.FBA.SpeciesFA sp) {
+    private boolean hasOutput(ND.modules.simulation.FBA.Ant ant, SpeciesFA sp) {
         boolean hasOutput = false;
         for (String r : ant.getPath().keySet()) {
             if (reactions.containsKey(r)) {
@@ -349,11 +342,11 @@ public class SomePathsTask extends AbstractTask {
     private List<String> getPossibleReactions(String compound) {
 
         List<String> possibleReactions = new ArrayList<>();
-        ND.modules.simulation.FBA.SpeciesFA sp = this.compounds.get(compound);
+        SpeciesFA sp = this.compounds.get(compound);
         ND.modules.simulation.FBA.Ant ant = sp.getAnt();
-       /* if (!this.sourceID.equals(compound) && ant == null) {
-            return possibleReactions;
-        }*/
+        /* if (!this.sourceID.equals(compound) && ant == null) {
+         return possibleReactions;
+         }*/
 
         List<String> connectedReactions = sp.getReactions();
         for (String reaction : connectedReactions) {
@@ -423,7 +416,7 @@ public class SomePathsTask extends AbstractTask {
     }
 
     private boolean allEnoughAnts(String species, String reaction) {
-        ND.modules.simulation.FBA.SpeciesFA s = this.compounds.get(species);
+        SpeciesFA s = this.compounds.get(species);
         ND.modules.simulation.FBA.Ant ant = s.getAnt();
         if (ant != null) {
             return !ant.contains(reaction);
@@ -447,7 +440,7 @@ public class SomePathsTask extends AbstractTask {
                 }
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
-                    ND.modules.simulation.FBA.SpeciesFA sp = compounds.get(reactant);
+                    SpeciesFA sp = compounds.get(reactant);
                     Node reactantNode = g.getNode(reactant);
                     if (reactantNode == null) {
                         reactantNode = new Node(reactant, sp.getName());
@@ -456,6 +449,13 @@ public class SomePathsTask extends AbstractTask {
                         reactantNode.setPosition(previousG.getNode(reactant).getPosition());
                     }
                     g.addNode2(reactantNode);
+                    if (sp.getId().equals(this.biomassID)) {
+                        reactantNode.setColor(Color.red);
+                    }
+
+                    if (this.sourcesList.contains(sp.getId())) {
+                        reactantNode.setColor(Color.MAGENTA);
+                    }
                     Edge e;
                     if (path.get(r)) {
                         e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
@@ -465,7 +465,7 @@ public class SomePathsTask extends AbstractTask {
                     g.addEdge(e);
                 }
                 for (String product : reaction.getProducts()) {
-                    ND.modules.simulation.FBA.SpeciesFA sp = compounds.get(product);
+                    SpeciesFA sp = compounds.get(product);
                     Node reactantNode = g.getNode(product);
                     if (reactantNode == null) {
                         reactantNode = new Node(product, sp.getName());
@@ -474,6 +474,13 @@ public class SomePathsTask extends AbstractTask {
                         reactantNode.setPosition(previousG.getNode(product).getPosition());
                     }
                     g.addNode2(reactantNode);
+                    if (sp.getId().equals(this.biomassID)) {
+                        reactantNode.setColor(Color.red);
+                    }
+
+                    if (this.sourcesList.contains(sp.getId())) {
+                        reactantNode.setColor(Color.PINK);
+                    }
                     Edge e;
                     if (path.get(r)) {
                         e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
