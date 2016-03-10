@@ -26,13 +26,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.TreeNode;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SpeciesReference;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class DatasetDataModel extends AbstractTableModel implements DataTableModel {
 
@@ -195,7 +191,7 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
                     r.getKineticLaw().getLocalParameter("LOWER_BOUND").setValue(Double.valueOf(aValue.toString()));
                 case "Upper bound":
                     r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(Double.valueOf(aValue.toString()));
-                case "Gene rules":
+                case "Notes":
 
                 case "Objective":
                     r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT").setValue(Double.valueOf(aValue.toString()));
@@ -207,29 +203,7 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
         } catch (Exception e) {
 
         }
-
-        /* SimplePeakListRowLCMS peakRow = (SimplePeakListRowLCMS) this.dataset.getRow(row);
-         if (column < this.fixNumberColumns) {
-         if (columns.get(column) == LCMSColumnName.IDENTIFICATION) {
-         if (aValue.toString().contains("NA")) {
-         peakRow.setVar(this.columns.get(column).getSetFunctionName(), IdentificationType.UNKNOWN.toString());
-         } else {
-         peakRow.setVar(this.columns.get(column).getSetFunctionName(), aValue);
-         }
-         } else if (columns.get(column) == LCMSColumnName.STANDARD) {
-         if ((Boolean) aValue == false) {
-         peakRow.setVar(this.columns.get(column).getSetFunctionName(), 0);
-         }
-         if ((Boolean) aValue == true) {
-         peakRow.setVar(this.columns.get(column).getSetFunctionName(), 1);
-         }
-         } else {
-         peakRow.setVar(this.columns.get(column).getSetFunctionName(), aValue);
-         }
-         } else {
-         peakRow.setPeak(this.dataset.getAllColumnNames().get(column - this.fixNumberColumns), (Double) aValue);
-         }
-         fireTableCellUpdated(row, column);*/
+        
     }
 
     @Override
@@ -260,7 +234,7 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
 
     @Override
     public Color getCellColor(int row, int column) {
-        return Color.white;
+        return null;
     }
 
     private Object getReaction(Reaction r) {
