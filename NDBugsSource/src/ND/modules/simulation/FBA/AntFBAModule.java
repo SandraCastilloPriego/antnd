@@ -31,7 +31,7 @@ import ND.taskcontrol.Task;
  */
 public class AntFBAModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Start Flux  Balance Ant";
+        public static final String MODULE_NAME = "Start Flux Balance Ant";
         private final AntFBAParameters parameters = new AntFBAParameters();
 
         @Override

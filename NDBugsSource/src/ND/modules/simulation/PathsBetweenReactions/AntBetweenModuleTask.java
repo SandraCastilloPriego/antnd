@@ -442,7 +442,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                         reactantNode.setColor(Color.red);
                     }
 
-                    if (this.sourcesList.contains(sp.getId())) {
+                    if (sp.getId().equals(this.sourceID)) {
                         reactantNode.setColor(Color.MAGENTA);
                     }
                     Edge e;

@@ -33,7 +33,6 @@ import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Dimension;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +139,17 @@ public class FluxVisualizationTask extends AbstractTask {
         for (String r : path.keySet()) {
             ReactionFA reaction = reactions.get(r);
          
-            if (reaction != null&&Math.abs(reaction.getFlux())>0) {
-                Node reactionNode = new Node(reaction.getId(),String.format("%.3g%n",reaction.getFlux()));
+            if (reaction != null&&Math.abs(reaction.getFinalFlux())>0) {
+                Node reactionNode = new Node(reaction.getId(),String.format("%.3g%n",reaction.getFinalFlux()));
+                Reaction modelReaction = this.networkDS.getDocument().getModel().getReaction(r);
+                 if(modelReaction!= null) {
+                    LocalParameter parameter = modelReaction.getKineticLaw().getLocalParameter("FLUX_VALUE");
+                    if(parameter == null){
+                        modelReaction.getKineticLaw().createLocalParameter("FLUX_VALUE").setValue(reaction.getFinalFlux());
+                    }else{
+                        parameter.setValue(reaction.getFinalFlux());
+                    }
+                }
                 g.addNode2(reactionNode);
                 for (String reactant : reaction.getReactants()) {
                     SpeciesFA sp = compounds.get(reactant);
