@@ -20,16 +20,19 @@ package ND.data.models;
 import ND.data.ColumnName;
 import ND.data.Dataset;
 import ND.data.DatasetType;
-import ND.data.ParameterType;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.util.Tables.DataTableModel;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.TreeNode;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SpeciesReference;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class DatasetDataModel extends AbstractTableModel implements DataTableModel {
 
@@ -122,8 +125,8 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
 
             String value = columns.get(column).getColumnName();
             switch (value) {
-                case "Selection":
-                    return this.dataset.isSelected(r);
+                case "Number":
+                    return row + 1;
                 case "Id":
                     return r.getId();
                 case "Name":
@@ -136,8 +139,14 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
                     return r.getKineticLaw().getLocalParameter("LOWER_BOUND").getValue();
                 case "Upper bound":
                     return r.getKineticLaw().getLocalParameter("UPPER_BOUND").getValue();
-                case "Gene rules":
-                    return r.getNotes().toXMLString();
+                case "Notes":
+                    String notes = r.getNotesString(); 
+                    String returnNotes = "";
+                    notes = notes.substring(notes.indexOf("<p>"), notes.lastIndexOf("</p>"));
+                    for(String n : notes.split("<p>")){
+                        returnNotes += n.replace("</p>", "") + "\n";
+                    }
+                    return returnNotes;
                 case "Objective":
                     return r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT").getValue();
                 case "Fluxes":
@@ -172,8 +181,8 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
 
             String value = columns.get(column).getColumnName();
             switch (value) {
-                case "Selection":
-                    this.dataset.setSelectionMode(r.getId());
+                case "Number":
+
                 case "Id":
                     r.setId(aValue.toString());
                 case "Name":
@@ -261,10 +270,12 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
         }
         reaction = reaction.substring(0, reaction.lastIndexOf(" + "));
         reaction += " <=> ";
-        for (SpeciesReference product : r.getListOfProducts()) {
-            reaction += product.getStoichiometry() + " " + product.getSpecies() + " + ";
+        if (!r.getListOfProducts().isEmpty()) {
+            for (SpeciesReference product : r.getListOfProducts()) {
+                reaction += product.getStoichiometry() + " " + product.getSpecies() + " + ";
+            }
+            reaction = reaction.substring(0, reaction.lastIndexOf(" + "));
         }
-        reaction = reaction.substring(0, reaction.lastIndexOf(" + "));
         return reaction;
     }
 
@@ -275,10 +286,12 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
         }
         reaction = reaction.substring(0, reaction.lastIndexOf(" + "));
         reaction += " <=> ";
-        for (SpeciesReference product : r.getListOfProducts()) {
-            reaction += product.getStoichiometry() + " " + product.getSpeciesInstance().getName() + " + ";
+        if (!r.getListOfProducts().isEmpty()) {
+            for (SpeciesReference product : r.getListOfProducts()) {
+                reaction += product.getStoichiometry() + " " + product.getSpeciesInstance().getName() + " + ";
+            }
+            reaction = reaction.substring(0, reaction.lastIndexOf(" + "));
         }
-        reaction = reaction.substring(0, reaction.lastIndexOf(" + "));
         return reaction;
     }
 }

@@ -112,6 +112,16 @@ public class LPTask extends AbstractTask {
                     reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());
                 }
                 g.addNode2(reactionNode);
+                Reaction modelReaction = m.getReaction(r);
+                if(modelReaction!= null) {
+                    LocalParameter parameter = modelReaction.getKineticLaw().getLocalParameter("FLUX_VALUE");
+                    if(parameter == null){
+                        modelReaction.getKineticLaw().createLocalParameter("FLUX_VALUE").setValue(reaction.getFlux());
+                    }else{
+                        parameter.setValue(reaction.getFlux());
+                    }
+                }
+                
                 for (String reactant : reaction.getReactants()) {
                     String name = m.getSpecies(reactant).getName();
                     Node reactantNode = g.getNode(reactant);

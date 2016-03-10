@@ -57,16 +57,14 @@ public class AntBetweenModuleTask extends AbstractTask {
     private double finishedPercentage = 0.0f;
     private final String biomassID, sourceID, excluded;
     private final Random rand;
-    private HashMap<String, ReactionFA> reactions;
-    private HashMap<String, ND.modules.simulation.FBA.SpeciesFA> compounds;
+    private final HashMap<String, ReactionFA> reactions;
+    private final HashMap<String, ND.modules.simulation.FBA.SpeciesFA> compounds;
     private final List<String> sourcesList, cofactors;
     private final JInternalFrame frame;
     private final JScrollPane panel;
     private final JPanel pn;
-    private int shortestPath = Integer.MAX_VALUE;
     private ND.modules.simulation.FBA.Ant ant;
     private final GetInfoAndTools tools;
-    private Map<String, Double[]> sources;
     private Model m;
 
     public AntBetweenModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
@@ -91,7 +89,6 @@ public class AntBetweenModuleTask extends AbstractTask {
 
         this.tools = new GetInfoAndTools();
         this.bounds = tools.readBounds(networkDS);
-        this.sources = tools.GetSourcesInfo();
         // Initialize the random number generator using the
         // time from above.
         rand.setSeed(time);
@@ -125,7 +122,7 @@ public class AntBetweenModuleTask extends AbstractTask {
             String[] excludedCompounds = this.excluded.split(",");
             for (String cofactor : excludedCompounds) {
                 this.cofactors.add(cofactor);
-                this.sourcesList.add(cofactor);
+                //this.sourcesList.add(cofactor);
             }
             this.sourcesList.add(sourceID);
 

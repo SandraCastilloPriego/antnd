@@ -7,14 +7,14 @@ public enum ColumnName {
          * Fix columns for Models files. Each column has:
          * Column name, getVar function, setVar function, regular Expresion to parse files and type of data. *
          */
-        SELECTION("Selection", "isSelected", "setSelectionMode", "Selection", ParameterType.BOOLEAN),
+        SELECTION("Number", "isSelected", "setSelectionMode", "Selection", ParameterType.BOOLEAN),
         ID("Id", "getID", "setID", "^ID.*|^Id|.*row ID.*", ParameterType.STRING),
         NAME("Name", "getName", "setName", ".*|^Name.*|^name.*|^Name", ParameterType.STRING),
         REACTION("Reaction", "getReaction", "setReaction", ".*Reaction.*", ParameterType.STRING),
         REACTIONEXT("Reaction extended", "getReactionExtended", "setReactionExtended", ".*ReactionExtended.*", ParameterType.STRING),
         LB("Lower bound", "getLowerBound", "setLowerBound", ".*lb.*", ParameterType.STRING),
         UB("Upper bound", "getUpperBound", "setUpperBound", ".*ub.*", ParameterType.STRING),
-        GENERULES("Gene rules", "getGeneRules", "setGeneRules", ".*Gene rules.*", ParameterType.STRING),
+        GENERULES("Notes", "getGeneRules", "setGeneRules", ".*Gene rules.*", ParameterType.STRING),
         OBJECTIVE("Objective", "getObjective", "setObjective", ".*Objective function.*", ParameterType.STRING),
         FLUXES("Fluxes", "", "e", "", ParameterType.DOUBLE);
         
