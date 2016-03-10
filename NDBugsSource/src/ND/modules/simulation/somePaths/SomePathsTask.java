@@ -31,11 +31,9 @@ import ND.taskcontrol.TaskStatus;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -56,7 +54,6 @@ public class SomePathsTask extends AbstractTask {
     private final SimpleBasicDataset networkDS;
     private double finishedPercentage = 0.0f;
     private final String biomassID;
-    private final Random rand;
     private final HashMap<String, ReactionFA> reactions;
     private final HashMap<String, SpeciesFA> compounds;
     private HashMap<String, String[]> bounds;
@@ -65,17 +62,12 @@ public class SomePathsTask extends AbstractTask {
     private JInternalFrame frame;
     private JScrollPane panel;
     private JPanel pn;
-    private final List<Graph> graphs;
     private final int iterations;
-    private int shortestPath = Integer.MAX_VALUE;
-    private Graph graph;
     private boolean removedReaction = false;
-    private Model m = null;
     private final GetInfoAndTools tools;
 
     public SomePathsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
-        this.m = this.networkDS.getDocument().getModel().clone();
         this.biomassID = parameters.getParameter(SomePathsParameters.objectiveReaction).getValue();
         this.iterations = parameters.getParameter(SomePathsParameters.numberOfIterations).getValue();
         String excluded = parameters.getParameter(SomePathsParameters.excluded).getValue();
@@ -90,23 +82,15 @@ public class SomePathsTask extends AbstractTask {
             this.cofactors.add(cofactor);
         }
 
-        this.rand = new Random();
-        Date date = new Date();
-        long time = date.getTime();
-
+       
         this.reactions = new HashMap<>();
         this.compounds = new HashMap<>();
         this.bounds = new HashMap<>();
-        this.graphs = new ArrayList<>();
 
         this.frame = new JInternalFrame("Result", true, true, true, true);
         this.pn = new JPanel();
         this.panel = new JScrollPane(pn);
-        this.tools = new GetInfoAndTools();
-
-        // Initialize the random number generator using the
-        // time from above.
-        rand.setSeed(time);
+        this.tools = new GetInfoAndTools();       
 
     }
 

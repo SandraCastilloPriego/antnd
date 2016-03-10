@@ -28,6 +28,7 @@ import ND.data.network.Node;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,7 +66,6 @@ public class AntBetweenModuleTask extends AbstractTask {
     private final JPanel pn;
     private ND.modules.simulation.FBA.Ant ant;
     private final GetInfoAndTools tools;
-    private Model m;
 
     public AntBetweenModuleTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
@@ -122,7 +122,6 @@ public class AntBetweenModuleTask extends AbstractTask {
             String[] excludedCompounds = this.excluded.split(",");
             for (String cofactor : excludedCompounds) {
                 this.cofactors.add(cofactor);
-                //this.sourcesList.add(cofactor);
             }
             this.sourcesList.add(sourceID);
 
@@ -213,20 +212,6 @@ public class AntBetweenModuleTask extends AbstractTask {
 
             for (SpeciesReference s : r.getListOfProducts()) {
                 Species sp = s.getSpeciesInstance();
-
-                if (sp.getName().contains("boundary") && reaction.getlb() < 0) {
-                    ND.modules.simulation.FBA.SpeciesFA specie = this.compounds.get(sp.getId());
-                    if (specie.getAnt() == null) {
-                        ND.modules.simulation.FBA.Ant ant = new ND.modules.simulation.FBA.Ant(specie.getId());
-                        Double[] sb = new Double[2];
-                        sb[0] = reaction.getlb();
-                        sb[1] = reaction.getub();
-                        ant.initAnt(Math.abs(reaction.getlb()));
-                        specie.addAnt(ant);
-                        this.sourcesList.add(sp.getId());
-                    }
-                }
-
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
                 ND.modules.simulation.FBA.SpeciesFA spFA = this.compounds.get(sp.getId());
                 if (spFA != null) {
@@ -234,25 +219,7 @@ public class AntBetweenModuleTask extends AbstractTask {
                 } else {
                     System.out.println(sp.getId());
                 }
-            }
-
-            if (r.getListOfProducts().isEmpty()) {
-                for (SpeciesReference s : r.getListOfReactants()) {
-                    Species sp = s.getSpeciesInstance();
-                    ND.modules.simulation.FBA.SpeciesFA specie = this.compounds.get(sp.getId());
-                    if (specie.getAnt() == null) {
-                        ND.modules.simulation.FBA.Ant ant = new ND.modules.simulation.FBA.Ant(specie.getId());
-                        Double[] sb = new Double[2];
-                        sb[0] = reaction.getlb();
-                        sb[1] = reaction.getub();
-                        if (sb[0] > 0.0 && sb[1] > 0.0) {
-                            ant.initAnt(Math.abs(reaction.getlb()));
-                            specie.addAnt(ant);
-                            this.sourcesList.add(sp.getId());
-                        }
-                    }
-                }
-            }
+            }            
             this.reactions.put(r.getId(), reaction);
         }
 
@@ -417,8 +384,7 @@ public class AntBetweenModuleTask extends AbstractTask {
         ND.modules.simulation.FBA.Ant ant = s.getAnt();
         if (ant != null) {
             return !ant.contains(reaction);
-        } else if (cofactors.contains(species)) {
-            //this.objectives.add(species);           
+        } else if (cofactors.contains(species)) {  
             return true;
         }
         return false;
@@ -446,6 +412,14 @@ public class AntBetweenModuleTask extends AbstractTask {
                         reactantNode.setPosition(previousG.getNode(reactant).getPosition());
                     }
                     g.addNode2(reactantNode);
+                    if (sp.getId().equals(this.biomassID)) {
+                        reactantNode.setColor(Color.red);
+                    }
+
+                    if (this.sourcesList.contains(sp.getId())) {
+                        reactantNode.setColor(Color.MAGENTA);
+                    }
+                    
                     Edge e;
                     if (path.get(r)) {
                         e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
@@ -464,6 +438,13 @@ public class AntBetweenModuleTask extends AbstractTask {
                         reactantNode.setPosition(previousG.getNode(product).getPosition());
                     }
                     g.addNode2(reactantNode);
+                    if (sp.getId().equals(this.biomassID)) {
+                        reactantNode.setColor(Color.red);
+                    }
+
+                    if (this.sourcesList.contains(sp.getId())) {
+                        reactantNode.setColor(Color.MAGENTA);
+                    }
                     Edge e;
                     if (path.get(r)) {
                         e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);

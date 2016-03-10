@@ -64,7 +64,7 @@ public class AntBetweenModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/allPaths.png";
+                return "icons/loopAnalyzer.png";
         }
 
         @Override

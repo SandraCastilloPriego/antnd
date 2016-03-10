@@ -66,7 +66,7 @@ public class AntFBAModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/simulation.png";
+                return "icons/simulationAdvance.png";
         }
 
         @Override
