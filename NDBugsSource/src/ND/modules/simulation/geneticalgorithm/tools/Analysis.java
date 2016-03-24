@@ -1,4 +1,4 @@
-package ND.modules.otimization.LP;
+package ND.modules.simulation.geneticalgorithm.tools;
 
 import ND.modules.simulation.FBA.LP.ConType;
 import ND.modules.simulation.FBA.LP.ModelCompressor;
@@ -15,20 +15,25 @@ import org.sbml.jsbml.Model;
 public abstract class Analysis {
 
     protected double maxObj = Double.NaN;
-    private String objective;
     List< Double> objectiveList;
     private Map<String, Integer> reactionPositionMap;
     private Map<String, Integer> metabolitePositionMap;
     List<ReactionFA> reactionsList;
     List<String> metabolitesList;
     ModelCompressor compressor;
+    List<ReactionFA> toBeRemoved;
 
     protected void setVars() {
         for (ReactionFA r : reactionsList) {
             String varName = Integer.toString(this.reactionPositionMap.get(r.getId()));
-            //System.out.println(r.getId() + ": " + varName + ": " + r.getlb() + " ," + r.getub());
+                
+            if (toBeRemoved.contains(r)) {
+                this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), 0.001);
+            } else {
+                 //System.out.println(r.getId() + ": " + varName + ": " + r.getlb() + " ," + r.getub());
 
-            this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+                this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+            }
         }
     }
 
@@ -55,6 +60,9 @@ public abstract class Analysis {
         }
 
         for (ReactionFA reaction : this.reactionsList) {
+            /* if (toBeRemoved.contains(reaction)) {
+             continue;
+             }*/
             for (String reactant : reaction.getReactants()) {
                 if (this.metabolitesList.contains(reactant)) {
                     double sto = reaction.getStoichiometry(reactant);
@@ -86,9 +94,10 @@ public abstract class Analysis {
         this.getSolver().setObj(map);
     }
 
-    public void setModel(String Objective, HashMap<String, ReactionFA> reactions, Model model) {
-        this.objective = Objective;
-        this.prepareReactions(reactions,model);       
+    public void setModel(HashMap<String, ReactionFA> reactions, Model model, List<ReactionFA> toBeRemoved) {
+        this.toBeRemoved = toBeRemoved;
+        //this.toBeRemoved.clear();
+        this.prepareReactions(reactions, model);
     }
 
     public void setSolverParameters() {
@@ -122,9 +131,14 @@ public abstract class Analysis {
         this.reactionPositionMap = new HashMap<>();
         this.objectiveList = new ArrayList<>();
 
+        int i = 0;
         for (String reaction : reactions.keySet()) {
-            // System.out.print(reaction + " - ");
+
+            //System.out.print(reaction + " - ");
             ReactionFA r = reactions.get(reaction);
+            /* if (toBeRemoved.contains(r)) {
+             continue;
+             }*/
             this.reactionsList.add(r);
 
             for (String reactant : r.getReactants()) {
@@ -133,25 +147,13 @@ public abstract class Analysis {
                 }
             }
             for (String product : r.getProducts()) {
-                 String sp = model.getSpecies(product).getName();
-                if (!metabolitesList.contains(product)&& !sp.contains("boundary")) {
+                String sp = model.getSpecies(product).getName();
+                if (!metabolitesList.contains(product) && !sp.contains("boundary")) {
                     this.metabolitesList.add(product);
                 }
             }
-
-        }
-
-        int i = 0;
-        for (ReactionFA reaction : this.reactionsList) {
-            //   System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
-            if (reaction.getId().equals(this.objective)) {
-                this.objectiveList.add(1.0);
-                System.out.println("Objective 1");
-            } else {
-                this.objectiveList.add(0.0);
-                System.out.println("Objective 0");
-            }
-            this.reactionPositionMap.put(reaction.getId(), i++);
+            this.objectiveList.add(r.getObjective());
+            this.reactionPositionMap.put(r.getId(), i++);
         }
 
     }

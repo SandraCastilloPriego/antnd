@@ -42,6 +42,7 @@ import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.FBA.AntFBAModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
+import ND.modules.simulation.geneticalgorithm.StartSimulationModule;
 import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
@@ -51,41 +52,42 @@ import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
  */
 public class NDModulesList {
 
-        /**
-         *
-         */
-        public static final Class<?> MODULES[] = new Class<?>[]{
-                OpenBasicFileModule.class,
-                OpenProjectModule.class,
-                SaveProjectModule.class,
-                SourcesConfModule.class,
-                //CofactorConfModule.class,
-                // AntModule.class,
-                AntBetweenModule.class,
-                SuperAntModule.class,
-                //SuperAntAdvancedModule.class,
-                AntFBAModule.class,
-                AddReactionModule.class,
-                ChangeBoundsModule.class,
-                RemoveReactionModule.class,
-                ShowReactionModule.class,
-                ShowAllReactionsModule.class,                
-                ShowCompoundModule.class,
-                ShowAllCompoundsModule.class,
-                DeadEndsModule.class,
-                //AddInfoModule.class, 
-                SomePathsModule.class,
-                ShowPathwaysModule.class,
-                // LoopAnalyzerModule.class,
-                //  AntFluxMaxModule.class,
-                //  AntFluxMinModule.class,
-                LPModule.class,
-                FluxAnalysisModule.class,
-                ClusteringModule.class,
-                ClusteringBetweennessModule.class,
-                KNeighborhoodModule.class,
-                //KStepMarkovModule.class,
-                //CycleDetectorModule.class,
-                CompareModule.class,
-                FluxVisualizationModule.class  };
+    /**
+     *
+     */
+    public static final Class<?> MODULES[] = new Class<?>[]{
+        OpenBasicFileModule.class,
+        OpenProjectModule.class,
+        SaveProjectModule.class,
+        SourcesConfModule.class,
+        //CofactorConfModule.class,
+        // AntModule.class,
+        AntBetweenModule.class,
+        SuperAntModule.class,
+        //SuperAntAdvancedModule.class,
+        AntFBAModule.class,
+        AddReactionModule.class,
+        ChangeBoundsModule.class,
+        RemoveReactionModule.class,
+        ShowReactionModule.class,
+        ShowAllReactionsModule.class,
+        ShowCompoundModule.class,
+        ShowAllCompoundsModule.class,
+        DeadEndsModule.class,
+        //AddInfoModule.class, 
+        SomePathsModule.class,
+        ShowPathwaysModule.class,
+        // LoopAnalyzerModule.class,
+        //  AntFluxMaxModule.class,
+        //  AntFluxMinModule.class,
+        LPModule.class,
+        FluxAnalysisModule.class,
+        ClusteringModule.class,
+        ClusteringBetweennessModule.class,
+        KNeighborhoodModule.class,
+        //KStepMarkovModule.class,
+        //CycleDetectorModule.class,
+        CompareModule.class,
+        FluxVisualizationModule.class,
+        StartSimulationModule.class};
 }

@@ -39,6 +39,7 @@ public class ReactionFA {
     private Map<String, Double> flux;
     private double finalFlux;
     private boolean status = false;
+    private double objective;
 
     public ReactionFA(String id) {
         this.id = id;
@@ -291,5 +292,13 @@ public class ReactionFA {
     public void resetFlux(){
         this.flux.clear();
         this.finalFlux = -1;
+    }
+    
+    public void setObjective(double objective){
+        this.objective = objective;
+    }
+    
+    public double getObjective(){
+        return this.objective;
     }
 }
