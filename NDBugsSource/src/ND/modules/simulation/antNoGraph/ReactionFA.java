@@ -29,6 +29,7 @@ import java.util.Map;
 public class ReactionFA {
 
     private final String id;
+    private String name;
     private final List<String> reactants, products;
     private List<String> path;
     private final Map<String, String> names;
@@ -49,6 +50,20 @@ public class ReactionFA {
         this.names = new HashMap<>();
         this.flux = new HashMap<>();
         this.path = new ArrayList<>();
+    }
+    public ReactionFA(String id, String name) {
+        this.id = id;
+        this.name = name;
+        this.reactants = new ArrayList<>();
+        this.products = new ArrayList<>();
+        this.stoichiometry = new HashMap<>();
+        this.names = new HashMap<>();
+        this.flux = new HashMap<>();
+        this.path = new ArrayList<>();
+    }
+    
+    public String getName(){
+        return this.name;
     }
 
     public void addReactant(String r, Double sto) {
@@ -300,5 +315,9 @@ public class ReactionFA {
     
     public double getObjective(){
         return this.objective;
+    }
+    
+    public String toString(){
+        return this.id;
     }
 }

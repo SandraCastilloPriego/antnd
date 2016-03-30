@@ -30,6 +30,7 @@ import ND.modules.file.saveProject.SaveProjectModule;
 import ND.modules.otimization.LP.LPModule;
 import ND.modules.otimization.visualization.FluxVisualizationModule;
 import ND.modules.reactionOP.AddInfo.AddInfoModule;
+import ND.modules.reactionOP.ModifyModel.AddReactionsModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.changebounds.ChangeBoundsModule;
 import ND.modules.reactionOP.deadends.DeadEndsModule;
@@ -43,6 +44,7 @@ import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.FBA.AntFBAModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
 import ND.modules.simulation.geneticalgorithm.StartSimulationModule;
+import ND.modules.simulation.geneticalgorithm.testing.StartTestingGAModule;
 import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
@@ -67,6 +69,7 @@ public class NDModulesList {
         //SuperAntAdvancedModule.class,
         AntFBAModule.class,
         AddReactionModule.class,
+        AddReactionsModule.class,
         ChangeBoundsModule.class,
         RemoveReactionModule.class,
         ShowReactionModule.class,
@@ -89,5 +92,6 @@ public class NDModulesList {
         //CycleDetectorModule.class,
         CompareModule.class,
         FluxVisualizationModule.class,
-        StartSimulationModule.class};
+        StartSimulationModule.class,
+        StartTestingGAModule.class};
 }

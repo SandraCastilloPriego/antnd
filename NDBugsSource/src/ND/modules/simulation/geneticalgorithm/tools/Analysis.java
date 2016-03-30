@@ -28,7 +28,7 @@ public abstract class Analysis {
             String varName = Integer.toString(this.reactionPositionMap.get(r.getId()));
                 
             if (toBeRemoved.contains(r)) {
-                this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), 0.001);
+                this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), 0.0);
             } else {
                  //System.out.println(r.getId() + ": " + varName + ": " + r.getlb() + " ," + r.getub());
 
