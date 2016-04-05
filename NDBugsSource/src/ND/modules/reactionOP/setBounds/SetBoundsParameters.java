@@ -15,18 +15,20 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.otimization.LP;
+package ND.modules.reactionOP.setBounds;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
-import ND.parameters.parametersType.StringParameter;
+import ND.parameters.parametersType.FileNameParameter;
 
-public class LPParameters extends SimpleParameterSet {
+public class SetBoundsParameters extends SimpleParameterSet {     
+   
+
+        public static final FileNameParameter boundsFile = new FileNameParameter(
+                "Bounds file", "File containing the reaction bounds", null);
        
-        public static final StringParameter objective = new StringParameter(
-                "Objective", "Reaction that will be optimized", "");
-      
-        public LPParameters() {
-                super(new Parameter[]{objective});
+
+        public SetBoundsParameters() {
+                super(new Parameter[]{boundsFile});
         }
 }

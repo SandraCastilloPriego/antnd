@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.ModifyModel;
+package ND.modules.reactionOP.addReactions;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -73,6 +73,6 @@ public class AddReactionsModule implements NDProcessingModule {
 
         @Override
         public boolean setSeparator() {
-                return false;
+                return true;
         }
 }

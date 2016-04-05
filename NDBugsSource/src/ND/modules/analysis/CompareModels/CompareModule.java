@@ -67,6 +67,6 @@ public class CompareModule implements NDProcessingModule {
 
         @Override
         public boolean setSeparator() {
-                return false;
+                return true;
         }
 }

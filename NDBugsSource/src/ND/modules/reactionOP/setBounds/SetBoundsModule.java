@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.geneticalgorithm;
+package ND.modules.reactionOP.setBounds;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
@@ -29,10 +29,10 @@ import ND.taskcontrol.Task;
  *
  * @author scsandra
  */
-public class StartSimulationModule implements NDProcessingModule {
+public class SetBoundsModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Genetic Algorith";
-        private StartSimulationParameters parameters = new StartSimulationParameters();
+        public static final String MODULE_NAME = "Adding bounds from file";
+        private SetBoundsParameters parameters = new SetBoundsParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -48,29 +48,31 @@ public class StartSimulationModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new StartSimulationTask[1];
-                if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
-                        NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
-                } else {
-                        tasks[0] = new StartSimulationTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
-
-                        NDCore.getTaskController().addTasks(tasks);
+                Task tasks[] = new SetBoundsTask[1];
+                SimpleBasicDataset dataset = null;
+                try {
+                        dataset = (SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0];
+                } catch (Exception e) {
                 }
+                tasks[0] = new SetBoundsTask(dataset, (SimpleParameterSet) parameters);
+
+                NDCore.getTaskController().addTasks(tasks);
+
                 return tasks;
         }
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.OPTIMIZATION;
+                return NDModuleCategory.REACTION;
         }
 
         @Override
         public String getIcon() {
-                return "icons/GeneticAlgorithm.png";
+                return "icons/confbounds.png";
         }
 
         @Override
         public boolean setSeparator() {
-                return false;
+                return true;
         }
 }

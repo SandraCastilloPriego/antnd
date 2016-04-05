@@ -61,12 +61,12 @@ public class StartTestingGAModule implements NDProcessingModule {
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.SIMULATION;
+                return NDModuleCategory.REACTION;
         }
 
         @Override
         public String getIcon() {
-                return "icons/loopAnalyzer.png";
+                return "icons/GeneticAlgorithm.png";
         }
 
         @Override

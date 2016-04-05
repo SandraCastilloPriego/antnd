@@ -15,7 +15,7 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.otimization.LP;
+package ND.modules.simulation.FBAreal;
 
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.modules.configuration.general.GetInfoAndTools;

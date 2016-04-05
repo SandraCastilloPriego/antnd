@@ -68,11 +68,11 @@ public class ChangeBoundsModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/AddReaction.png";
+                return "icons/confbounds.png";
         }
 
         @Override
         public boolean setSeparator() {
-                return true;
+                return false;
         }
 }

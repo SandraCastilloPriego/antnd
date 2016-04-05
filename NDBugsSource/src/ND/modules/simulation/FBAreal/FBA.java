@@ -1,4 +1,4 @@
-package ND.modules.otimization.LP;
+package ND.modules.simulation.FBAreal;
 
 import ND.modules.simulation.FBA.LP.LinearSolver;
 import ND.modules.simulation.FBA.LP.Solver;

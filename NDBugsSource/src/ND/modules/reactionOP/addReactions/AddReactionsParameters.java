@@ -15,26 +15,24 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.kNeighborhood;
+package ND.modules.reactionOP.addReactions;
 
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
-import ND.parameters.parametersType.IntegerParameter;
-import ND.parameters.parametersType.StringParameter;
+import ND.parameters.parametersType.FileNameParameter;
 
-public class KNeighborhoodParameters extends SimpleParameterSet {     
+public class AddReactionsParameters extends SimpleParameterSet {     
    
 
-        public static final IntegerParameter radiusK = new IntegerParameter(
-                "Radius", "The neighborhood radius around the root set", 2);
-        public static final StringParameter rootNode = new StringParameter(
-                "Root node", "The root node", ""
-        );
-        public static final StringParameter excluded = new StringParameter(
-                "Excluded compounds:", "ID of the compounds that will be excluded"); 
+        public static final FileNameParameter reactionFile = new FileNameParameter(
+                "Reaction file", "File with the reactions that will be added.", null);
+        public static final FileNameParameter compoundsFile = new FileNameParameter(
+                "Compounds file", "File with the compounds that will be added.", null);
+        
 
-        public KNeighborhoodParameters() {
-                super(new Parameter[]{radiusK, rootNode, excluded});
+
+        public AddReactionsParameters() {
+                super(new Parameter[]{reactionFile, compoundsFile});
         }
 }

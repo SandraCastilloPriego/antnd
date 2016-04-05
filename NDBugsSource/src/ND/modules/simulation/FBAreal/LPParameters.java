@@ -15,24 +15,18 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.reactionOP.ModifyModel;
-
+package ND.modules.simulation.FBAreal;
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
-import ND.parameters.parametersType.FileNameParameter;
+import ND.parameters.parametersType.StringParameter;
 
-public class AddReactionsParameters extends SimpleParameterSet {     
-   
-
-        public static final FileNameParameter reactionFile = new FileNameParameter(
-                "Reaction file", "File with the reactions that will be added.", null);
-        public static final FileNameParameter compoundsFile = new FileNameParameter(
-                "Compounds file", "File with the compounds that will be added.", null);
-        
-
-
-        public AddReactionsParameters() {
-                super(new Parameter[]{reactionFile, compoundsFile});
+public class LPParameters extends SimpleParameterSet {
+       
+        public static final StringParameter objective = new StringParameter(
+                "Objective", "Reaction that will be optimized", "");
+      
+        public LPParameters() {
+                super(new Parameter[]{objective});
         }
 }

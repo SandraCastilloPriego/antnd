@@ -153,13 +153,17 @@ public final class Bug {
         FBA fba = new FBA();
         fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
         try {
+           // boolean isTakingCO2 = true;
             double flux = 0.0;
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {
                 //System.out.println(r);
-                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective) && fba.getMaxObj() > 0.00001 /*|| this.reactions.get(r).hasReactant(this.objective))*/) {
-                    flux += soln.get(r);
+                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective)  /*|| this.reactions.get(r).hasReactant(this.objective))*/) {
+                    flux += soln.get(r);                    
                 }
+                /*if(r.equals("r_1672")&& soln.get(r)>0){
+                    isTakingCO2 = false;
+                }*/
             }
 
             double refB = 0;
@@ -187,6 +191,7 @@ public final class Bug {
             for (ReactionFA r : this.rowList) {
                 solution += r.getId() + " - ";
             }
+           // if(!isTakingCO2) score = 0;
             System.out.println(solution + ": " + score);
         } catch (Exception ex) {
             System.out.println(ex);

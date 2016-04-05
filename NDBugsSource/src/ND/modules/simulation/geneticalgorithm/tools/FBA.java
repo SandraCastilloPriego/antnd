@@ -1,6 +1,5 @@
 package ND.modules.simulation.geneticalgorithm.tools;
 
-import ND.modules.otimization.LP.*;
 import ND.modules.simulation.FBA.LP.LinearSolver;
 import ND.modules.simulation.FBA.LP.Solver;
 import ND.modules.simulation.FBA.LP.SolverFactory;

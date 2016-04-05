@@ -136,10 +136,10 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
                 case "Upper bound":
                     return r.getKineticLaw().getLocalParameter("UPPER_BOUND").getValue();
                 case "Notes":
-                    String notes = r.getNotesString(); 
+                    String notes = r.getNotesString();
                     String returnNotes = "";
                     notes = notes.substring(notes.indexOf("<p>"), notes.lastIndexOf("</p>"));
-                    for(String n : notes.split("<p>")){
+                    for (String n : notes.split("<p>")) {
                         returnNotes += n.replace("</p>", "") + "\n";
                     }
                     return returnNotes;
@@ -180,30 +180,42 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
                 case "Number":
 
                 case "Id":
-                    r.setId(aValue.toString());
+                    if (aValue == null || aValue.toString().isEmpty()) {
+                        this.dataset.getDocument().getModel().removeReaction(r);
+                    } else {
+                        r.setId(aValue.toString());
+                    }
+                    return;
                 case "Name":
                     r.setName(aValue.toString());
+                    return;
                 case "Reaction":
-
+                    changeReaction(r, aValue.toString());
+                    return;
                 case "Reaction extended":
-
+                    changeReaction(r, aValue.toString());
+                    return;
                 case "Lower bound":
                     r.getKineticLaw().getLocalParameter("LOWER_BOUND").setValue(Double.valueOf(aValue.toString()));
+                    return;
                 case "Upper bound":
                     r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(Double.valueOf(aValue.toString()));
+                    return;
                 case "Notes":
 
                 case "Objective":
                     r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT").setValue(Double.valueOf(aValue.toString()));
+                    return;
                 case "Fluxes":
                     r.getKineticLaw().getLocalParameter("FLUX_VALUE").setValue(Double.valueOf(aValue.toString()));
+                    return;
             }
 
             fireTableCellUpdated(row, column);
         } catch (Exception e) {
 
         }
-        
+
     }
 
     @Override
@@ -267,5 +279,22 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
             reaction = reaction.substring(0, reaction.lastIndexOf(" + "));
         }
         return reaction;
+    }
+
+    private void changeReaction(Reaction r, String value) {
+        /*if (value == null) {
+            this.dataset.getDocument().getModel().removeReaction(r);
+        } else {
+            //1.0 s_3713 <=> 1.0 s_1524
+            try {
+                String[] sides = value.split(" <=> ");
+                String[] reactants = sides[0].split(" + ");
+                String[] products = sides[1].split(" + ");
+                r.getListOfReactants()
+            } catch (Exception e) {
+            }
+
+        }*/
+
     }
 }

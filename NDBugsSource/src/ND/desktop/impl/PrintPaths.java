@@ -101,7 +101,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
         this.graph = graph;
         List<Node> nodes = graph.getNodes();
         List<Edge> edges = graph.getEdges();
-        Map<String, Color> colors = new HashMap<>();
+        final Map<String, Color> colors = new HashMap<>();
         layout = new SpringLayout<>(g);
 
         //layout = new KKLayout(g);       

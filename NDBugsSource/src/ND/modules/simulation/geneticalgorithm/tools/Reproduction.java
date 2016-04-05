@@ -30,7 +30,7 @@ public class Reproduction extends Thread {
     }
 
     public void run() {
-        Bug mother = bugsInside.get(this.rand.nextInt(bugsInside.size()));
+        Bug mother = bugsInside.get(this.rand.nextInt(bugsInside.size()/2));
         Bug father = bugsInside.get(this.rand.nextInt(bugsInside.size()));
         if (!mother.isSameBug(father)) {
             population.add(new Bug(father, mother, trainingDataset, bugLife));

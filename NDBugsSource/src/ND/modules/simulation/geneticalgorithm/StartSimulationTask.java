@@ -126,7 +126,7 @@ public class StartSimulationTask extends AbstractTask {
                 String[] reaction = lines.getValues();
                 reactionIds.addAll(Arrays.asList(reaction));
             }
-            this.maxBugs = reactionIds.size() + 50;
+            this.maxBugs = reactionIds.size() + 100;
             return reactionIds;
         } catch (FileNotFoundException ex) {
             

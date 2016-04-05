@@ -57,7 +57,6 @@ public class SuperAntModuleTask extends AbstractTask {
     private final String biomassID;
     private final HashMap<String, ReactionFA> reactions;
     private final HashMap<String, SpeciesFA> compounds;
-    private HashMap<String, String[]> bounds;
     private Map<String, Double[]> sources;
     private final List<String> sourcesList, cofactors;
     private final JInternalFrame frame;
@@ -82,7 +81,6 @@ public class SuperAntModuleTask extends AbstractTask {
 
         this.reactions = new HashMap<>();
         this.compounds = new HashMap<>();
-        this.bounds = new HashMap<>();
 
         this.frame = new JInternalFrame("Result", true, true, true, true);
         this.pn = new JPanel();
@@ -106,7 +104,7 @@ public class SuperAntModuleTask extends AbstractTask {
         setStatus(TaskStatus.CANCELED);
     }
 
-     @Override
+    @Override
     public void run() {
         try {
             setStatus(TaskStatus.PROCESSING);
@@ -164,35 +162,34 @@ public class SuperAntModuleTask extends AbstractTask {
             boolean biomass = false;
 
             ReactionFA reaction = new ReactionFA(r.getId());
-            String[] b = this.bounds.get(r.getId());
-            if (b != null) {
-                reaction.setBounds(Double.valueOf(b[3]), Double.valueOf(b[4]));
-            } else {
-                try {
-                    KineticLaw law = r.getKineticLaw();
-                    LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
-                    LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                    reaction.setBounds(lbound.getValue(), ubound.getValue());
-                } catch (Exception ex) {
-                    reaction.setBounds(-1000, 1000);
-                }
+            try {
+                KineticLaw law = r.getKineticLaw();
+                LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
+                LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                reaction.setBounds(lbound.getValue(), ubound.getValue());
+            } catch (Exception ex) {
+                reaction.setBounds(-1000, 1000);
             }
-            for (SpeciesReference s : r.getListOfReactants()) {
+            System.out.println("1" + r.getId());
+            try {
+                for (SpeciesReference s : r.getListOfReactants()) {
 
-                Species sp = s.getSpeciesInstance();
+                    Species sp = s.getSpeciesInstance();
 
-                reaction.addReactant(sp.getId(), sp.getName(), s.getStoichiometry());
-                SpeciesFA spFA = this.compounds.get(sp.getId());
-                if (biomass) {
-                    spFA.setPool(Math.abs(s.getStoichiometry()));
+                    reaction.addReactant(sp.getId(), sp.getName(), s.getStoichiometry());
+                    SpeciesFA spFA = this.compounds.get(sp.getId());
+                    if (biomass) {
+                        spFA.setPool(Math.abs(s.getStoichiometry()));
+                    }
+                    if (spFA != null) {
+                        spFA.addReaction(r.getId());
+                    } else {
+                        System.out.println(sp.getId());
+                    }
                 }
-                if (spFA != null) {
-                    spFA.addReaction(r.getId());
-                } else {
-                    System.out.println(sp.getId());
-                }
+            } catch (NullPointerException e) {
             }
-
+            System.out.println("2");
             for (SpeciesReference s : r.getListOfProducts()) {
                 Species sp = s.getSpeciesInstance();
 
@@ -209,7 +206,7 @@ public class SuperAntModuleTask extends AbstractTask {
                         this.sources.put(sp.getId(), sb);
                     }
                 }
-
+                System.out.println("3");
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
                 SpeciesFA spFA = this.compounds.get(sp.getId());
                 if (spFA != null) {
@@ -218,7 +215,7 @@ public class SuperAntModuleTask extends AbstractTask {
                     System.out.println(sp.getId());
                 }
             }
-
+            System.out.println("4");
             if (r.getListOfProducts().isEmpty()) {
                 for (SpeciesReference s : r.getListOfReactants()) {
                     Species sp = s.getSpeciesInstance();
@@ -239,13 +236,14 @@ public class SuperAntModuleTask extends AbstractTask {
             }
             this.reactions.put(r.getId(), reaction);
         }
-
+        System.out.println("5");
         List<String> toBeRemoved = new ArrayList<>();
         for (String compound : compounds.keySet()) {
             if (compounds.get(compound).getReactions().isEmpty()) {
                 toBeRemoved.add(compound);
             }
         }
+        System.out.println("6");
         for (String compound : toBeRemoved) {
             this.compounds.remove(compound);
         }

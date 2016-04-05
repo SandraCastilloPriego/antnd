@@ -71,6 +71,6 @@ public class SomePathsModule implements NDProcessingModule {
 
         @Override
         public boolean setSeparator() {
-                return false;
+                return true;
         }
 }

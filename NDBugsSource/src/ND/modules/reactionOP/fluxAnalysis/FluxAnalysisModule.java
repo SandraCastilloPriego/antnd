@@ -62,7 +62,7 @@ public class FluxAnalysisModule implements NDProcessingModule {
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.OPTIMIZATION;
+                return NDModuleCategory.VISUALIZATION;
         }
 
         @Override

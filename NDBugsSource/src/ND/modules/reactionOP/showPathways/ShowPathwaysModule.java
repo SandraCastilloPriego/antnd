@@ -64,7 +64,7 @@ public class ShowPathwaysModule implements NDProcessingModule {
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.REACTION;
+                return NDModuleCategory.VISUALIZATION;
         }
 
         @Override
