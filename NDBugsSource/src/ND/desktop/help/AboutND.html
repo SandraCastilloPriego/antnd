@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>About AntND</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="/ND/desktop/impl/helpsystem/HelpStyles.css">
+    </head>
+    <body>
+
+        <img src="NDIcon.png" height="130" width="166"/> <h1>AntND</h1>
+        <p>This program is meant to be a help for the manual curation and visualization of metabolic models in SBML format. </p>
+    <center>
+        <p>
+            <img src="capture.png" name="AntND"/>
+        </p>
+    </center>
+    <p>
+        This program is able to open SBML files containing a metabolic model. Given a set of compounds used as a source (they can be represented inside the 
+        metabolic model as an exchange reactions with lower bound < 0), it can calculate one or more of the 
+        shortest paths from the sources to an user defined compound. This resulting path or subnetwork can be visualized in the same program or exported
+        as and SBML file which will be a subset of the initial one.
+    </p>
+    <p>
+        The program can perform simple Flux Balance Analysis using the R package sybil. For that reason, the integration of this java program with R
+        must be defined in the initial files (startND_Linux.sh, startND_MacOSX.command or start_Windows.bat): <br>
+        You will need to correctly configure the following:
+    </p>
+    <ul>             
+        <li>R_HOME - This is the directory where R is installed, e.g. for Windows it will be something like C:\Program Files\R\R-2.15.0
+        <li>R_LIBS_USER - This is the directory in which R installs third-party packages. It's usually a subdirectory of your personal directory, e.g. for Windows it will be something like %USERPROFILE%\Documents\R\win-library\2.15. For some R installations it might the library subdirectory of %R_HOME%, e.g. %R_HOME%\library
+        <li>PATH -  Append the directory that contains R's libraries. It will be a subdirectory of %R_HOME%, e.g. for 32-bit Windows it will be something like %R_HOME%\bin\i386 or for 64-bit Windows %R_HOME%\bin\x64
+        <li>JRI_LIB_PATH - This is the directory where rJava has installed its JRI libraries. It will be a subdirectory of %R_LIBS_USER%, e.g. for 32-bit Windows it will be something like %R_LIBS_USER%\rJava\jri\i386 or for 64-bit Windows %R_LIBS_USER%\rJava\jri\x64
+    </ul>
+
+
+    <p>
+        This software can modify the model by adding or removing reaction. Any change will be recorded for each model in a text file that
+        will be saved during the project saving. The user is allowed to add comments or modify this file. It can be accessed by selecting the 
+        model in the left part of the screen and pressing the right button of the mouse. In the menu the option "Show changes" must be selected.
+    </p>
+    <p>It can list all the reactions in the selected model
+        or search for specific reaction and the same for the compounds. It contains a module for the comparison of two models but it only works when 
+        the two models share IDs. 
+    </p>
+    <p>
+        The different networks or SBML files can be combined in a single SBML file using the option "Combine" that appears using the right 
+        button of the mouse after selecting the models you want to combine.
+
+    </p>
+    <p>
+        To analyze the resulting subnetworks or the main metabolic models, the program contains several algorithm to cluster the nodes or obtain 
+        specific subnetworks based on neighborhood. 
+    </p>
+</body>
+</html>

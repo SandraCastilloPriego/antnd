@@ -1,0 +1,52 @@
+#!/bin/sh
+
+
+# The HEAP_SIZE variable line defines the Java heap size in MB. 
+# That is the total amount of memory available to AntND.
+# Please adjust according to the amount of memory of your computer.
+# Maximum value on a 32-bit Linux system is about 1900. 
+HEAP_SIZE=1024
+
+# If you have a 64-bit CPU, 64-bit OS and 64-bit JVM installed, you 
+# can run AntND in 64-bit mode and increase the HEAP_SIZE above 
+# the limitations of 32-bit platform. In that case, please set the 
+# value of USE_64_BIT parameter to "-d64" (without quotes).
+USE_64_BIT=-d64
+
+# The TMP_FILE_DIRECTORY parameter defines the location where temporary 
+# files (parsed raw data) will be placed. Default is /tmp.
+TMP_FILE_DIRECTORY=/tmp
+
+# Set R environment variables.
+export R_HOME=/usr/lib64/R
+export R_LIBS_USER=${HOME}/R/x86_64-redhat-linux-gnu-library/3.0
+
+# Include R shared libraries in LD_LIBRARY_PATH.
+export LD_LIBRARY_PATH=${R_HOME}/lib:${R_HOME}/bin
+
+# The directory holding the JRI JARs (JRI.jar, JRIEngine.jar REngine.jar).
+JRI_CLASS_PATH=${R_LIBS_USER}/rJava/jri
+
+# The directory holding the JRI shared library (libjri.so).
+JRI_LIB_PATH=${R_LIBS_USER}/rJava/jri
+
+# It is usually not necessary to modify the JAVA_COMMAND parameter, but 
+# if you like to run a specific Java Virtual Machine, you may set the 
+# path to the java command of that JVM.
+JAVA_COMMAND=java
+
+# It is not necessary to modify the following section
+LOGGING_CONFIG_FILE=conf/logging.properties
+JAVA_PARAMETERS="-XX:+UseParallelGC -Djava.io.tmpdir=$TMP_FILE_DIRECTORY -Djava.util.logging.config.file=$LOGGING_CONFIG_FILE $USE_64_BIT -Xms${HEAP_SIZE}m -Xmx${HEAP_SIZE}m -Djava.library.path=${JRI_LIB_PATH}"
+CLASS_PATH=ND.jar:${JRI_CLASS_PATH}/JRIEngine.jar:${JRI_CLASS_PATH}/JRI.jar:${JRI_CLASS_PATH}/REngine.jar
+MAIN_CLASS=ND.main.NDCore
+
+# Make sure we are in the correct directory
+SCRIPTDIR=`dirname "$0"`
+cd "$SCRIPTDIR"
+
+# Show java version, in case a problem occurs
+echo "-version" | xargs $JAVA_COMMAND
+
+# This command starts the Java Virtual Machine
+echo "$JAVA_PARAMETERS" -classpath $CLASS_PATH $MAIN_CLASS | xargs $JAVA_COMMAND

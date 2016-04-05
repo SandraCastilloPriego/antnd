@@ -1,0 +1,44 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+    <head>
+        <title>Simulation - Get the shortest path</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="/ND/desktop/impl/helpsystem/HelpStyles.css">
+    </head>
+    <body>
+        <h1>Get Shortest Path module</h1>
+        <h2>Description</h2>
+        <p>
+            This module returns one of the possible shortest paths between 
+            the sources defined in the program configuration ("Sources and bounds configuration" module) and an user defined objective compound. This algorithm
+            takes into account the stoichiometry and bound of the reactions. It's input file is a SBML file and the output subnetwork won't contain loops.
+        </p>    
+        <p>
+            It creates a new SBML file that can be visualized selecting it in the left side of the screen and 
+            using the right button of the mouse to select the options "Visualize". 
+         
+        </p>  
+        <p>
+            The initial or unprocessed SBML models don't have contain any graph so they can't be visualized. 
+        </p>
+        <p>
+            When the new model is saved inside a project, its comments/information and its graph will be saved with it in 
+            separated files. The SBML file can be also saved as a single SBML file to be used in other software by selecting the option
+            "Save model in a file" which appears when the model is selected and the the right button of the mouse is pressed.
+        </p>
+        
+        <h4>Method parameters</h4>
+                <dl>
+                        <dt>Compound ID</dt>
+                        <dd>ID of the compound objective for the algorithm.</dd>
+
+                        <dt>Number of iterations</dt>
+                        <dd>Minimum number of steps in which the algorithm will search for the path. It should be between 10 and 100 depending on
+                        the size of the model.</dd>
+
+                        <dt>Steady state</dt>
+                        <dd>It adds NAD in case it is needed in any reaction.</dd>   
+                </dl>
+    </body>
+</html>
+
