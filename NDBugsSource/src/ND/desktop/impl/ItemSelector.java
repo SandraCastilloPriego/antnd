@@ -23,6 +23,8 @@ import ND.main.NDCore;
 import ND.modules.reactionOP.CombineModels.CombineModelsModule;
 import ND.util.GUIUtils;
 import ND.util.components.DragOrderedJList;
+import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -30,15 +32,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.xml.stream.XMLStreamException;
+import org.freehep.graphics2d.VectorGraphics;
+import org.freehep.graphicsio.pdf.PDFGraphics2D;
+import org.freehep.graphicsio.svg.SVGGraphics2D;
 import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBMLWriter;
 
@@ -88,6 +96,7 @@ public class ItemSelector extends JPanel implements ActionListener,
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
+ //       GUIUtils.addMenuItem(dataFilePopupMenu, "Save graph", this, "SAVEGRAPH");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
@@ -110,6 +119,9 @@ public class ItemSelector extends JPanel implements ActionListener,
         if (command.equals("SHOW_DATASET")) {
             showData();
         }
+//        if (command.equals("SAVEGRAPH")) {
+//            saveGraph();
+//        }
 
         if (command.equals("SAVE_DATASET")) {
             saveData();
@@ -219,7 +231,7 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         Object src = event.getSource();
 
-                // Update the highlighting of peak list list in case raw data list
+        // Update the highlighting of peak list list in case raw data list
         // selection has changed and vice versa.
         if (src == DatasetFiles) {
             DatasetFiles.revalidate();
@@ -302,6 +314,34 @@ public class ItemSelector extends JPanel implements ActionListener,
 
                 System.out.println("Visualize");
                 pn.add(print.printPathwayInFrame(file.getGraph()));
+
+            } catch (NullPointerException ex) {
+                System.out.println(ex.toString());
+            }
+        }
+    }
+
+    private void saveGraph() {
+        Dataset[] selectedFiles = getSelectedDatasets();
+
+        for (Dataset file : selectedFiles) {
+            try {
+                PrintPaths print = new PrintPaths(file.getDocument().getModel());
+                System.out.println("Save");
+                VisualizationViewer<String, String> vv = print.printPathwayInFrame(file.getGraph());
+                Properties p = new Properties();
+                p.setProperty("PageSize", "A5");
+                VectorGraphics g;
+                try {
+                    // g = new SVGGraphics2D(new File("Output.svg"), new Dimension(2400,1900));
+                    g = new PDFGraphics2D(new File("Output.pdf"), new Dimension(2400, 1900));
+                    g.setProperties(p);
+                    g.startExport();
+                    vv.print(g);
+                    g.endExport();
+                } catch (IOException ex) {
+
+                }
 
             } catch (NullPointerException ex) {
                 System.out.println(ex.toString());

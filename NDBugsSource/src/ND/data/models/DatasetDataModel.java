@@ -21,11 +21,14 @@ import ND.data.ColumnName;
 import ND.data.Dataset;
 import ND.data.DatasetType;
 import ND.data.impl.datasets.SimpleBasicDataset;
+import ND.data.network.Graph;
+import ND.data.network.Node;
 import ND.util.Tables.DataTableModel;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SpeciesReference;
@@ -180,8 +183,11 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
                 case "Number":
 
                 case "Id":
-                    if (aValue == null || aValue.toString().isEmpty()) {
+                    if (aValue == null || aValue.toString().isEmpty()|| aValue.equals("NA")) {
                         this.dataset.getDocument().getModel().removeReaction(r);
+                        Graph g = this.dataset.getGraph();
+                        Node n = g.getNode(r.getId());
+                        if(n!=null) g.removeNode(n.getId());
                     } else {
                         r.setId(aValue.toString());
                     }
@@ -204,10 +210,18 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
                 case "Notes":
 
                 case "Objective":
-                    r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT").setValue(Double.valueOf(aValue.toString()));
+                    LocalParameter parameter = r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT");
+                    if (parameter == null) {
+                        parameter = r.getKineticLaw().createLocalParameter("OBJECTIVE_COEFFICIENT");
+                    }
+                    parameter.setValue(Double.valueOf(aValue.toString()));
                     return;
                 case "Fluxes":
-                    r.getKineticLaw().getLocalParameter("FLUX_VALUE").setValue(Double.valueOf(aValue.toString()));
+                    parameter = r.getKineticLaw().getLocalParameter("FLUX_VALUE");
+                    if (parameter == null) {
+                        parameter = r.getKineticLaw().createLocalParameter("FLUX_VALUE");
+                    }
+                    parameter.setValue(Double.valueOf(aValue.toString()));
                     return;
             }
 
@@ -283,18 +297,18 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
 
     private void changeReaction(Reaction r, String value) {
         /*if (value == null) {
-            this.dataset.getDocument().getModel().removeReaction(r);
-        } else {
-            //1.0 s_3713 <=> 1.0 s_1524
-            try {
-                String[] sides = value.split(" <=> ");
-                String[] reactants = sides[0].split(" + ");
-                String[] products = sides[1].split(" + ");
-                r.getListOfReactants()
-            } catch (Exception e) {
-            }
+         this.dataset.getDocument().getModel().removeReaction(r);
+         } else {
+         //1.0 s_3713 <=> 1.0 s_1524
+         try {
+         String[] sides = value.split(" <=> ");
+         String[] reactants = sides[0].split(" + ");
+         String[] products = sides[1].split(" + ");
+         r.getListOfReactants()
+         } catch (Exception e) {
+         }
 
-        }*/
+         }*/
 
     }
 }

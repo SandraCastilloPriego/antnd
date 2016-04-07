@@ -43,6 +43,7 @@ import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.FBA.AntFBAModule;
+import ND.modules.simulation.FBANoCofactors.LPNCModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
 import ND.modules.simulation.geneticalgorithm.StartSimulationModule;
 import ND.modules.simulation.geneticalgorithm.reducing.StartReducingGAModule;
@@ -69,12 +70,12 @@ public class NDModulesList {
         AntBetweenModule.class,
         SuperAntModule.class,
         //SuperAntAdvancedModule.class,
-        AntFBAModule.class,
+        //AntFBAModule.class,
         AddReactionModule.class,
-        AddReactionsModule.class, 
+        AddReactionsModule.class,
         RemoveReactionModule.class,
         ChangeBoundsModule.class,
-        SetBoundsModule.class,        
+        SetBoundsModule.class,
         ShowReactionModule.class,
         ShowAllReactionsModule.class,
         ShowCompoundModule.class,
@@ -87,6 +88,7 @@ public class NDModulesList {
         //  AntFluxMaxModule.class,
         //  AntFluxMinModule.class,
         LPModule.class,
+       // LPNCModule.class,
         FluxAnalysisModule.class,
         ClusteringModule.class,
         ClusteringBetweennessModule.class,
@@ -94,7 +96,7 @@ public class NDModulesList {
         //KStepMarkovModule.class,
         //CycleDetectorModule.class,
         CompareModule.class,
-        FluxVisualizationModule.class,
+        //FluxVisualizationModule.class,
         StartSimulationModule.class,
         StartTestingGAModule.class,
         StartReducingGAModule.class};
