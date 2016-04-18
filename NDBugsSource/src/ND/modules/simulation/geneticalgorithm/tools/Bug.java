@@ -151,6 +151,7 @@ public final class Bug {
 
     public void evaluation() {
         FBA fba = new FBA();
+        //fba.setSoverType(true);
         fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
         try {
            // boolean isTakingCO2 = true;
@@ -178,7 +179,7 @@ public final class Bug {
             }else if(flux <0 ){
                 refO = 0;
             } else {
-                refO = flux / this.referenceObjective;
+                refO = flux / 6;
             }
             this.score = 2 * ((refB * refO) / (refB + refO));
             

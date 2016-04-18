@@ -26,14 +26,11 @@ public abstract class Analysis {
     protected void setVars() {
         for (ReactionFA r : reactionsList) {
             String varName = Integer.toString(this.reactionPositionMap.get(r.getId()));
-                
-            if (toBeRemoved.contains(r)) {
-                this.getSolver().setVar(varName, VarType.CONTINUOUS, 0.0, 0.0);
-            } else {
-                 //System.out.println(r.getId() + ": " + varName + ": " + r.getlb() + " ," + r.getub());
-
-                this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
-            }
+            /*if (toBeRemoved.contains(r)) {
+             this.getSolver().setVar(varName, VarType.CONTINUOUS, 0.0, 0.0);
+             }else{*/
+            this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+            // }
         }
     }
 
@@ -136,9 +133,9 @@ public abstract class Analysis {
 
             //System.out.print(reaction + " - ");
             ReactionFA r = reactions.get(reaction);
-            /* if (toBeRemoved.contains(r)) {
-             continue;
-             }*/
+            if (toBeRemoved.contains(r)) {
+                continue;
+            }
             this.reactionsList.add(r);
 
             for (String reactant : r.getReactants()) {

@@ -29,11 +29,15 @@ import ND.taskcontrol.TaskStatus;
 import com.csvreader.CsvReader;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -158,75 +162,86 @@ public class StartSimulationTask extends AbstractTask {
 
     public void printResult(List<Bug> bugs) {
 
-        Comparator<Result> c = new Comparator<Result>() {
-            public int compare(Result o1, Result o2) {
-                return Double.compare(o1.getScore(), o2.getScore());
-            }
-        };
-
-        Comparator<Result> c2 = new Comparator<Result>() {
-            public int compare(Result o1, Result o2) {
-                return Double.compare(o1.getValues().size(), o2.getValues().size());
-            }
-        };
-
-        Comparator<Bug> c3 = new Comparator<Bug>() {
-            public int compare(Bug o1, Bug o2) {
-                return Double.compare(o1.getScore(), o2.getScore());
-            }
-        };
-        int count = 0;
-        try {
-            Collections.sort(bugs, c3);
-            Collections.reverse(bugs);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        for (Bug bug : bugs) {
-            if (count < 300) {
-                Result result = new Result(bug.getScore());
-                for (ReactionFA row : bug.getRows()) {
-                    result.addValue(String.valueOf(row.getId()));
+        FileWriter fw = null;
+        
+            Comparator<Result> c = new Comparator<Result>() {
+                public int compare(Result o1, Result o2) {
+                    return Double.compare(o1.getScore(), o2.getScore());
                 }
-                result.score = bug.getScore();
-
-                boolean isIt = false;
-                for (Result r : this.results) {
-                    if (r.isIt(result.getValues())) {
-                        r.count();
-                        isIt = true;
+            };
+            Comparator<Result> c2 = new Comparator<Result>() {
+                public int compare(Result o1, Result o2) {
+                    return Double.compare(o1.getValues().size(), o2.getValues().size());
+                }
+            };
+            Comparator<Bug> c3 = new Comparator<Bug>() {
+                public int compare(Bug o1, Bug o2) {
+                    return Double.compare(o1.getScore(), o2.getScore());
+                }
+            };
+            int count = 0;
+            try {
+                Collections.sort(bugs, c3);
+                Collections.reverse(bugs);
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            for (Bug bug : bugs) {
+                if (count < 300) {
+                    Result result = new Result(bug.getScore());
+                    for (ReactionFA row : bug.getRows()) {
+                        result.addValue(String.valueOf(row.getId()));
+                    }
+                    result.score = bug.getScore();
+                    
+                    boolean isIt = false;
+                    for (Result r : this.results) {
+                        if (r.isIt(result.getValues())) {
+                            r.count();
+                            isIt = true;
+                        }
+                    }
+                    if (!isIt) {
+                        this.results.add(result);
                     }
                 }
-                if (!isIt) {
-                    this.results.add(result);
-                }
+                count++;
+                
             }
-            count++;
-
-        }
-
-        try {
-            Collections.sort(results, c2);
-            Collections.reverse(results);
-            Collections.sort(results, c);
-            Collections.reverse(results);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        int contbug = 0;
-        String result = "";
-
-        for (Result r : results) {
+            try {
+                Collections.sort(results, c2);
+                Collections.reverse(results);
+                Collections.sort(results, c);
+                Collections.reverse(results);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            int contbug = 0;
+            String result = "";
+            for (Result r : results) {
             result += r.toString();
             contbug++;
             if (contbug > 500) {
                 break;
             }
-        }
-        this.textArea.setText(result);
+            }
+            this.textArea.setText(result);
+         try {
+            fw = new FileWriter(new File("/home/scsandra/Documents/CellFactory2015/LifGA/result.txt"));
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(result);
+            bw.close();
 
+        } catch (IOException ex) {
+            
+        } finally {
+            try {
+                fw.close();
+            } catch (IOException ex) {
+                
+            }
+        }
     }
 
 }

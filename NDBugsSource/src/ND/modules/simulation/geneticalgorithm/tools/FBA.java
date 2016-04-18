@@ -1,6 +1,7 @@
 package ND.modules.simulation.geneticalgorithm.tools;
 
 import ND.modules.simulation.FBA.LP.LinearSolver;
+import ND.modules.simulation.FBA.LP.ObjType;
 import ND.modules.simulation.FBA.LP.Solver;
 import ND.modules.simulation.FBA.LP.SolverFactory;
 
@@ -41,9 +42,18 @@ public class FBA extends Analysis
 */
 	public void solve() throws Exception
 	{
-		this.setSolverParameters();
+		this.setSolverParameters();                
 		this.maxObj = linearSolver.optimize();
+                
 	}
+        
+        public void setSoverType(boolean type){
+            if(type){
+                linearSolver.setObjType(ObjType.Maximize);
+            }else{
+                linearSolver.setObjType(ObjType.Minimize);
+            }
+        }
 	
 	@Override
 	public Solver getSolver()

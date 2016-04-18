@@ -55,11 +55,11 @@ public final class World {
         this.createReactions();
         
         this.setObjectiveObjective();
-        double referenceObjective = this.getReference();
+        double referenceObjective = this.getReference(true);
         this.reactions.remove("objective");
         
         this.setBiomassObjective();
-        double referenceBiomass = this.getReference();
+        double referenceBiomass = this.getReference(true);
 
         if (training != null) {
             System.out.println("Adding bugs");
@@ -74,8 +74,9 @@ public final class World {
         }
     }
     
-     public double getReference() {
+     public double getReference(boolean type) {
         FBA fba = new FBA();      
+        fba.setSoverType(type);
         List<ReactionFA> nullList = new ArrayList<>();
         fba.setModel(this.reactions, this.trainingDataset.getDocument().getModel(), nullList);
         try {

@@ -26,9 +26,9 @@ public abstract class Analysis {
     protected void setVars() {
         for (ReactionFA r : reactionsList) {
             String varName = Integer.toString(this.reactionPositionMap.get(r.getId()));
-            //System.out.println(r.getId() + ": " + varName + ": " + r.getlb() + " ," + r.getub());
-
+            //System.out.println(r.getId() + ": " + varName + ": " + r.getlb() + " ," + r.getub());            
             this.getSolver().setVar(varName, VarType.CONTINUOUS, r.getlb(), r.getub());
+
         }
     }
 
@@ -88,7 +88,7 @@ public abstract class Analysis {
 
     public void setModel(String Objective, HashMap<String, ReactionFA> reactions, Model model) {
         this.objective = Objective;
-        this.prepareReactions(reactions,model);       
+        this.prepareReactions(reactions, model);
     }
 
     public void setSolverParameters() {
@@ -124,7 +124,9 @@ public abstract class Analysis {
 
         for (String reaction : reactions.keySet()) {
             // System.out.print(reaction + " - ");
+            
             ReactionFA r = reactions.get(reaction);
+            if(r.getlb()==0 && r.getub()==0) continue;
             this.reactionsList.add(r);
 
             for (String reactant : r.getReactants()) {
@@ -133,8 +135,8 @@ public abstract class Analysis {
                 }
             }
             for (String product : r.getProducts()) {
-                 String sp = model.getSpecies(product).getName();
-                if (!metabolitesList.contains(product)&& !sp.contains("boundary")) {
+                String sp = model.getSpecies(product).getName();
+                if (!metabolitesList.contains(product) && !sp.contains("boundary")) {
                     this.metabolitesList.add(product);
                 }
             }
