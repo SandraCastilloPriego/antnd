@@ -36,7 +36,8 @@ public class LPModule implements NDProcessingModule {
 
         @Override
         public ParameterSet getParameterSet() {
-                return parameters;
+               // return parameters;
+            return null;
         }
 
         @Override

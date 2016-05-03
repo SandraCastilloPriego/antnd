@@ -22,6 +22,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
+import weka.classifiers.functions.SimpleLinearRegression;
+import weka.core.Attribute;
+import weka.core.FastVector;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.SparseInstance;
 
 /**
  *
@@ -36,9 +43,8 @@ public final class Bug {
     Dataset dataset;
     String objective;
     int count = 1;
-    double referenceBiomass, referenceObjective;
 
-    public Bug(ReactionFA row, Dataset dataset, int bugLife, String objective, HashMap<String, ReactionFA> reactions, double referenceBiomass, double referenceObjective) {
+    public Bug(ReactionFA row, Dataset dataset, int bugLife, String objective, HashMap<String, ReactionFA> reactions) {
         this.rowList = new ArrayList<>();
         if (row != null) {
             this.rowList.add(row);
@@ -47,8 +53,6 @@ public final class Bug {
         this.life = bugLife;
         this.objective = objective;
         this.reactions = reactions;
-        this.referenceBiomass = referenceBiomass;
-        this.referenceObjective = referenceObjective;
         this.evaluation();
     }
 
@@ -58,8 +62,6 @@ public final class Bug {
         this.rowList = new ArrayList<>();
         this.reactions = father.getReactions();
         this.objective = father.getObjective();
-        this.referenceBiomass = father.referenceBiomass;
-        this.referenceObjective = father.referenceObjective;
 
         if (father.getRows().isEmpty() || mother.getRows().isEmpty()) {
             this.life = 0;
@@ -148,60 +150,91 @@ public final class Bug {
 //        }
 //        return 0.0;
 //    }
-
     public void evaluation() {
-        FBA fba = new FBA();
-        //fba.setSoverType(true);
-        fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
-        try {
-           // boolean isTakingCO2 = true;
-            double flux = 0.0;
-            Map<String, Double> soln = fba.run();
-            for (String r : soln.keySet()) {
-                //System.out.println(r);
-                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective)  /*|| this.reactions.get(r).hasReactant(this.objective))*/) {
-                    flux += soln.get(r);                    
-                }
-                /*if(r.equals("r_1672")&& soln.get(r)>0){
-                    isTakingCO2 = false;
-                }*/
-            }
-
-            double refB = 0;
-            if (fba.getMaxObj() > this.referenceBiomass) {
-                refB = 1;
-            } else {
-                refB = fba.getMaxObj() / this.referenceBiomass;
-            }
-            double refO = 0;
-            if (flux > this.referenceObjective) {
-                refO = 1;
-            }else if(flux <0 ){
-                refO = 0;
-            } else {
-                refO = flux / 6;
-            }
-            this.score = 2 * ((refB * refO) / (refB + refO));
-            
-            if (score == Double.POSITIVE_INFINITY || score == Double.NaN) {
-                score = 0.0;
-            }
-            if(fba.getMaxObj()<0.00001) score = 0.0;
-
-            String solution = "";
-            for (ReactionFA r : this.rowList) {
-                solution += r.getId() + " - ";
-            }
-           // if(!isTakingCO2) score = 0;
-            System.out.println(solution + ": " + score);
-        } catch (Exception ex) {
-            System.out.println(ex);
+        double slope = this.getParetoR();
+        System.out.println("Correlation: " + slope);
+        if (slope == 0) {
+            this.score = 0;
+        } else {
+            this.score = slope;
         }
+        /* setObjective(this.objective);
+
+         FBA fba = new FBA();
+         //fba.setSoverType(true);
+         fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+         try {
+         // boolean isTakingCO2 = true;
+         fba.run();
+         double flux = fba.getMaxObj();
+         setObjective("r_2111");
+         fba = new FBA();
+         fba.run();
+         double fluxBiomass = fba.getMaxObj();
+
+         System.out.println(fluxBiomass + " -- " + flux);
+
+         /*  double refB = 0;
+         if (fluxBiomass > this.referenceBiomass) {
+         refB = 1;
+         } else if (fluxBiomass == 0) {
+         refB = 0;
+         } else {
+         refB = fluxBiomass / this.referenceBiomass;
+         }
+         double refO = 0;
+         if (flux > this.referenceObjective) {
+         refO = 1;
+         } else if (flux < 0) {
+         refO = 0;
+         } else {
+         refO = flux / this.referenceObjective;
+         }
+         if (refO == 0) {
+         refO = 0.00001;
+         }
+         if (refB == 0) {
+         refB = 0.00001;
+         }
+         System.out.println(refB + " -- " + refO);
+         this.score = 2 * ((refB * refO) / (refB + refO));*/
+        //score = fba.getMaxObj();
+          /*  if (score == Double.POSITIVE_INFINITY || score == Double.NaN) {
+         score = 0.0;
+         }
+
+         if (fba.getMaxObj() < 0.000001) {
+         score = 0.0;
+         }
+         // score = flux;
+
+         */
+        String solution = "";
+        for (ReactionFA r : this.rowList) {
+            solution += r.getId() + " - ";
+        }
+        // if(!isTakingCO2) score = 0;
+        System.out.println(solution + ": " + score);
+        /*} catch (Exception ex) {
+         System.out.println(ex);
+         }*/
 
     }
 
+    public void setObjective(String objective) {
+        for (ReactionFA r : this.reactions.values()) {
+            if (r.getId().equals(objective)) {
+                r.setObjective(1);
+            } else {
+                r.setObjective(0);
+            }
+        }
+    }
+
     public double getScore() {
-        if(score == Double.NaN) return 0.0;
+        if (score == Double.NaN) {
+            return 0.0;
+        }
         return score;
     }
 
@@ -260,6 +293,149 @@ public final class Bug {
 
     private String getObjective() {
         return this.objective;
+    }
+
+    private double getParetoSlope() {
+        try {
+            FastVector fvWekaAttributes = new FastVector(2);
+            Attribute fluxes = new Attribute("Biomassfluxes");
+            Attribute fluxesobj = new Attribute("Objectivefluxes");
+            fvWekaAttributes.addElement(fluxes);
+            fvWekaAttributes.addElement(fluxesobj);
+            Instances data = new Instances("Data", fvWekaAttributes, 0);
+            data.setClass(data.attribute("Objectivefluxes"));
+
+            setObjective(this.objective);
+            this.reactions.get("r_2111").setBounds(0.01, 0.01);
+            FBA fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            double values[] = new double[2];
+            double v = fba.getMaxObj();
+            if (v > 0) {
+                values[0] = v;
+                values[1] = 0.01;
+                Instance inst = new SparseInstance(1.0, values);
+                data.add(inst);
+            }
+
+            setObjective(this.objective);
+            this.reactions.get("r_2111").setBounds(0.05, 0.05);
+            fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            values = new double[2];
+            v = fba.getMaxObj();
+            if (v > 0) {
+                values[0] = v;
+                values[1] = 0.05;
+                Instance inst = new SparseInstance(1.0, values);
+                data.add(inst);
+            }
+
+            setObjective(this.objective);
+            this.reactions.get("r_2111").setBounds(0.1, 0.1);
+            fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            values = new double[2];
+            v = fba.getMaxObj();
+            if (v > 0) {
+                values[0] = v;
+                values[1] = 0.1;
+                Instance inst = new SparseInstance(1.0, values);
+                data.add(inst);
+            }
+
+            setObjective(this.objective);
+            this.reactions.get("r_2111").setBounds(0.2, 0.2);
+            fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            values = new double[2];
+            v = fba.getMaxObj();
+            if (v > 0) {
+                values[0] = v;
+                values[1] = 0.2;
+                Instance inst = new SparseInstance(1.0, values);
+                data.add(inst);
+            }
+
+            SimpleLinearRegression sr = new SimpleLinearRegression();
+            sr.buildClassifier(data);
+            return sr.getSlope();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0;
+        }
+
+    }
+
+    private double getParetoR() {
+        try {
+            double[] valuesX = new double[4];
+            double[] valuesY = new double[4];
+            double production = 0.0;
+            setObjective("r_2111");
+            
+            this.reactions.get(this.objective).setBounds(0.01, 0.01);
+            FBA fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            double v = fba.getMaxObj();
+            if (v > 0) {
+                valuesX[0] = v;
+                valuesY[0] = 0.01;                
+            }
+
+            this.reactions.get(this.objective).setBounds(0.5, 0.5);
+            fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            v = fba.getMaxObj();
+            if (v > 0) {
+                valuesX[1] = v;
+                valuesY[1] = 0.5;
+
+            }
+
+            setObjective(this.objective);
+            this.reactions.get(this.objective).setBounds(1.0, 1.0);
+            fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            v = fba.getMaxObj();
+            if (v > 0) {
+                valuesX[2] = v;
+                valuesY[2] = 1.0;
+
+            }
+
+            setObjective(this.objective);
+            this.reactions.get(this.objective).setBounds(1.9, 1.9);
+            fba = new FBA();
+            fba.setModel(this.reactions, this.dataset.getDocument().getModel(), this.rowList);
+            fba.run();
+            v = fba.getMaxObj();
+            if (v > 0) {
+                valuesX[3] = v;
+                valuesY[3] = 1.9;
+
+            }
+
+            //CorrelationAttributeEval sr = new CorrelationAttributeEval();
+            // sr.buildClassifier(data);
+            //  return sr.g;
+            
+                return new PearsonsCorrelation().correlation(valuesX, valuesY) * -1;
+            
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -10.0;
+        }
+
     }
 
 }

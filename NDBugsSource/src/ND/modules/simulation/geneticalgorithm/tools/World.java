@@ -54,12 +54,12 @@ public final class World {
         this.objective = objective;
         this.createReactions();
         
+       /* this.setBiomassObjective();
+        double referenceBiomass = this.getReference(true);
+        
         this.setObjectiveObjective();
         double referenceObjective = this.getReference(true);
-        this.reactions.remove("objective");
-        
-        this.setBiomassObjective();
-        double referenceBiomass = this.getReference(true);
+        this.reactions.remove("objective");*/
 
         if (training != null) {
             System.out.println("Adding bugs");
@@ -67,7 +67,7 @@ public final class World {
             for (ReactionFA reaction : this.reactions.values()) {
                 if (isNotExchange(reaction)&& reactionIds.contains(reaction.getId())) {
                     System.out.println("Bug " + i++ + ": " +reaction.getId());
-                    this.addBug(reaction, referenceBiomass, referenceObjective);
+                    this.addBug(reaction);
                 }
             }
 
@@ -103,6 +103,8 @@ public final class World {
                 KineticLaw law = r.getKineticLaw();
                 LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
                 LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                LocalParameter objective = law.getLocalParameter("OBJECTIVE_COEFFICIENT");
+                reaction.setObjective(objective.getValue());
                 reaction.setBounds(lbound.getValue(), ubound.getValue());
             } catch (Exception ex) {
                 reaction.setBounds(-1000, 1000);
@@ -118,12 +120,14 @@ public final class World {
                 Species sp = s.getSpeciesInstance();
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
             }
-            reaction.setObjective(0.0);            
+            //reaction.setObjective(0.0);            
             this.reactions.put(r.getId(), reaction);            
         }
         
         
     }
+    
+    
     
     public void setBiomassObjective(){
         ReactionFA objectiveReaction = new ReactionFA("objective");
@@ -146,8 +150,8 @@ public final class World {
         return this.population;
     }
 
-    private void addBug(ReactionFA row, double referenceBiomass, double referenceObjective) {
-        Bug bug = new Bug(row, trainingDataset, bugLife, objective, this.reactions, referenceBiomass, referenceObjective);
+    private void addBug(ReactionFA row) {
+        Bug bug = new Bug(row, trainingDataset, bugLife, objective, this.reactions);
         this.population.add(bug);
     }
 

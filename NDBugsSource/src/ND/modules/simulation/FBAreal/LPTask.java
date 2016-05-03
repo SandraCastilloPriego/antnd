@@ -45,7 +45,7 @@ public class LPTask extends AbstractTask {
 
     private final SimpleBasicDataset networkDS;
     private double finishedPercentage = 0.0f;
-    private final String objectiveSpecie;
+  //  private final String objectiveSpecie;
 
     private final GetInfoAndTools tools;
     private Double objective;
@@ -54,7 +54,7 @@ public class LPTask extends AbstractTask {
 
     public LPTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
-        this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
+       // this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
         this.tools = new GetInfoAndTools();
 
     }
@@ -80,8 +80,8 @@ public class LPTask extends AbstractTask {
         finishedPercentage = 0.1f;
         Graph g = optimize();
         if (g != null) {
-            this.tools.createDataFile(g, networkDS, this.objectiveSpecie, this.networkDS.getSources(), false);
-            String info = "Objective value of " + this.objectiveSpecie + ": " + this.objective;
+            this.tools.createDataFile(g, networkDS, " ", this.networkDS.getSources(), false);
+            String info = "Objective value of the objective : " + this.objective;
             this.networkDS.addInfo(info);
         }
         finishedPercentage = 1f;
@@ -90,7 +90,7 @@ public class LPTask extends AbstractTask {
 
     private Graph optimize() {
         createReactions();
-        objective = this.getFlux(objectiveSpecie);
+        objective = this.getFlux();
 
         if (objective > 0.0) {
             Graph g = createGraph();
@@ -155,12 +155,12 @@ public class LPTask extends AbstractTask {
         return g;
     }
 
-    public double getFlux(String objective) {
+    public double getFlux() {
         FBA fba = new FBA();
-        ReactionFA objectiveReaction = new ReactionFA("objective");
+        /*ReactionFA objectiveReaction = new ReactionFA("objective");
         objectiveReaction.addReactant(objective, 1.0);
-        objectiveReaction.setBounds(0, 1000);
-        this.reactions.put("objective", objectiveReaction);
+        objectiveReaction.setBounds(0, 1000);*/
+       // this.reactions.put("objective", objectiveReaction);
         fba.setModel("objective", this.reactions, this.networkDS.getDocument().getModel());
         try {
             Map<String, Double> soln = fba.run();
@@ -187,6 +187,8 @@ public class LPTask extends AbstractTask {
                 KineticLaw law = r.getKineticLaw();
                 LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
                 LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                LocalParameter objective = law.getLocalParameter("OBJECTIVE_COEFFICIENT");
+                reaction.setObjective(objective.getValue());
                 reaction.setBounds(lbound.getValue(), ubound.getValue());
             } catch (Exception ex) {
                 reaction.setBounds(-1000, 1000);

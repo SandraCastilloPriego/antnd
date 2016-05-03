@@ -27,6 +27,6 @@ public class LPParameters extends SimpleParameterSet {
                 "Objective", "Reaction that will be optimized", "");
       
         public LPParameters() {
-                super(new Parameter[]{objective});
+                super(new Parameter[]{/*objective*/});
         }
 }

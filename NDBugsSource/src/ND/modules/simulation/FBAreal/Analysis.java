@@ -146,13 +146,14 @@ public abstract class Analysis {
         int i = 0;
         for (ReactionFA reaction : this.reactionsList) {
             //   System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
-            if (reaction.getId().equals(this.objective)) {
+            this.objectiveList.add(reaction.getObjective());
+            /*if (reaction.getId().equals(this.objective)) {
                 this.objectiveList.add(1.0);
                 System.out.println("Objective 1");
             } else {
                 this.objectiveList.add(0.0);
                 System.out.println("Objective 0");
-            }
+            }*/
             this.reactionPositionMap.put(reaction.getId(), i++);
         }
 
