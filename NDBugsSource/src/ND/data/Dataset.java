@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.swing.JTextArea;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.Species;
 
 /**
  * Interface for data set
@@ -166,7 +167,11 @@ public interface Dataset {
         
         public List<String> getCofactors();
 
-        public boolean isSelected(Reaction reaction);
+        public boolean isReactionSelected(Reaction reaction);
         
-        public void setSelectionMode(String reaction);
+        public boolean isMetaboliteSelected(Species species);
+        
+        public void setReactionSelectionMode(String reaction);
+        
+        public void setMetaboliteSelectionMode(String species);
 }

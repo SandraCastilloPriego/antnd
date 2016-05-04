@@ -26,6 +26,7 @@ import ND.data.network.Node;
 import ND.util.Tables.DataTableModel;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.sbml.jsbml.LocalParameter;
@@ -33,18 +34,17 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SpeciesReference;
 
-public class DatasetDataModel extends AbstractTableModel implements DataTableModel {
+public class ReactionsDataModel extends AbstractTableModel implements DataTableModel {
 
     private Dataset dataset;
-    private int fixNumberColumns = 9;
     private List<ColumnName> columns;
     private Color[] rowColor;
 
-    public DatasetDataModel(Dataset dataset) {
+    public ReactionsDataModel(Dataset dataset) {
         this.dataset = (SimpleBasicDataset) dataset;
         rowColor = new Color[dataset.getDocument().getModel().getNumReactions()];
-        this.setParameters();
-        this.writeData();
+        columns = new ArrayList<>();
+        columns.addAll(Arrays.asList(ColumnName.values()));
     }
 
     public Color getRowColor(int row) {
@@ -60,45 +60,13 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
     }
 
     /**
-     * @see guineu.data.LCMSColumnName The function isColumnShown() in the enum
-     * class says whether each column has to be shown in the table or not.
-     *
-     */
-    public void setParameters() {
-        this.columns = new ArrayList<ColumnName>();
-        fixNumberColumns = 0;
-
-        for (ColumnName column : ColumnName.values()) {
-            columns.add(column);
-            fixNumberColumns++;
-        }
-
-    }
-
-    /**
-     * Sets the rest of the data from the dataset object, which contains the all
-     * the rows.
-     *
-     */
-    private void writeData() {
-        /*PeakListRow peakListRow;
-         for (int i = 0; i < dataset.getNumberRows(); i++) {
-         peakListRow = this.dataset.getRow(i);
-         if (peakListRow.getID() == -1) {
-         peakListRow.setID(i);
-         }
-         }*/
-
-    }
-
-    /**
      * @see guineu.util.Tables.DataTableModel
      */
     public void removeRows() {
         Model model = dataset.getDocument().getModel();
         List<Reaction> toBeRemoved = new ArrayList();
         for (Reaction reaction : model.getListOfReactions()) {
-            if (dataset.isSelected(reaction)) {
+            if (dataset.isReactionSelected(reaction)) {
                 toBeRemoved.add(reaction);
                 this.fireTableDataChanged();
                 this.removeRows();
@@ -111,7 +79,7 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
     }
 
     public int getColumnCount() {
-        return this.fixNumberColumns;
+        return 10;
     }
 
     public int getRowCount() {
@@ -181,13 +149,15 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
             String value = columns.get(column).getColumnName();
             switch (value) {
                 case "Number":
-
+                    return;
                 case "Id":
-                    if (aValue == null || aValue.toString().isEmpty()|| aValue.equals("NA")) {
+                    if (aValue == null || aValue.toString().isEmpty() || aValue.equals("NA")) {
                         this.dataset.getDocument().getModel().removeReaction(r);
                         Graph g = this.dataset.getGraph();
                         Node n = g.getNode(r.getId());
-                        if(n!=null) g.removeNode(n.getId());
+                        if (n != null) {
+                            g.removeNode(n.getId());
+                        }
                     } else {
                         r.setId(aValue.toString());
                     }
@@ -208,7 +178,7 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
                     r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(Double.valueOf(aValue.toString()));
                     return;
                 case "Notes":
-
+                    return;
                 case "Objective":
                     LocalParameter parameter = r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT");
                     if (parameter == null) {
@@ -242,13 +212,6 @@ public class DatasetDataModel extends AbstractTableModel implements DataTableMod
      */
     public DatasetType getType() {
         return this.dataset.getType();
-    }
-
-    /**
-     * @see guineu.util.Tables.DataTableModel
-     */
-    public int getFixColumns() {
-        return this.fixNumberColumns;
     }
 
     /**

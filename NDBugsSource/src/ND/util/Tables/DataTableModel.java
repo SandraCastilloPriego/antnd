@@ -26,16 +26,7 @@ import javax.swing.table.TableModel;
  *
  * @author scsandra
  */
-public interface DataTableModel extends TableModel {
-
-        /**
-         * Returns the number of columns corresponding to the fix parameters of
-         * each kind of dataset. For example, in LC-MS data sets they would be
-         * "retention time", "name", .., and in GCxGX-tof data sets "RT1", "RT2",...
-         *
-         * @return Number of parameter columns
-         */
-        public int getFixColumns();
+public interface DataTableModel extends TableModel {    
 
         /**
          * Removes selected rows from the table. It only removes the rows which are

@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.swing.JTextArea;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.Species;
 
 /**
  * Basic data set implementation.
@@ -55,7 +56,7 @@ public class SimpleBasicDataset implements Dataset {
     private HashMap<String, SpeciesFA> compounds;
     private List<String> cofactors;
     private Map<String, Double[]> sourcesMap;
-    private String selectedReaction;
+    private String selectedReaction, selectedMetabolite;
 
     /**
      *
@@ -266,15 +267,26 @@ public class SimpleBasicDataset implements Dataset {
     }
 
     @Override
-    public boolean isSelected(Reaction reaction) {
+    public boolean isReactionSelected(Reaction reaction) {
         if (this.selectedReaction.equals(reaction.getId())) {
             return true;
         }
         return false;
     }
 
-    public void setSelectionMode(String reaction) {
+    public void setReactionSelectionMode(String reaction) {
         this.selectedReaction = reaction;
     }
+    
+    @Override
+    public boolean isMetaboliteSelected(Species metabolite) {
+        if (this.selectedMetabolite.equals(metabolite.getId())) {
+            return true;
+        }
+        return false;
+    }
 
+    public void setMetaboliteSelectionMode(String metabolite) {
+        this.selectedMetabolite = metabolite;
+    }
 }

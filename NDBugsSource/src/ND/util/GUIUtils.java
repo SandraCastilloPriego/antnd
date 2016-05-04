@@ -496,9 +496,14 @@ public class GUIUtils {
          */
         public static void showNewTable(Dataset dataset, boolean addDataset) {
                 DataTableModel model = FileUtils.getTableModel(dataset);
+                DataTableModel modelMet = FileUtils.getTableModelMet(dataset);
                 DataTable table = new PushableTable(model);
+                DataTable metTable = new PushableTable(modelMet);
                 table.formatNumbers(dataset.getType());
-                DataInternalFrame frame = new DataInternalFrame(dataset.getDatasetName(), table.getTable(), new Dimension(450, 450));
+                
+              
+                DataInternalFrame frame = new DataInternalFrame(dataset.getDatasetName(), table.getTable(), metTable.getTable(),new Dimension(450, 450));
+               
                 NDCore.getDesktop().addInternalFrame(frame);
                 if (addDataset) {
                         NDCore.getDesktop().AddNewFile(dataset);

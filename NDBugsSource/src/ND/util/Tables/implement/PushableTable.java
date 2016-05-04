@@ -183,7 +183,7 @@ public class PushableTable implements DataTable, ActionListener {
         try {
             NumberFormat format = NumberFormat.getNumberInstance();
             format.setMinimumFractionDigits(7);
-            int init = model.getFixColumns();
+            int init = model.getColumnCount();
 
             for (int i = init; i < table.getColumnCount(); i++) {
                 table.getColumnModel().getColumn(i).setCellRenderer(new NumberRenderer(format));

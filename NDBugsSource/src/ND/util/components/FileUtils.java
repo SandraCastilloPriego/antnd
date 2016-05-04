@@ -19,7 +19,8 @@ package ND.util.components;
 
 import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
-import ND.data.models.DatasetDataModel;
+import ND.data.models.MetaboliteDataModel;
+import ND.data.models.ReactionsDataModel;
 import ND.util.Tables.DataTableModel;
 
 /**
@@ -41,8 +42,12 @@ public class FileUtils {
     }
     
     public static DataTableModel getTableModel(Dataset dataset) {            
-        return new DatasetDataModel(dataset);
+        return new ReactionsDataModel(dataset);
        
+    }
+
+    public static DataTableModel getTableModelMet(Dataset dataset) {
+        return new MetaboliteDataModel(dataset);
     }
    
 }

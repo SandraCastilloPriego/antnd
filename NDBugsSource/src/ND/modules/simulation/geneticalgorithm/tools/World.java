@@ -67,7 +67,7 @@ public final class World {
             for (ReactionFA reaction : this.reactions.values()) {
                 if (isNotExchange(reaction)&& reactionIds.contains(reaction.getId())) {
                     System.out.println("Bug " + i++ + ": " +reaction.getId());
-                    this.addBug(reaction);
+                    this.addBug(reaction, 0.5, 2.5);
                 }
             }
 
@@ -150,8 +150,8 @@ public final class World {
         return this.population;
     }
 
-    private void addBug(ReactionFA row) {
-        Bug bug = new Bug(row, trainingDataset, bugLife, objective, this.reactions);
+    private void addBug(ReactionFA row, double referenceBiomass, double referenceObjective) {
+        Bug bug = new Bug(row, trainingDataset, bugLife, objective, this.reactions, referenceBiomass, referenceObjective);
         this.population.add(bug);
     }
 
