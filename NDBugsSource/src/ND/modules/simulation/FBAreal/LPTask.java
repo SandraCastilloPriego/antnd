@@ -161,7 +161,7 @@ public class LPTask extends AbstractTask {
         objectiveReaction.addReactant(objective, 1.0);
         objectiveReaction.setBounds(0, 1000);*/
        // this.reactions.put("objective", objectiveReaction);
-        fba.setModel("objective", this.reactions, this.networkDS.getDocument().getModel());
+        fba.setModel(this.reactions, this.networkDS.getDocument().getModel());
         try {
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {

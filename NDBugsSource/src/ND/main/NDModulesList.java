@@ -22,17 +22,15 @@ import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
 import ND.modules.analysis.CompareModels.CompareModule;
 import ND.modules.analysis.kNeighborhood.KNeighborhoodModule;
-import ND.modules.configuration.cofactors.CofactorConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.file.saveProject.SaveProjectModule;
 import ND.modules.simulation.FBAreal.LPModule;
-import ND.modules.otimization.visualization.FluxVisualizationModule;
-import ND.modules.reactionOP.AddInfo.AddInfoModule;
 import ND.modules.reactionOP.addReactions.AddReactionsModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
 import ND.modules.reactionOP.changebounds.ChangeBoundsModule;
+import ND.modules.reactionOP.compoundFlux.FluxCalcModule;
 import ND.modules.reactionOP.deadends.DeadEndsModule;
 import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
@@ -42,15 +40,12 @@ import ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
-import ND.modules.simulation.FBA.AntFBAModule;
-import ND.modules.simulation.FBANoCofactors.LPNCModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
 import ND.modules.simulation.geneticalgorithm.StartSimulationModule;
 import ND.modules.simulation.geneticalgorithm.reducing.StartReducingGAModule;
 import ND.modules.simulation.geneticalgorithm.testing.StartTestingGAModule;
 import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
-import ND.modules.simulation.superAntAdvanced.SuperAntAdvancedModule;
 
 /**
  * List of modules included in MM
@@ -90,6 +85,7 @@ public class NDModulesList {
         LPModule.class,
        // LPNCModule.class,
         FluxAnalysisModule.class,
+        FluxCalcModule.class,
         ClusteringModule.class,
         ClusteringBetweennessModule.class,
         KNeighborhoodModule.class,

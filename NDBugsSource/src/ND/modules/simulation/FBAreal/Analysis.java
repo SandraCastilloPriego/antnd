@@ -15,7 +15,6 @@ import org.sbml.jsbml.Model;
 public abstract class Analysis {
 
     protected double maxObj = Double.NaN;
-    private String objective;
     List< Double> objectiveList;
     private Map<String, Integer> reactionPositionMap;
     private Map<String, Integer> metabolitePositionMap;
@@ -86,8 +85,8 @@ public abstract class Analysis {
         this.getSolver().setObj(map);
     }
 
-    public void setModel(String Objective, HashMap<String, ReactionFA> reactions, Model model) {
-        this.objective = Objective;
+    public void setModel(HashMap<String, ReactionFA> reactions, Model model) {
+
         this.prepareReactions(reactions, model);
     }
 
@@ -122,11 +121,12 @@ public abstract class Analysis {
         this.reactionPositionMap = new HashMap<>();
         this.objectiveList = new ArrayList<>();
 
+        int i = 0;
         for (String reaction : reactions.keySet()) {
             // System.out.print(reaction + " - ");
-            
+
             ReactionFA r = reactions.get(reaction);
-            if(r.getlb()==0 && r.getub()==0) continue;
+            //if(r.getlb()==0 && r.getub()==0) continue;
             this.reactionsList.add(r);
 
             for (String reactant : r.getReactants()) {
@@ -140,21 +140,8 @@ public abstract class Analysis {
                     this.metabolitesList.add(product);
                 }
             }
-
-        }
-
-        int i = 0;
-        for (ReactionFA reaction : this.reactionsList) {
-            //   System.out.println(reaction.getId()+ "bounds: "+ reaction.getlb() +  " - " + reaction.getub());
-            this.objectiveList.add(reaction.getObjective());
-            /*if (reaction.getId().equals(this.objective)) {
-                this.objectiveList.add(1.0);
-                System.out.println("Objective 1");
-            } else {
-                this.objectiveList.add(0.0);
-                System.out.println("Objective 0");
-            }*/
-            this.reactionPositionMap.put(reaction.getId(), i++);
+            this.objectiveList.add(r.getObjective());
+            this.reactionPositionMap.put(r.getId(), i++);
         }
 
     }

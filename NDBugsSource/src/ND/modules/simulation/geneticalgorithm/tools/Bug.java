@@ -158,49 +158,51 @@ public final class Bug {
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {
                 //System.out.println(r);
-                if(this.reactions.containsKey(r) && this.reactions.get(r).getId().equals(this.objective)){
-                    flux += soln.get(r);
+               /* if(this.reactions.containsKey(r) && this.reactions.get(r).getId().equals(this.objective)){
+                 flux += soln.get(r);
+                 }*/
+                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective) /*|| this.reactions.get(r).hasReactant(this.objective)*/) {
+                    if (soln.get(r) > 0) {
+                        flux += soln.get(r);
+                    }
                 }
-//                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective) /*|| this.reactions.get(r).hasReactant(this.objective)*/) {
-//                    if (soln.get(r) > 0) {
-//                        flux += soln.get(r);
-//                    }
-//                }
-//                if (this.reactions.containsKey(r) && this.reactions.get(r).hasReactant(this.objective)) {
-//                    if (soln.get(r) < 0) {
-//                        flux -= soln.get(r);
-//                    }
-//                }
+                if (this.reactions.containsKey(r) && this.reactions.get(r).hasReactant(this.objective)) {
+                    if (soln.get(r) < 0) {
+                        flux -= soln.get(r);
+                    }
+                }
                 /*if(r.equals("r_1672")&& soln.get(r)>0){
                  isTakingCO2 = false;
                  }*/
             }
 
-            double refB = 0;
-            if (fba.getMaxObj() > this.referenceBiomass) {
-                refB = 1;
-            } else {
-                refB = fba.getMaxObj() / this.referenceBiomass;
-            }
-            double refO = 0;
-            if (flux > this.referenceObjective) {
-                refO = 1;
-            } else if (flux < 0) {
-                refO = 0;
-            } else {
-                refO = flux / this.referenceObjective;
-            }
-            if (refO == 0) {
-                refO = 0.00001;
-            }
-            this.score = 2 * ((refB * refO) / (refB + refO));
-            //score = fba.getMaxObj();
-            if (score == Double.POSITIVE_INFINITY || score == Double.NaN) {
+            /*double refB = 0;
+             if (fba.getMaxObj() > this.referenceBiomass) {
+             refB = 1;
+             } else {
+             refB = fba.getMaxObj() / this.referenceBiomass;
+             }
+             double refO = 0;
+             if (flux > this.referenceObjective) {
+             refO = 1;
+             } else if (flux < 0) {
+             refO = 0;
+             } else {
+             refO = flux / this.referenceObjective;
+             }
+             if (refO == 0) {
+             refO = 0.00001;
+             }
+             this.score = 2 * ((refB * refO) / (refB + refO));
+             //score = fba.getMaxObj();
+             if (score == Double.POSITIVE_INFINITY || score == Double.NaN) {
+             score = 0.0;
+             }*/
+            if (fba.getMaxObj() < 0.005) {
                 score = 0.0;
+            } else {
+                score = flux;
             }
-
-            //  if(fba.getMaxObj()<0.000001) score = 0.0;
-            score = flux;
 
             String solution = "";
             for (ReactionFA r : this.rowList) {

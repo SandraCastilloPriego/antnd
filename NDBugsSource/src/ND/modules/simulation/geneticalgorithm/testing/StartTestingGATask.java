@@ -92,7 +92,9 @@ public class StartTestingGATask extends AbstractTask {
         Model m = this.training.getDocument().getModel().clone();
         for (String reaction : this.reactions) {
             Reaction r = m.getReaction(reaction);
-            r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(0.0);
+            m.removeReaction(reaction);
+            //r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(0.0);
+            //r.getKineticLaw().getLocalParameter("LOWER_BOUND").setValue(0.0);
         }
         SimpleBasicDataset dataset = new SimpleBasicDataset();
         dataset.setDocument(this.training.getDocument().clone());
