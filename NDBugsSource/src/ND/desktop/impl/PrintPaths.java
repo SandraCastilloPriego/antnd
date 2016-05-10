@@ -61,6 +61,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -124,7 +125,9 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                     // System.out.println("Position: " + name + " : " + node.getPosition().toString());
                     vv.getGraphLayout().lock(name, true);
                 }
-                colors.put(name, node.getColor());
+                if (node.getColor() != null) {
+                    colors.put(name, node.getColor());
+                }
             }
         }
 
@@ -148,6 +151,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
 
                 String name = id.split(" - ")[0];
                 String r = id.split(" : ")[0];
+
                 if (colors.containsKey(id)) {
                     return colors.get(id);
                 } else if (m.getReaction(r.trim()) != null || m.getReaction(name.trim()) != null) {
@@ -161,7 +165,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                     || id.contains(": AMP") || id.contains(" : diphosphate ") || id.contains(" : carbon dioxide ") || id.contains(" : potassium ")) {
                     return Color.ORANGE;
                 } else {
-                    return Color.white;
+                    return new Color(156, 244, 125);
                 }
 
             }
@@ -393,10 +397,38 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                 tcc.setVisible(true);
             }
         });
+        JTextField field = new JTextField("");
+        field.setPreferredSize(new Dimension(350, 30));
+        field.setBackground(Color.LIGHT_GRAY);
+        field.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent ke) {
+            }
 
+            @Override
+            public void keyPressed(KeyEvent ke) {
+                if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String[] reactions = field.getText().split(",");
+                    for (String r : reactions) {
+                        Collection<String> V = g.getVertices();
+                        for (String v : V) {
+                            if (v.contains(r)) {
+                                colors.put(v, selectedColor);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke) {
+            }
+
+        });
+        topPanel.add(field);
         topPanel.add(banner);
         topPanel.add(button);
-        topPanel.setPreferredSize(new Dimension(300, 40));
+        topPanel.setPreferredSize(new Dimension(800, 40));
         topPanel.setBackground(Color.WHITE);
         vv.add(topPanel);
         vv.setBackground(Color.WHITE);
