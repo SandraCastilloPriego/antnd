@@ -42,10 +42,8 @@ public class StartReducingGATask extends AbstractTask {
     private final Dataset training;
     private final List<String> variables;
     private List<ReactionFA> rows;
-    private final String biomass, objective;
-    private final GetInfoAndTools tools;
+    private final String objective;
     private HashMap<String, ReactionFA> reactions;
-    private double referenceObjective;
 
     public StartReducingGATask(Dataset dataset, SimpleParameterSet parameters) {
         training = dataset;
@@ -56,10 +54,8 @@ public class StartReducingGATask extends AbstractTask {
         } else {
             variables.addAll(Arrays.asList(reactionsToTest.split(" - ")));
         }
-        this.biomass = parameters.getParameter(StartReducingGAParameters.biomass).getValue();
         this.objective = parameters.getParameter(StartReducingGAParameters.objective).getValue();
         this.rows = new ArrayList<>();
-        this.tools = new GetInfoAndTools();
     }
 
     @Override
@@ -82,15 +78,18 @@ public class StartReducingGATask extends AbstractTask {
         try {
             setStatus(TaskStatus.PROCESSING);
             createReactions();
-            
-            this.setBiomassObjective();
-            double referenceBiomass = this.getReference();
-            
+            for (String var : variables) {
+                this.rows.add(reactions.get(var));
+            }
+
             List<String> solution = new ArrayList<>();
             for (String var : this.variables) {
-               boolean score = this.evaluate(referenceBiomass, referenceObjective, var);
+                boolean score = this.evaluate(0.4, 2004.15, var);
                 if (!score) {
+                    System.out.println("FALSE");
                     solution.add(var);
+                } else {
+                    System.out.println("TRUE");
                 }
             }
 
@@ -117,6 +116,8 @@ public class StartReducingGATask extends AbstractTask {
                 KineticLaw law = r.getKineticLaw();
                 LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
                 LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
+                LocalParameter objective = law.getLocalParameter("OBJECTIVE_COEFFICIENT");
+                reaction.setObjective(objective.getValue());
                 reaction.setBounds(lbound.getValue(), ubound.getValue());
             } catch (Exception ex) {
                 reaction.setBounds(-1000, 1000);
@@ -132,49 +133,10 @@ public class StartReducingGATask extends AbstractTask {
                 Species sp = s.getSpeciesInstance();
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
             }
-            reaction.setObjective(0.0);
-            if (this.variables.contains(reaction.getId())) {
-                this.rows.add(reaction);
-            }
+            //reaction.setObjective(0.0);            
             this.reactions.put(r.getId(), reaction);
         }
 
-    }
-
-    public void setBiomassObjective() {
-        ReactionFA objectiveReaction = new ReactionFA("objective");
-        objectiveReaction.addReactant(this.biomass, 1.0);
-        objectiveReaction.setBounds(0, 1000);
-        objectiveReaction.setObjective(1.0);
-        this.reactions.put("objective", objectiveReaction);
-    }
-
-    public void setObjectiveObjective() {
-        ReactionFA objectiveReaction = new ReactionFA("objective");
-        objectiveReaction.addReactant(this.objective, 1.0);
-        objectiveReaction.setBounds(0, 1000);
-        objectiveReaction.setObjective(1.0);
-        this.reactions.put("objective", objectiveReaction);
-    }
-
-    public double getReference() {
-        FBA fba = new FBA();
-        this.referenceObjective = 0;
-        fba.setModel(this.reactions, this.training.getDocument().getModel(), this.rows);
-        try {
-            Map<String, Double> soln = fba.run();
-            for (String r : soln.keySet()) {
-                //System.out.println(r);
-                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective) && fba.getMaxObj() > 0.00001 /*|| this.reactions.get(r).hasReactant(this.objective))*/) {
-                    this.referenceObjective+= soln.get(r);
-                }
-            }
-            return fba.getMaxObj();
-
-        } catch (Exception ex) {
-            System.out.println(ex);
-        }
-        return 0.0;
     }
 
     private boolean evaluate(double referenceBiomass, double referenceObjective, String reactionToDelete) {
@@ -193,13 +155,25 @@ public class StartReducingGATask extends AbstractTask {
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {
                 //System.out.println(r);
-                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective) && fba.getMaxObj() > 0.00001 /*|| this.reactions.get(r).hasReactant(this.objective))*/) {
-                    flux += soln.get(r);
+                if (this.reactions.containsKey(r) && this.reactions.get(r).hasProduct(this.objective) /*|| this.reactions.get(r).hasReactant(this.objective)*/) {
+                    if (soln.get(r) > 0) {
+                        flux += soln.get(r);
+                    }
+                }
+                if (this.reactions.containsKey(r) && this.reactions.get(r).hasReactant(this.objective)) {
+                    if (soln.get(r) < 0) {
+                        flux -= soln.get(r);
+                    }
                 }
             }
+            System.out.println(reactionToDelete + " - " + flux + " - " + fba.getMaxObj());
 
-            if(flux < referenceObjective) return false;
-            if(fba.getMaxObj() < referenceBiomass) return false;
+            if (flux < 2004) {
+                return false;
+            }
+            if (fba.getMaxObj() < 0.01) {
+                return false;
+            }
             return true;
 
         } catch (Exception ex) {

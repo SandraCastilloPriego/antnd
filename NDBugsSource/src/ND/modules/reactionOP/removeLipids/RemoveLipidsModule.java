@@ -15,8 +15,10 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.geneticalgorithm.reducing;
+package ND.modules.reactionOP.removeLipids;
 
+import ND.modules.reactionOP.compoundFlux.*;
+import ND.modules.reactionOP.fluxAnalysis.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.modules.NDModuleCategory;
@@ -24,19 +26,17 @@ import ND.modules.NDProcessingModule;
 import ND.parameters.ParameterSet;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.Task;
-
 /**
  *
  * @author scsandra
  */
-public class StartReducingGAModule implements NDProcessingModule {
+public class RemoveLipidsModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Reducing Genetic Algorith solution";
-        private StartReducingGAParameters parameters = new StartReducingGAParameters();
+        public static final String MODULE_NAME = "Remove Lipids";
 
         @Override
         public ParameterSet getParameterSet() {
-                return parameters;
+                return null;
         }
 
         @Override
@@ -48,25 +48,27 @@ public class StartReducingGAModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new StartReducingGATask[1];
+                Task tasks[] = new RemoveLipidsTask[1];
                 if (NDCore.getDesktop().getSelectedDataFiles().length == 0) {
                         NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
                 } else {
-                        tasks[0] = new StartReducingGATask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
+
+                        tasks[0] = new RemoveLipidsTask((SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0], (SimpleParameterSet) parameters);
 
                         NDCore.getTaskController().addTasks(tasks);
                 }
+
                 return tasks;
         }
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.OPTIMIZATION;
+                return NDModuleCategory.VISUALIZATION;
         }
 
         @Override
         public String getIcon() {
-                return "icons/GeneticAlgorithm.png";
+                return "icons/AnalyzeFluxes.png";
         }
 
         @Override

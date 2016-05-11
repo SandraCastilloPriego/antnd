@@ -26,6 +26,8 @@ import ND.modules.configuration.sources.SourcesConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
 import ND.modules.file.saveProject.SaveProjectModule;
+import ND.modules.reactionOP.Layout.ExtractLayoutModule;
+import ND.modules.reactionOP.Layout.ExtractLayoutTask;
 import ND.modules.simulation.FBAreal.LPModule;
 import ND.modules.reactionOP.addReactions.AddReactionsModule;
 import ND.modules.reactionOP.addReaction.AddReactionModule;
@@ -33,6 +35,7 @@ import ND.modules.reactionOP.changebounds.ChangeBoundsModule;
 import ND.modules.reactionOP.compoundFlux.FluxCalcModule;
 import ND.modules.reactionOP.deadends.DeadEndsModule;
 import ND.modules.reactionOP.fluxAnalysis.FluxAnalysisModule;
+import ND.modules.reactionOP.removeLipids.RemoveLipidsModule;
 import ND.modules.reactionOP.removeReaction.RemoveReactionModule;
 import ND.modules.reactionOP.setBounds.SetBoundsModule;
 import ND.modules.reactionOP.showAllCompoundList.ShowAllCompoundsModule;
@@ -86,6 +89,8 @@ public class NDModulesList {
        // LPNCModule.class,
         FluxAnalysisModule.class,
         FluxCalcModule.class,
+        RemoveLipidsModule.class,
+        ExtractLayoutModule.class,
         ClusteringModule.class,
         ClusteringBetweennessModule.class,
         KNeighborhoodModule.class,

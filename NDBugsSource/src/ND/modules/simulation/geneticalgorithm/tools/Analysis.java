@@ -93,7 +93,6 @@ public abstract class Analysis {
 
     public void setModel(HashMap<String, ReactionFA> reactions, Model model, List<ReactionFA> toBeRemoved) {
         this.toBeRemoved = toBeRemoved;
-        //this.toBeRemoved.clear();
         this.prepareReactions(reactions, model);
     }
 

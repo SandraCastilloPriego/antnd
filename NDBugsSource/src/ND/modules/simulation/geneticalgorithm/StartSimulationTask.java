@@ -228,7 +228,7 @@ public class StartSimulationTask extends AbstractTask {
             }
             this.textArea.setText(result);
          try {
-            fw = new FileWriter(new File("/home/scsandra/Documents/CellFactory2015/LifGA/resultMalateAll.txt"));
+            fw = new FileWriter(new File("/home/scsandra/Documents/CellFactory2015/LifGA/resultMalateLast.txt"));
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(result);
             bw.close();

@@ -27,16 +27,19 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -49,15 +52,25 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -67,6 +80,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
+import org.freehep.graphics2d.VectorGraphics;
+import org.freehep.graphicsio.pdf.PDFGraphics2D;
+import org.freehep.graphicsio.svg.SVGGraphics2D;
 import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
@@ -354,6 +370,20 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                 }
             }
         });
+
+        final JButton saveButton = new JButton("Save Graph");
+        saveButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fc = new JFileChooser();
+                int returnVal = fc.showSaveDialog(topPanel);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    saveImage(file.getAbsolutePath());
+                }
+            }
+        });
         //Set up color chooser for setting text color
         tcc = new JColorChooser();
         tcc.getSelectionModel().addChangeListener(this);
@@ -414,6 +444,15 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                         for (String v : V) {
                             if (v.contains(r)) {
                                 colors.put(v, selectedColor);
+                                String spID = v;
+
+                                if (v.contains(" : ")) {
+                                    spID = v.split(" : ")[0];
+                                }
+                                Node n = graph.getNode(spID);
+                                if (n != null) {
+                                    n.setColor(selectedColor);
+                                }
                             }
                         }
                     }
@@ -428,7 +467,8 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
         topPanel.add(field);
         topPanel.add(banner);
         topPanel.add(button);
-        topPanel.setPreferredSize(new Dimension(800, 40));
+        topPanel.add(saveButton);
+        topPanel.setPreferredSize(new Dimension(1000, 40));
         topPanel.setBackground(Color.WHITE);
         vv.add(topPanel);
         vv.setBackground(Color.WHITE);
@@ -820,4 +860,60 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
 
     }
 
+    public void saveImage(String path) {
+        // Create the VisualizationImageServer
+// vv is the VisualizationViewer containing my graph
+        VisualizationImageServer<String, String> vis
+            = new VisualizationImageServer<String, String>(vv.getGraphLayout(),
+                vv.getSize());
+
+// Configure the VisualizationImageServer the same way
+// you did your VisualizationViewer. In my case e.g.
+        vis.setBackground(Color.WHITE);
+        vis.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<>());
+        vis.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<>());
+        vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<>());
+        vis.getRenderer().getVertexLabelRenderer()
+            .setPosition(Renderer.VertexLabel.Position.CNTR);
+
+// Create the buffered image
+        BufferedImage image = (BufferedImage) vis.getImage(
+            new Point2D.Double(vv.getGraphLayout().getSize().getWidth(),
+                vv.getSize().getHeight()),
+            new Dimension(vv.getSize()));
+
+// Write image to a png file
+        File outputfile = new File(path);
+
+        try {
+            ImageIO.write(image, "png", outputfile);
+        } catch (IOException e) {
+            // Exception handling
+        }
+
+    }
+
+    public void saveImage2() {
+        try {
+            JPanel panel = new JPanel();
+            panel.setLayout(new FlowLayout());
+            panel.setBackground(Color.WHITE);
+            panel.add(vv);
+
+            Properties p = new Properties();
+            p.setProperty("PageSize", "A4");
+
+// vv is the VirtualizationViewer
+            VectorGraphics g = new SVGGraphics2D(new File("/home/scsandra/Pictures/Network.svg"), vv);
+
+            g.setProperties(p);
+            g.startExport();
+            panel.print(g);
+            g.endExport();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PrintPaths.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(PrintPaths.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

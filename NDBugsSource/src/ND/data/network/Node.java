@@ -33,13 +33,13 @@ public class Node {
 
     public Node(String id) {
         this.id = id;
-        this.color = new Color(156, 244, 125);
+        this.color = null;
     }
 
     public Node(String id, String name) {
         this.id = id;
         this.name = name;
-        this.color = new Color(156, 244, 125);
+        this.color = null;
     }
 
     public String getId() {
