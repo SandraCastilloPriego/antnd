@@ -32,6 +32,7 @@ import ND.taskcontrol.TaskStatus;
 import ND.util.StreamCopy;
 import de.schlichtherle.truezip.zip.ZipEntry;
 import de.schlichtherle.truezip.zip.ZipFile;
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -97,7 +98,7 @@ public class OpenProjectTask extends AbstractTask {
     private void loadSBMLFiles(ZipFile zipFile) throws IOException {
         Enumeration zipEntries = zipFile.entries();
         Pattern filePattern = Pattern
-                .compile("(.*)\\.sbml$|(.*)\\.xml$");
+            .compile("(.*)\\.sbml$|(.*)\\.xml$");
         while (zipEntries.hasMoreElements()) {
             if (isCanceled()) {
                 return;
@@ -128,7 +129,7 @@ public class OpenProjectTask extends AbstractTask {
     private void loadInfo(ZipFile zipFile) throws IOException {
         Enumeration zipEntries = zipFile.entries();
         Pattern filePattern = Pattern
-                .compile("(.*)\\.info$");
+            .compile("(.*)\\.info$");
         while (zipEntries.hasMoreElements()) {
             if (isCanceled()) {
                 return;
@@ -157,19 +158,29 @@ public class OpenProjectTask extends AbstractTask {
                             }
                             String nodeName = strLine.split("= ")[1];
                             String position = null;
+                            int color = -1;
                             if (nodeName.contains(" // ")) {
-                                position = nodeName.split(" // ")[1];
-                                nodeName = nodeName.split(" // ")[0];
+                                String[] properties = nodeName.split(" // ");
+                                position = properties[1];
+                                nodeName = properties[0];
+                                if (properties.length>2 && !properties[2].contains("null")) {
+                                    color = Integer.valueOf(properties[2]);
+                                }
                             }
                             String id = nodeName.split(" : ")[0];
                             String name = "";
-                            try{
-                                 name = nodeName.split(" : ")[1];
-                            }catch(Exception e){}                     
+                            try {
+                                name = nodeName.split(" : ")[1];
+                            } catch (Exception e) {
+                            }
                             Node n = new Node(id, name);
-                            if (position != null) {
+                            if (position != null && !position.contains("null")) {
                                 String[] point = position.split(" , ");
                                 n.setPosition(Double.valueOf(point[0]), Double.valueOf(point[1]));
+                            }
+                            
+                            if (color!= -1) {                               
+                                n.setColor(new Color(color));
                             }
                             g.addNode(n);
 
@@ -196,7 +207,7 @@ public class OpenProjectTask extends AbstractTask {
     private void loadPaths(ZipFile zipFile) throws IOException {
         Enumeration zipEntries = zipFile.entries();
         Pattern filePattern = Pattern
-                .compile("(.*)\\.paths$");
+            .compile("(.*)\\.paths$");
         while (zipEntries.hasMoreElements()) {
             if (isCanceled()) {
                 return;
@@ -227,7 +238,7 @@ public class OpenProjectTask extends AbstractTask {
                             Ant ant = new Ant(compound.getId());
                             ant.setPath(path);
                             ant.setPathSize(path.size());
-                            compound.setAnt(ant);                            
+                            compound.setAnt(ant);
                             compounds.put(compound.getId(), compound);
                         } catch (Exception e) {
                             e.printStackTrace();

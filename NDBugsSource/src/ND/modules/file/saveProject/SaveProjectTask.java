@@ -155,12 +155,16 @@ public class SaveProjectTask extends AbstractTask {
                 }
                 if (graph != null) {
                     for (Node node : graph.getNodes()) {
-                        Point2D position = node.getPosition(); 
-                        String name = node.getName().trim();                        
-                        if (position != null) {                           
-                            writer.write("\nNodes= " + node.getId() + " : " + name + " // " + position.getX() + " , " + position.getY());
+                        Point2D position = node.getPosition();
+                        String name = node.getName().trim();
+                        String color = "null";
+                        if (node.getColor() != null) {
+                            color = String.valueOf(node.getColor().getRGB());
+                        }
+                        if (position != null) {
+                            writer.write("\nNodes= " + node.getId() + " : " + name + " // " + position.getX() + " , " + position.getY() + " // " + color);
                         } else {
-                            writer.write("\nNodes= " + node.getId() + " : " + name);
+                            writer.write("\nNodes= " + node.getId() + " : " + name + " // null // " + color);
                         }
                     }
                     for (Edge edge : graph.getEdges()) {
