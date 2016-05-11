@@ -17,40 +17,12 @@
  */
 package ND.modules.reactionOP.compoundFlux;
 
-import ND.modules.reactionOP.fluxAnalysis.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
-import ND.data.network.Edge;
-import ND.data.network.Graph;
-import ND.data.network.Node;
-import ND.main.NDCore;
-import ND.modules.configuration.general.GetInfoAndTools;
-import ND.modules.simulation.FBA.Ant;
-import ND.modules.simulation.FBA.SpeciesFA;
-import ND.modules.simulation.antNoGraph.ReactionFA;
-import ND.modules.simulation.antNoGraph.uniqueId;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import com.csvreader.CsvReader;
-import java.awt.Color;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.sbml.jsbml.KineticLaw;
-import org.sbml.jsbml.ListOf;
-import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
 
 /**
  *
@@ -90,13 +62,16 @@ public class FluxCalcTask extends AbstractTask {
             Model m = this.networkDS.getDocument().getModel();
             for (Reaction r : m.getListOfReactions()) {
                 if (r.hasProduct(m.getSpecies(this.compound))) {
+                    
                     double flux = r.getKineticLaw().getLocalParameter("FLUX_VALUE").getValue();
                     if (flux > 0) {
+                        System.out.println(r.getId() +"-->"+ flux);
                         totalFlux += Math.abs(flux);
                     }
                 } else if (r.hasReactant(m.getSpecies(this.compound))) {
                     double flux = r.getKineticLaw().getLocalParameter("FLUX_VALUE").getValue();
                     if (flux < 0) {
+                        System.out.println(r.getId() +"<--"+ flux);
                         totalFlux += Math.abs(flux);
                     }
                 }

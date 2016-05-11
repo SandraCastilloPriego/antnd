@@ -109,15 +109,14 @@ public class ExtractLayoutTask extends AbstractTask {
                 }                
                 if (sCurrentLine.contains("label	") && isNewNode) {
                     label = sCurrentLine.substring(sCurrentLine.indexOf("label	") + 6);
-                    System.out.println(x + " - " + y + " - " + label);
                     isNewNode = false;
                     label = label.replace("\"", "");
+                    if(label.contains(":")) label = label.split(" : ")[0];
                     Node node = g.getNode(label);
                     if (node != null) {
-                        Node newNode = node.clone();
-                        newNode.setPosition(Double.valueOf(x), Double.valueOf(y));
-                        
-                        nodes.add(newNode);
+                        Node newNode = node;
+                        newNode.setPosition(Double.valueOf(x), Double.valueOf(y));                        
+                        nodes.add(node);
                     }
                     x = null;
                     y = null;
@@ -130,7 +129,7 @@ public class ExtractLayoutTask extends AbstractTask {
                 for (Edge edge : e) {
                     Node destination = edge.getDestination();
                     if (nodes.contains(destination)) {
-                        edges.add(edge);
+                        edges.add(edge.clone());
                     }
                 }
             }

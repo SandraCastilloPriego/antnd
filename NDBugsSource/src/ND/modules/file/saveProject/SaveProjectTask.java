@@ -155,8 +155,9 @@ public class SaveProjectTask extends AbstractTask {
                 }
                 if (graph != null) {
                     for (Node node : graph.getNodes()) {
-                        Point2D position = node.getPosition();
-                        String name = node.getName().trim();
+                        Point2D position = node.getPosition();                        
+                        String name = node.getName();
+                        if(name != null) name = name.trim();
                         String color = "null";
                         if (node.getColor() != null) {
                             color = String.valueOf(node.getColor().getRGB());

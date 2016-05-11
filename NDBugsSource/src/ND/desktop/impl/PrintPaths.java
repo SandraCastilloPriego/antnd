@@ -58,6 +58,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -380,7 +383,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                 int returnVal = fc.showSaveDialog(topPanel);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
-                    saveImage(file.getAbsolutePath());
+                    saveImage3(file.getAbsolutePath());
                 }
             }
         });
@@ -548,6 +551,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
             if (r.hasReactant(sp) || r.hasProduct(sp)) {
                 double lb = Double.NEGATIVE_INFINITY;
                 double ub = Double.POSITIVE_INFINITY;
+                Double flux = null;
                 // read bounds to know the direction of the edges
                 if (r.getKineticLaw() != null) {
                     KineticLaw law = r.getKineticLaw();
@@ -555,10 +559,18 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                     lb = lbound.getValue();
                     LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
                     ub = ubound.getValue();
+                    LocalParameter rflux = law.getLocalParameter("FLUX_VALUE");
+                    flux = rflux.getValue();
                 }
 
                 // adds the new reaction node with and edge from the extended node
-                String reactionName = r.getId() + " - " + uniqueId.nextId();
+                String reactionName = null;
+                if (flux != null) {
+                    DecimalFormat df = new DecimalFormat("#.####");
+                    reactionName = r.getId() + " : " + df.format(flux) + " - " + uniqueId.nextId();
+                } else {
+                    reactionName = r.getId() + " - " + uniqueId.nextId();
+                }
 
                 //  String initSPName = sp.getId() + " : " + sp.getName() + " - " + uniqueId.nextId();
                 String initSPName = initialStringNode;
@@ -915,5 +927,60 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
         } catch (IOException ex) {
             Logger.getLogger(PrintPaths.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void saveImage3(String path) {
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(path, "UTF-8");
+            writer.println("Creator \"AntND\"");
+            writer.println("Version	1.0");
+            writer.println("graph\t[");
+            Map<Node, String> indexes = new HashMap<>();
+            List<Node> nodes = graph.getNodes();
+            int i = 1;
+            for (Node node : nodes) {
+                indexes.put(node, String.valueOf(i));
+                writer.println("\tnode\t[");
+                writer.println("\t\troot_index\t" + i);
+                writer.println("\t\tid\t" + i++);
+                writer.println("\t\tgraphics\t[");
+                if (node.getPosition() != null) {
+                    writer.println("\t\t\tx\t" + node.getPosition().getX());
+                    writer.println("\t\t\ty\t" + node.getPosition().getY());
+                }
+                writer.println("\t\t\tw\t35.0");
+                writer.println("\t\t\th\t35.0");
+                if (node.getColor() != null) {
+                    String hex = "#" + Integer.toHexString(node.getColor().getRGB()).substring(2);
+                    writer.println("\t\t\tfill\t\"" + hex + "\"");
+                }
+                writer.println("\t\t\ttype\t\"ellipse\"");
+                writer.println("\t\t\toutline\t\"#3333ff\"");
+                writer.println("\t\t\toutline_width\t5.0");
+                writer.println("\t\t]");
+                writer.println("\t\tlabel\t\"" + node.getCompleteId() + "\"");
+                writer.println("\t]");
+            }
+
+            List<Edge> edges = graph.getEdges();
+
+            for (Edge edge : edges) {
+                writer.println("\tedge\t[");
+                writer.println("\t\troot_index\t" + i++);
+                writer.println("\t\ttarget\t" + indexes.get(edge.getDestination()));
+                writer.println("\t\tsource\t" + indexes.get(edge.getSource()));
+                writer.println("\t]");
+            }
+            writer.println("]");
+
+            writer.println("Title\t\"" + this.m.getId() + "\"");
+            writer.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PrintPaths.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(PrintPaths.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 }

@@ -45,7 +45,7 @@ public class LPTask extends AbstractTask {
 
     private final SimpleBasicDataset networkDS;
     private double finishedPercentage = 0.0f;
-  //  private final String objectiveSpecie;
+    //  private final String objectiveSpecie;
 
     private final GetInfoAndTools tools;
     private Double objective;
@@ -54,7 +54,7 @@ public class LPTask extends AbstractTask {
 
     public LPTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
-       // this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
+        // this.objectiveSpecie = parameters.getParameter(LPParameters.objective).getValue();
         this.tools = new GetInfoAndTools();
 
     }
@@ -83,6 +83,7 @@ public class LPTask extends AbstractTask {
             this.tools.createDataFile(g, networkDS, " ", this.networkDS.getSources(), false);
             String info = "Objective value of the objective : " + this.objective;
             this.networkDS.addInfo(info);
+            this.networkDS.setReactionsFA(reactions);
         }
         finishedPercentage = 1f;
         setStatus(TaskStatus.FINISHED);
@@ -108,20 +109,20 @@ public class LPTask extends AbstractTask {
             ReactionFA reaction = reactions.get(r);
             if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000001) {
                 Node reactionNode = new Node(reaction.getId(), String.format("%.3g%n", reaction.getFlux()));
-                if (previousG != null && previousG.getNode(reaction.getId()) !=null ) {
+                if (previousG != null && previousG.getNode(reaction.getId()) != null) {
                     reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());
                 }
                 g.addNode2(reactionNode);
                 Reaction modelReaction = m.getReaction(r);
-                if(modelReaction!= null) {
+                if (modelReaction != null) {
                     LocalParameter parameter = modelReaction.getKineticLaw().getLocalParameter("FLUX_VALUE");
-                    if(parameter == null){
+                    if (parameter == null) {
                         modelReaction.getKineticLaw().createLocalParameter("FLUX_VALUE").setValue(reaction.getFlux());
-                    }else{
+                    } else {
                         parameter.setValue(reaction.getFlux());
                     }
                 }
-                
+
                 for (String reactant : reaction.getReactants()) {
                     String name = m.getSpecies(reactant).getName();
                     Node reactantNode = g.getNode(reactant);
@@ -129,10 +130,15 @@ public class LPTask extends AbstractTask {
                         reactantNode = new Node(reactant, name);
                     }
                     g.addNode2(reactantNode);
-                    if (previousG != null&& previousG.getNode(reactant) !=null) {
+                    if (previousG != null && previousG.getNode(reactant) != null) {
                         reactantNode.setPosition(previousG.getNode(reactant).getPosition());
                     }
-                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    Edge e = null;
+                    if (reaction.getFlux() > 0) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    } else {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+                    }
 
                     g.addEdge(e);
                 }
@@ -142,11 +148,16 @@ public class LPTask extends AbstractTask {
                     if (reactantNode == null) {
                         reactantNode = new Node(product, name);
                     }
-                    if (previousG != null&& previousG.getNode(product) !=null) {
+                    if (previousG != null && previousG.getNode(product) != null) {
                         reactantNode.setPosition(previousG.getNode(product).getPosition());
                     }
                     g.addNode2(reactantNode);
-                    Edge e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+                    Edge e = null;
+                    if (reaction.getFlux() > 0) {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactionNode, reactantNode);
+                    } else {
+                        e = new Edge(r + " - " + uniqueId.nextId(), reactantNode, reactionNode);
+                    }
 
                     g.addEdge(e);
                 }
@@ -158,9 +169,9 @@ public class LPTask extends AbstractTask {
     public double getFlux() {
         FBA fba = new FBA();
         /*ReactionFA objectiveReaction = new ReactionFA("objective");
-        objectiveReaction.addReactant(objective, 1.0);
-        objectiveReaction.setBounds(0, 1000);*/
-       // this.reactions.put("objective", objectiveReaction);
+         objectiveReaction.addReactant(objective, 1.0);
+         objectiveReaction.setBounds(0, 1000);*/
+        // this.reactions.put("objective", objectiveReaction);
         fba.setModel(this.reactions, this.networkDS.getDocument().getModel());
         try {
             Map<String, Double> soln = fba.run();
