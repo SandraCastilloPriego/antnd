@@ -15,14 +15,14 @@
  * ALVS; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.simulation.geneticalgorithm;
+package ND.modules.simulation.geneticalgorithmDirections;
 
 import ND.data.Dataset;
 import ND.main.NDCore;
 import ND.modules.simulation.antNoGraph.ReactionFA;
-import ND.modules.simulation.geneticalgorithm.tools.Bug;
-import ND.modules.simulation.geneticalgorithm.tools.Result;
-import ND.modules.simulation.geneticalgorithm.tools.World;
+import ND.modules.simulation.geneticalgorithmDirections.tools.Bug;
+import ND.modules.simulation.geneticalgorithmDirections.tools.Result;
+import ND.modules.simulation.geneticalgorithmDirections.tools.World;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
@@ -36,8 +36,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -47,7 +45,7 @@ import javax.swing.JTextArea;
  *
  * @author scsandra
  */
-public class StartSimulationTask extends AbstractTask {
+public class StartSimulationDirectionsTask extends AbstractTask {
 
     private final Dataset training;
     private sinkThread thread;
@@ -59,15 +57,14 @@ public class StartSimulationTask extends AbstractTask {
     int[] counter;
     boolean stoppingCriteria;
     private final File reactionFile, output;
-    
 
-    public StartSimulationTask(Dataset dataset, SimpleParameterSet parameters) {
+    public StartSimulationDirectionsTask(Dataset dataset, SimpleParameterSet parameters) {
         this.stoppingCriteria = true;
         training = dataset;
-        this.objective = parameters.getParameter(StartSimulationParameters.objective).getValue();
-        this.bugLife = parameters.getParameter(StartSimulationParameters.bugLife).getValue();
-        this.reactionFile = parameters.getParameter(StartSimulationParameters.reactions).getValue();
-        this.output = parameters.getParameter(StartSimulationParameters.output).getValue();
+        this.objective = parameters.getParameter(StartSimulationDirectionsParameters.objective).getValue();
+        this.bugLife = parameters.getParameter(StartSimulationDirectionsParameters.bugLife).getValue();
+        this.reactionFile = parameters.getParameter(StartSimulationDirectionsParameters.reactions).getValue();
+        this.output = parameters.getParameter(StartSimulationDirectionsParameters.output).getValue();
         this.results = new ArrayList<Result>();
     }
 
@@ -135,7 +132,7 @@ public class StartSimulationTask extends AbstractTask {
             this.maxBugs = reactionIds.size() + 100;
             return reactionIds;
         } catch (FileNotFoundException ex) {
-            
+
         } catch (IOException ex) {
         }
         return null;
@@ -152,10 +149,7 @@ public class StartSimulationTask extends AbstractTask {
         @Override
         public void run() {
             while (stoppingCriteria) {
-                // for (int i = 0; i < 1; i++) {
                 world.cicle();
-                //}
-
                 printResult(world.getBugs());
 
             }
@@ -165,83 +159,83 @@ public class StartSimulationTask extends AbstractTask {
     public void printResult(List<Bug> bugs) {
 
         FileWriter fw = null;
-        
-            Comparator<Result> c = new Comparator<Result>() {
-                public int compare(Result o1, Result o2) {
-                    return Double.compare(o1.getScore(), o2.getScore());
-                }
-            };
-            Comparator<Result> c2 = new Comparator<Result>() {
-                public int compare(Result o1, Result o2) {
-                    return Double.compare(o1.getValues().size(), o2.getValues().size());
-                }
-            };
-            Comparator<Bug> c3 = new Comparator<Bug>() {
-                public int compare(Bug o1, Bug o2) {
-                    return Double.compare(o1.getScore(), o2.getScore());
-                }
-            };
-            int count = 0;
-            try {
-                Collections.sort(bugs, c3);
-                Collections.reverse(bugs);
-                
-            } catch (Exception e) {
-                e.printStackTrace();
+
+        Comparator<Result> c = new Comparator<Result>() {
+            public int compare(Result o1, Result o2) {
+                return Double.compare(o1.getScore(), o2.getScore());
             }
-            for (Bug bug : bugs) {
-                if (count < 300) {
-                    Result result = new Result(bug.getScore());
-                    for (ReactionFA row : bug.getRows()) {
-                        result.addValue(String.valueOf(row.getId()));
-                    }
-                    result.score = bug.getScore();
-                    
-                    boolean isIt = false;
-                    for (Result r : this.results) {
-                        if (r.isIt(result.getValues())) {
-                            r.count();
-                            isIt = true;
-                        }
-                    }
-                    if (!isIt) {
-                        this.results.add(result);
+        };
+        Comparator<Result> c2 = new Comparator<Result>() {
+            public int compare(Result o1, Result o2) {
+                return Double.compare(o1.getValues().size(), o2.getValues().size());
+            }
+        };
+        Comparator<Bug> c3 = new Comparator<Bug>() {
+            public int compare(Bug o1, Bug o2) {
+                return Double.compare(o1.getScore(), o2.getScore());
+            }
+        };
+        int count = 0;
+        try {
+            Collections.sort(bugs, c3);
+            Collections.reverse(bugs);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (Bug bug : bugs) {
+            if (count < 300) {
+                Result result = new Result(bug.getScore());
+                for (ReactionFA row : bug.getRows().keySet()) {
+                    result.addValue(String.valueOf(row.getId()), bug.getRows().get(row));
+                }
+                result.score = bug.getScore();
+
+                boolean isIt = false;
+                for (Result r : this.results) {
+                    if (r.isIt(result.getValues())) {
+                        r.count();
+                        isIt = true;
                     }
                 }
-                count++;
-                
+                if (!isIt) {
+                    this.results.add(result);
+                }
             }
-            try {
-                Collections.sort(results, c2);
-                Collections.reverse(results);
-                Collections.sort(results, c);
-                Collections.reverse(results);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            int contbug = 0;
-            String result = "";
-            for (Result r : results) {
+            count++;
+
+        }
+        try {
+            Collections.sort(results, c2);
+            Collections.reverse(results);
+            Collections.sort(results, c);
+            Collections.reverse(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        int contbug = 0;
+        String result = "";
+        for (Result r : results) {
             result += r.toString();
             contbug++;
             if (contbug > 500) {
                 break;
             }
-            }
-            this.textArea.setText(result);
-         try {
+        }
+        this.textArea.setText(result);
+        try {
             fw = new FileWriter(this.output);
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(result);
             bw.close();
 
         } catch (IOException ex) {
-            
+
         } finally {
             try {
                 fw.close();
             } catch (IOException ex) {
-                
+
             }
         }
     }

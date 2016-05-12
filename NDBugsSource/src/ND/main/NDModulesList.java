@@ -47,6 +47,7 @@ import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
 import ND.modules.simulation.geneticalgorithm.StartSimulationModule;
 import ND.modules.simulation.geneticalgorithm.reducing.StartReducingGAModule;
 import ND.modules.simulation.geneticalgorithm.testing.StartTestingGAModule;
+import ND.modules.simulation.geneticalgorithmDirections.StartSimulationDirectionsModule;
 import ND.modules.simulation.somePaths.SomePathsModule;
 import ND.modules.simulation.superAnt.SuperAntModule;
 
@@ -100,5 +101,6 @@ public class NDModulesList {
         //FluxVisualizationModule.class,
         StartSimulationModule.class,
         StartTestingGAModule.class,
-        StartReducingGAModule.class};
+        StartReducingGAModule.class,
+        StartSimulationDirectionsModule.class};
 }

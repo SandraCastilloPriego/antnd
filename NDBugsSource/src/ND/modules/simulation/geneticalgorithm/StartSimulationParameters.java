@@ -18,9 +18,12 @@ public class StartSimulationParameters extends SimpleParameterSet {
         
         public static final FileNameParameter reactions = new FileNameParameter("Reactions file",
         "File containing the reaction ids separated by comma",null);
+        
+        public static final FileNameParameter output = new FileNameParameter("Output file",
+        "Output file",null);
       
 
         public StartSimulationParameters() {
-                super(new Parameter[]{objective, bugLife, reactions});
+                super(new Parameter[]{objective, bugLife, reactions, output});
         }
 }
