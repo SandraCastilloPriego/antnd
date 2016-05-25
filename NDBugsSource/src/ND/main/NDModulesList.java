@@ -43,6 +43,7 @@ import ND.modules.reactionOP.showAllReactionList.ShowAllReactionsModule;
 import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
+import ND.modules.simulation.Dynamic.DynamicModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
 import ND.modules.simulation.geneticalgorithm.StartSimulationModule;
 import ND.modules.simulation.geneticalgorithm.reducing.StartReducingGAModule;
@@ -90,6 +91,7 @@ public class NDModulesList {
        // LPNCModule.class,
         FluxAnalysisModule.class,
         FluxCalcModule.class,
+        DynamicModule.class,
         RemoveLipidsModule.class,
         ExtractLayoutModule.class,
         ClusteringModule.class,

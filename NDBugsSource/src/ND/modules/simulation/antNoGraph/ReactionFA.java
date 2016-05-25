@@ -62,6 +62,19 @@ public class ReactionFA {
         this.path = new ArrayList<>();
     }
     
+    @Override
+    public ReactionFA clone(){
+        ReactionFA newReaction = new ReactionFA(this.id, this.name);
+        newReaction.setBounds(this.lb, this.ub);
+        for(String reactant : this.getReactants()){
+            newReaction.addReactant(reactant, this.names.get(reactant), this.getStoichiometry(reactant));
+        }
+        for(String product : this.getProducts()){
+            newReaction.addReactant(product, this.names.get(product), this.getStoichiometry(product));
+        }
+        return newReaction;
+    }
+    
     public String getName(){
         return this.name;
     }

@@ -16,12 +16,9 @@
  */
 package ND.modules.simulation.geneticalgorithmDirections.tools;
 
-import ND.modules.simulation.geneticalgorithm.tools.*;
 import ND.data.Dataset;
 import ND.modules.simulation.antNoGraph.ReactionFA;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 

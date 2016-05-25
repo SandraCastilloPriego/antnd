@@ -101,6 +101,10 @@ public class PushableTable implements DataTable, ActionListener {
                     if (getCellColor(Index_row, Index_col) != null) {
                         comp.setBackground(getCellColor(Index_row, Index_col));
                     }
+                    
+                    if(isExchange(Index_row)){
+                        comp.setBackground(Color.YELLOW);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -122,6 +126,10 @@ public class PushableTable implements DataTable, ActionListener {
 
             private Color getCellColor(int row, int column) {
                 return tableModel.getCellColor(row, column);
+            }
+            
+            private boolean isExchange(int row){
+                return tableModel.isExchange(row);
             }
         };
 

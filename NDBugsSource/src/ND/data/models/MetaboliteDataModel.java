@@ -163,4 +163,9 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
         return null;
     }
 
+    @Override
+    public boolean isExchange(int row) {
+       return false;
+    }
+
 }

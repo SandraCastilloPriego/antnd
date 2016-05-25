@@ -21,21 +21,15 @@ import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.modules.configuration.general.GetInfoAndTools;
+import ND.modules.simulation.geneticalgorithmDirections.tools.Bug.status;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import javax.swing.JInternalFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.w3c.dom.Document;
 
 /**
  *
@@ -45,16 +39,31 @@ public class StartTestingGATask extends AbstractTask {
     
     private final Dataset training;
     private final List<String> reactions;
+    private final Map<String, status> reactionDirections;
     private final GetInfoAndTools tools;
     
     public StartTestingGATask(Dataset dataset, SimpleParameterSet parameters) {
         training = dataset;
+        this.reactionDirections = new HashMap<>();
         String reactionsToTest = parameters.getParameter(StartTestingGAParameters.reactions).getValue();
         this.reactions = new ArrayList<>();
-        if (reactionsToTest.contains(",")) {
+        if (reactionsToTest.contains(",") && !reactionsToTest.contains(" - ")) {
             reactions.addAll(Arrays.asList(reactionsToTest.split(",")));
-        } else {
+        } else if (!reactionsToTest.contains(",") && reactionsToTest.contains(" - ")){
             reactions.addAll(Arrays.asList(reactionsToTest.split(" - ")));
+        }else if (reactionsToTest.contains(",") && reactionsToTest.contains(" - ")){
+            reactions.addAll(Arrays.asList(reactionsToTest.split(",")));
+            for(String reaction: reactions){
+                String[] r = reaction.split(" - ");
+                status stt = status.KO;
+                if(r[1].contains("LB")){
+                    stt = status.LB;
+                }else if(r[1].contains("UP")){
+                    stt = status.UP;
+                }
+                this.reactionDirections.put(r[0], stt);
+            }
+            this.reactions.clear();
         }
         this.tools = new GetInfoAndTools();
     }
@@ -91,10 +100,24 @@ public class StartTestingGATask extends AbstractTask {
     private void modifyModel() {
         Model m = this.training.getDocument().getModel().clone();
         for (String reaction : this.reactions) {
-            Reaction r = m.getReaction(reaction);
+           // Reaction r = m.getReaction(reaction);
             m.removeReaction(reaction);
             //r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(0.0);
             //r.getKineticLaw().getLocalParameter("LOWER_BOUND").setValue(0.0);
+        }
+        
+        for(String reaction : this.reactionDirections.keySet()){           
+            status stt = this.reactionDirections.get(reaction);
+            if(stt == status.KO){
+                m.removeReaction(reaction);
+            }else if(stt == status.LB){
+                Reaction r = m.getReaction(reaction);
+                r.getKineticLaw().getLocalParameter("LOWER_BOUND").setValue(0.0);
+            }else if(stt == status.UP){
+                Reaction r = m.getReaction(reaction);
+                r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(0.0);
+            }
+            
         }
         SimpleBasicDataset dataset = new SimpleBasicDataset();
         dataset.setDocument(this.training.getDocument().clone());

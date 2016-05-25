@@ -274,4 +274,13 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
          }*/
 
     }
+
+    @Override
+    public boolean isExchange(int row) {
+        Reaction r = this.dataset.getDocument().getModel().getReaction(row);
+        if (r.getName().contains("exchange")) {
+            return true;
+        }
+        return false;
+    }
 }

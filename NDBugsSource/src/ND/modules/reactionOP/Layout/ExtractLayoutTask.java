@@ -95,31 +95,38 @@ public class ExtractLayoutTask extends AbstractTask {
             List<Node> nodes = new ArrayList<>();
             List<Edge> edges = new ArrayList<>();
             br = new BufferedReader(new FileReader(this.layoutFile));
-            boolean isNewNode = false;
-            String x = null, y = null, label;
+            String x = null, y = null, label = null;
             while ((sCurrentLine = br.readLine()) != null) {
-                if (sCurrentLine.contains("node")) {
-                    isNewNode = true;
-                }
-                if (sCurrentLine.contains("x	") && isNewNode) {
-                    x = sCurrentLine.substring(sCurrentLine.indexOf("x	") + 2);
-                }
-                if (sCurrentLine.contains("y	") && isNewNode) {
-                    y = sCurrentLine.substring(sCurrentLine.indexOf("y	") + 2);
-                }                
-                if (sCurrentLine.contains("label	") && isNewNode) {
-                    label = sCurrentLine.substring(sCurrentLine.indexOf("label	") + 6);
-                    isNewNode = false;
-                    label = label.replace("\"", "");
-                    if(label.contains(":")) label = label.split(" : ")[0];
-                    Node node = g.getNode(label);
-                    if (node != null) {
-                        Node newNode = node;
-                        newNode.setPosition(Double.valueOf(x), Double.valueOf(y));                        
-                        nodes.add(node);
+                if (sCurrentLine.contains("node") || sCurrentLine.contains("edge")) {
+                    if (label != null) {
+                        System.out.println(label + x + y);
+                        Node node = g.getNode(label);
+                        if (node != null) {
+                            System.out.println("2");
+                            Node newNode = node;
+                            newNode.setPosition(Double.valueOf(x), Double.valueOf(y));
+                            System.out.println("3");
+                            nodes.add(newNode);
+                        }
+                        x = null;
+                        y = null;
+                        label = null;
                     }
-                    x = null;
-                    y = null;
+                }
+                if (sCurrentLine.contains("x	")) {
+                    x = sCurrentLine.substring(sCurrentLine.indexOf("x	") + 2);
+                    System.out.println(x);
+                }
+                if (sCurrentLine.contains("y	")) {
+                    y = sCurrentLine.substring(sCurrentLine.indexOf("y	") + 2);
+                    System.out.println(y);
+                }
+                if (sCurrentLine.contains("label	")) {
+                    label = sCurrentLine.substring(sCurrentLine.indexOf("label	") + 6);
+                    label = label.replace("\"", "");
+                    if (label.contains(" : ")) {
+                        label = label.split(" : ")[0];
+                    }
                 }
 
             }

@@ -26,32 +26,34 @@ import javax.swing.table.TableModel;
  *
  * @author scsandra
  */
-public interface DataTableModel extends TableModel {    
+public interface DataTableModel extends TableModel {
 
-        /**
-         * Removes selected rows from the table. It only removes the rows which are
-         * selected in the "Selection" column.
-         *
-         */
-        public void removeRows();
+    /**
+     * Removes selected rows from the table. It only removes the rows which are
+     * selected in the "Selection" column.
+     *
+     */
+    public void removeRows();
 
-        /**
-         * Returns the type of data set which correspons to this data model
-         *
-         * @return Data set type
-         */
-        public DatasetType getType();
+    /**
+     * Returns the type of data set which correspons to this data model
+     *
+     * @return Data set type
+     */
+    public DatasetType getType();
 
-        /**
-         * Adds a new column in the table.
-         *
-         * @param columnName Name of the new column
-         */
-        public void addColumn(String columnName);
+    /**
+     * Adds a new column in the table.
+     *
+     * @param columnName Name of the new column
+     */
+    public void addColumn(String columnName);
 
-        public void addRowColor(Color[] color);
+    public void addRowColor(Color[] color);
 
-        public Color getRowColor(int row);
+    public Color getRowColor(int row);
 
-        public Color getCellColor(int row, int column);
+    public Color getCellColor(int row, int column);
+
+    public boolean isExchange(int row);
 }
