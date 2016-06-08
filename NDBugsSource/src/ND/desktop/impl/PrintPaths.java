@@ -170,23 +170,25 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
 
                 String name = id.split(" - ")[0];
                 String r = id.split(" : ")[0];
-
-                if (colors.containsKey(id)) {
-                    return colors.get(id);
-                } else if (m.getReaction(r.trim()) != null || m.getReaction(name.trim()) != null) {
-                    if (id.split(" : ").length > 1) {
-                        return makeItDarKer(id.split(" : ")[1]);
+                try {
+                    if (colors.containsKey(id)) {
+                        return colors.get(id);
+                    } else if (m.getReaction(r.trim()) != null || m.getReaction(name.trim()) != null) {
+                        if (id.split(" : ").length > 1) {
+                            return makeItDarKer(id.split(" : ")[1]);
+                        } else {
+                            return new Color(102, 194, 164);
+                        }
+                    } else if (id.contains("H+") || id.contains("H2O") || id.contains(" : phosphate ") || id.contains(" : ADP")
+                        || id.contains(" : ATP") || id.contains(" : NAD") || id.contains(" : CO2") || id.contains(" : oxygen")
+                        || id.contains(": AMP") || id.contains(" : diphosphate ") || id.contains(" : carbon dioxide ") || id.contains(" : potassium ")) {
+                        return Color.ORANGE;
                     } else {
-                        return new Color(102, 194, 164);
+                        return new Color(156, 244, 125);
                     }
-                } else if (id.contains("H+") || id.contains("H2O") || id.contains(" : phosphate ") || id.contains(" : ADP")
-                    || id.contains(" : ATP") || id.contains(" : NAD") || id.contains(" : CO2") || id.contains(" : oxygen")
-                    || id.contains(": AMP") || id.contains(" : diphosphate ") || id.contains(" : carbon dioxide ") || id.contains(" : potassium ")) {
-                    return Color.ORANGE;
-                } else {
+                } catch (Exception e) {
                     return new Color(156, 244, 125);
                 }
-
             }
 
             private Paint makeItDarKer(String split) {
@@ -216,11 +218,16 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
         Transformer<String, Shape> vertexShape = new Transformer<String, Shape>() {
             public Shape transform(String v) {
                 String name = v.split(" - ")[0];
-                String r = v.split(" : ")[0];
-                if (m.getReaction(r.trim()) != null || m.getReaction(name.trim()) != null) {
-                    Rectangle2D circle = new Rectangle2D.Double(-15.0, -15.0, 50.0, 25.0);
-                    return circle;
-                } else {
+                try {
+                    String r = v.split(" : ")[0];
+                    if (m.getReaction(r.trim()) != null || m.getReaction(name.trim()) != null) {
+                        Rectangle2D circle = new Rectangle2D.Double(-15.0, -15.0, 50.0, 25.0);
+                        return circle;
+                    } else {
+                        Ellipse2D circle = new Ellipse2D.Double(-15, -15, 20, 20);
+                        return circle;
+                    }
+                } catch (Exception e) {
                     Ellipse2D circle = new Ellipse2D.Double(-15, -15, 20, 20);
                     return circle;
                 }

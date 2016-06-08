@@ -17,7 +17,6 @@
  */
 package ND.modules.analysis.ClusteringBetweenness;
 
-import ND.modules.analysis.ClusteringBetweenness.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.modules.configuration.general.GetInfoAndTools;

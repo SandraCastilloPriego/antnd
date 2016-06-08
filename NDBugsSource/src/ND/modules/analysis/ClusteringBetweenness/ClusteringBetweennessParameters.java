@@ -18,7 +18,6 @@
 package ND.modules.analysis.ClusteringBetweenness;
 
 
-import ND.modules.analysis.ClusteringBetweenness.*;
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.IntegerParameter;
