@@ -39,7 +39,7 @@ import javax.swing.*;
  */
 public final class MainMenu extends JMenuBar implements ActionListener {
 
-    private final JMenu fileMenu, configurationMenu, simulationMenu, visualizationMenu, optimizationMenu, analysisMenu, reactionMenu, helpMenu;
+    private final JMenu fileMenu, configurationMenu, simulationMenu, visualizationMenu, optimizationMenu, analysisMenu, reactionMenu, helpMenu, DBMenu;
     private final JWindowsMenu windowsMenu;
     private final JMenuItem showAbout;
     private final Map<JMenuItem, NDProcessingModule> moduleMenuItems = new HashMap<>();
@@ -66,28 +66,34 @@ public final class MainMenu extends JMenuBar implements ActionListener {
         add(simulationMenu);
 
         reactionMenu = new JMenu("Model");
-        reactionMenu.setMnemonic(KeyEvent.VK_R);
+        reactionMenu.setMnemonic(KeyEvent.VK_M);
         reactionMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
         reactionMenu.setIcon(new ImageIcon("icons/model.png"));
         add(reactionMenu);
 
         visualizationMenu = new JMenu("Visualization");
-        visualizationMenu.setMnemonic(KeyEvent.VK_R);
+        visualizationMenu.setMnemonic(KeyEvent.VK_V);
         visualizationMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
         visualizationMenu.setIcon(new ImageIcon("icons/Visualization.png"));
         add(visualizationMenu);
 
         optimizationMenu = new JMenu("Optimization");
-        optimizationMenu.setMnemonic(KeyEvent.VK_R);
+        optimizationMenu.setMnemonic(KeyEvent.VK_O);
         optimizationMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
         optimizationMenu.setIcon(new ImageIcon("icons/optimizer.png"));
         add(optimizationMenu);
 
         analysisMenu = new JMenu("Analysis");
-        analysisMenu.setMnemonic(KeyEvent.VK_R);
+        analysisMenu.setMnemonic(KeyEvent.VK_A);
         analysisMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
         analysisMenu.setIcon(new ImageIcon("icons/analysis.png"));
         add(analysisMenu);
+
+        DBMenu = new JMenu("Graph DB");
+        DBMenu.setMnemonic(KeyEvent.VK_D);
+        DBMenu.setFont(new Font("SansSerif", Font.BOLD, 13));
+        DBMenu.setIcon(new ImageIcon("icons/neo4j.png"));
+        add(DBMenu);
 
         JDesktopPane mainDesktopPane = ((MainWindow) NDCore.getDesktop()).getDesktopPane();
         windowsMenu = new JWindowsMenu(mainDesktopPane);
@@ -140,6 +146,9 @@ public final class MainMenu extends JMenuBar implements ActionListener {
             case ANALYSIS:
                 analysisMenu.add(newItem);
                 break;
+            case DB:
+                DBMenu.add(newItem);
+                break;
             case HELPSYSTEM:
                 helpMenu.add(newItem);
                 break;
@@ -168,6 +177,9 @@ public final class MainMenu extends JMenuBar implements ActionListener {
                 break;
             case ANALYSIS:
                 analysisMenu.addSeparator();
+                break;
+            case DB:
+                DBMenu.addSeparator();
                 break;
             case HELPSYSTEM:
                 helpMenu.addSeparator();

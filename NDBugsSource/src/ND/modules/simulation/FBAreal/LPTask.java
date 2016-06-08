@@ -107,7 +107,7 @@ public class LPTask extends AbstractTask {
         Graph previousG = this.networkDS.getGraph();
         for (String r : reactions.keySet()) {
             ReactionFA reaction = reactions.get(r);
-            if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000001) {
+            if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000000000001) {
                 Node reactionNode = new Node(reaction.getId(), String.format("%.3g%n", reaction.getFlux()));
                 if (previousG != null && previousG.getNode(reaction.getId()) != null) {
                     reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());

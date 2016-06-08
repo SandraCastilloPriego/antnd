@@ -221,6 +221,11 @@ public final class Bug {
                 score = flux;
             }
 
+            if(score > 1500){
+                score = score -2000;
+            }else if(score > 500){
+                score = score -1000;
+            }
             String solution = "";
             for (ReactionFA r : this.rowList.keySet()) {
                 solution += r.getId() + " - ";
@@ -230,7 +235,7 @@ public final class Bug {
             System.out.println(solution + ": " + score);
 
             //mutation
-            int index = rnd.nextInt(this.rowList.size() - 1);
+          /*  int index = rnd.nextInt(this.rowList.size() - 1);
             int i = 0;
             ReactionFA selected = null;
             for (ReactionFA r : this.rowList.keySet()) {
@@ -244,7 +249,7 @@ public final class Bug {
                 this.rowList.put(selected, status.UP);
             } else if (this.rowList.get(selected) == status.UP) {
                 this.rowList.put(selected, status.LB);
-            }
+            }*/
 
         } catch (Exception ex) {
             System.out.println(ex);

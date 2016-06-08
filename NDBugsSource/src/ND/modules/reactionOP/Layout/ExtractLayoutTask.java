@@ -25,15 +25,12 @@ import ND.modules.configuration.general.GetInfoAndTools;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Reaction;
 
 /**
  *
@@ -99,13 +96,13 @@ public class ExtractLayoutTask extends AbstractTask {
             while ((sCurrentLine = br.readLine()) != null) {
                 if (sCurrentLine.contains("node") || sCurrentLine.contains("edge")) {
                     if (label != null) {
-                        System.out.println(label + x + y);
+                       // System.out.println(label + x + y);
                         Node node = g.getNode(label);
                         if (node != null) {
-                            System.out.println("2");
+                            //System.out.println("2");
                             Node newNode = node;
                             newNode.setPosition(Double.valueOf(x), Double.valueOf(y));
-                            System.out.println("3");
+                            //System.out.println("3");
                             nodes.add(newNode);
                         }
                         x = null;
@@ -115,11 +112,11 @@ public class ExtractLayoutTask extends AbstractTask {
                 }
                 if (sCurrentLine.contains("x	")) {
                     x = sCurrentLine.substring(sCurrentLine.indexOf("x	") + 2);
-                    System.out.println(x);
+                   // System.out.println(x);
                 }
                 if (sCurrentLine.contains("y	")) {
                     y = sCurrentLine.substring(sCurrentLine.indexOf("y	") + 2);
-                    System.out.println(y);
+                    //System.out.println(y);
                 }
                 if (sCurrentLine.contains("label	")) {
                     label = sCurrentLine.substring(sCurrentLine.indexOf("label	") + 6);

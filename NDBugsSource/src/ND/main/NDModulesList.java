@@ -22,6 +22,7 @@ import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
 import ND.modules.analysis.CompareModels.CompareModule;
 import ND.modules.analysis.kNeighborhood.KNeighborhoodModule;
+import ND.modules.configuration.db.DBConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
 import ND.modules.file.openProject.OpenProjectModule;
 import ND.modules.file.openfile.OpenBasicFileModule;
@@ -64,7 +65,8 @@ public class NDModulesList {
         OpenBasicFileModule.class,
         OpenProjectModule.class,
         SaveProjectModule.class,
-        SourcesConfModule.class,
+        DBConfModule.class,
+       // SourcesConfModule.class,
         //CofactorConfModule.class,
         // AntModule.class,
         AntBetweenModule.class,

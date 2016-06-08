@@ -244,7 +244,7 @@ public class MainWindow extends JFrame implements NDModule, Desktop,
                 pack();
 
                 // TODO: check screen size?
-                setBounds(0, 0, 1100, 800);
+                setBounds(0, 0, 1200, 900);
                 setLocationRelativeTo(null);
 
                 // Application wants to control closing by itself
