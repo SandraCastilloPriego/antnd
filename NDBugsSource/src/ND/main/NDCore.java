@@ -23,6 +23,7 @@ import ND.desktop.impl.MainWindow;
 import ND.desktop.impl.helpsystem.HelpImpl;
 import ND.modules.NDModule;
 import ND.modules.NDProcessingModule;
+import ND.modules.configuration.db.DBConfParameters;
 import ND.modules.configuration.general.GeneralconfigurationParameters;
 import ND.parameters.ParameterSet;
 import ND.taskcontrol.TaskController;
@@ -56,296 +57,295 @@ import org.xml.sax.SAXException;
  * This interface represents ND core modules - I/O, task controller and GUI.
  */
 /**
- * @author Taken from MZmine2
- * http://mzmine.sourceforge.net/
+ * @author Taken from MZmine2 http://mzmine.sourceforge.net/
  */
 public class NDCore implements Runnable {
 
-        public static final File CONFIG_FILE = new File("conf/config.xml");
-        public static final String STANDARD_RANGE = "standard_ranges";
-        public static final String STANDARD_NAME = "standard_name";
-        private static Logger logger = Logger.getLogger(NDCore.class.getName());
-        private static GeneralconfigurationParameters preferences;
-        private static TaskControllerImpl taskController;
-        private static NDModule[] initializedModules;
-        private static HelpImpl help;
-        private static MainWindow desktop;
-      
+    public static final File CONFIG_FILE = new File("conf/config.xml");
+    public static final String STANDARD_RANGE = "standard_ranges";
+    public static final String STANDARD_NAME = "standard_name";
+    private static Logger logger = Logger.getLogger(NDCore.class.getName());
+    private static GeneralconfigurationParameters preferences;
+    private static DBConfParameters DBparameters;
+    private static TaskControllerImpl taskController;
+    private static NDModule[] initializedModules;
+    private static HelpImpl help;
+    private static MainWindow desktop;
 
-        /**
-         * Returns a reference to local task controller.
-         *
-         * @return TaskController reference
-         */
-        public static TaskController getTaskController() {
-                return taskController;
+    /**
+     * Returns a reference to local task controller.
+     *
+     * @return TaskController reference
+     */
+    public static TaskController getTaskController() {
+        return taskController;
+    }
+
+    /**
+     * Returns a reference to Desktop.
+     */
+    public static Desktop getDesktop() {
+        return desktop;
+    }
+
+    /**
+     * Returns an array of all initialized ND modules
+     *
+     * @return Array of all initialized ND modules
+     */
+    public static NDModule[] getAllModules() {
+        return initializedModules;
+    }
+
+    /**
+     *
+     *
+     * @return
+     */
+    public static HelpImpl getHelpImpl() {
+        return help;
+    }
+
+    /**
+     * Saves configuration and exits the application.
+     *
+     */
+    public static ExitCode exitND() {
+
+        // If we have GUI, ask if use really wants to quit
+        int selectedValue = JOptionPane.showInternalConfirmDialog(desktop.getMainFrame().getContentPane(),
+            "Are you sure you want to exit?", "Exiting...",
+            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        if (selectedValue != JOptionPane.YES_OPTION) {
+            return ExitCode.CANCEL;
         }
 
-        /**
-         * Returns a reference to Desktop.
-         */
-        public static Desktop getDesktop() {
-                return desktop;
-        }
+        desktop.getMainFrame().dispose();
 
-        /**
-         * Returns an array of all initialized ND modules
-         *
-         * @return Array of all initialized ND modules
-         */
-        public static NDModule[] getAllModules() {
-                return initializedModules;
-        }
+        logger.info("Exiting AntND");
 
-        /**
-         *
-         *
-         * @return
-         */
-        public static HelpImpl getHelpImpl() {
-                return help;
-        }
+        System.exit(0);
 
-        /**
-         * Saves configuration and exits the application.
-         *
-         */
-        public static ExitCode exitND() {
+        return ExitCode.OK;
 
-                // If we have GUI, ask if use really wants to quit
-                int selectedValue = JOptionPane.showInternalConfirmDialog(desktop.getMainFrame().getContentPane(),
-                        "Are you sure you want to exit?", "Exiting...",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+    }
 
-                if (selectedValue != JOptionPane.YES_OPTION) {
-                        return ExitCode.CANCEL;
-                }
+    /**
+     * Main method
+     */
+    public static void main(String args[]) {
+        // create the GUI in the event-dispatching thread
+        NDCore core = new NDCore();
+        SwingUtilities.invokeLater(core);
 
-                desktop.getMainFrame().dispose();
+    }
 
-                logger.info("Exiting AntND");
+    /**
+     * @see java.lang.Runnable#run()
+     */
+    @Override
+    public void run() {
+        logger.log(Level.INFO, "Starting AntND {0}", getNDVersion());
 
-                System.exit(0);
+        logger.fine("Loading core classes..");
 
-                return ExitCode.OK;
-
-        }
-
-        /**
-         * Main method
-         */
-        public static void main(String args[]) {
-                // create the GUI in the event-dispatching thread
-                NDCore core = new NDCore();
-                SwingUtilities.invokeLater(core);
-
-        }
-
-        /**
-         * @see java.lang.Runnable#run()
-         */
-        @Override
-        public void run() {
-                logger.log(Level.INFO, "Starting AntND {0}", getNDVersion());
-
-                logger.fine("Loading core classes..");
-
-                // create instance of preferences
-                preferences = new GeneralconfigurationParameters();               
+        // create instance of preferences
+        preferences = new GeneralconfigurationParameters();
+        DBparameters = new DBConfParameters();
 
                 // create instances of core modules
+        // load configuration from XML
+        taskController = new TaskControllerImpl();
+        desktop = new MainWindow();
+        help = new HelpImpl();
 
-                // load configuration from XML
-                taskController = new TaskControllerImpl();
-                desktop = new MainWindow();
-                help = new HelpImpl();
-
-                logger.fine("Initializing core classes..");
-
+        logger.fine("Initializing core classes..");
 
                 // Second, initialize desktop, because task controller needs to add
-                // TaskProgressWindow to the desktop
-                desktop.initModule();
+        // TaskProgressWindow to the desktop
+        desktop.initModule();
 
-                // Last, initialize task controller
-                taskController.initModule();
+        // Last, initialize task controller
+        taskController.initModule();
 
-                logger.fine("Loading modules");
+        logger.fine("Loading modules");
 
-                Vector<NDModule> moduleSet = new Vector<>();
+        Vector<NDModule> moduleSet = new Vector<>();
 
-                for (Class<?> moduleClass : NDModulesList.MODULES) {
+        for (Class<?> moduleClass : NDModulesList.MODULES) {
 
-                        try {
+            try {
 
-                                logger.log(Level.FINEST, "Loading module {0}", moduleClass.getName());
+                logger.log(Level.FINEST, "Loading module {0}", moduleClass.getName());
 
-                                // create instance and init module
-                                NDModule moduleInstance = (NDModule) moduleClass.newInstance();
+                // create instance and init module
+                NDModule moduleInstance = (NDModule) moduleClass.newInstance();
 
-                                // add desktop menu icon
-                                if (moduleInstance instanceof NDProcessingModule) {
-                                        desktop.getMainMenu().addMenuItemForModule(
-                                                (NDProcessingModule) moduleInstance);
-                                }
-
-                                // add to the module set
-                                moduleSet.add(moduleInstance);
-
-                        } catch (Throwable e) {
-                                logger.log(Level.SEVERE,
-                                        "Could not load module " + moduleClass, e);
-                                e.printStackTrace();
-                                continue;
-                        }
-
+                // add desktop menu icon
+                if (moduleInstance instanceof NDProcessingModule) {
+                    desktop.getMainMenu().addMenuItemForModule(
+                        (NDProcessingModule) moduleInstance);
                 }
 
-                NDCore.initializedModules = moduleSet.toArray(new NDModule[0]);
+                // add to the module set
+                moduleSet.add(moduleInstance);
 
-                if (CONFIG_FILE.canRead()) {
-                        try {
-                                loadConfiguration(CONFIG_FILE);
-                        } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException e) {
-                                
-                        }
-                }
-
-                // register shutdown hook
-                ShutDownHook shutDownHook = new ShutDownHook();
-                Runtime.getRuntime().addShutdownHook(shutDownHook);
-
-                // show the GUI
-                logger.info("Showing main window");
-                ((MainWindow) desktop).setVisible(true);
-
-                // show the welcome message
-                desktop.setStatusBarText("Welcome to AntND!");
-                preferences.setProxy();
+            } catch (Throwable e) {
+                logger.log(Level.SEVERE,
+                    "Could not load module " + moduleClass, e);
+                e.printStackTrace();
+                continue;
+            }
 
         }
 
-        public static void saveConfiguration(File file)
-                throws ParserConfigurationException, TransformerException,
-                FileNotFoundException {
+        NDCore.initializedModules = moduleSet.toArray(new NDModule[0]);
 
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        if (CONFIG_FILE.canRead()) {
+            try {
+                loadConfiguration(CONFIG_FILE);
+            } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException e) {
 
-                Document configuration = dBuilder.newDocument();
-                Element configRoot = configuration.createElement("configuration");
-                configuration.appendChild(configRoot);                
+            }
+        }
 
-                Element modulesElement = configuration.createElement("modules");
-                configRoot.appendChild(modulesElement);
+        // register shutdown hook
+        ShutDownHook shutDownHook = new ShutDownHook();
+        Runtime.getRuntime().addShutdownHook(shutDownHook);
 
-                // traverse modules
-                for (NDModule module : getAllModules()) {
+        // show the GUI
+        logger.info("Showing main window");
+        ((MainWindow) desktop).setVisible(true);
 
-                        String className = module.getClass().getName();
+        // show the welcome message
+        desktop.setStatusBarText("Welcome to AntND!");
+        preferences.setProxy();
 
-                        Element moduleElement = configuration.createElement("module");
-                        moduleElement.setAttribute("class", className);
-                        modulesElement.appendChild(moduleElement);
+    }
 
-                        Element paramElement = configuration.createElement("parameters");
-                        moduleElement.appendChild(paramElement);
+    public static void saveConfiguration(File file)
+        throws ParserConfigurationException, TransformerException,
+        FileNotFoundException {
 
-                        ParameterSet moduleParameters = module.getParameterSet();
-                        if (moduleParameters != null) {
-                                moduleParameters.saveValuesToXML(paramElement);
-                        }
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-                }
+        Document configuration = dBuilder.newDocument();
+        Element configRoot = configuration.createElement("configuration");
+        configuration.appendChild(configRoot);
 
+        Element modulesElement = configuration.createElement("modules");
+        configRoot.appendChild(modulesElement);
 
-                // Save Parameters path
-                String className = "ParameterPath";
-                Element moduleElement = configuration.createElement("module");
-                moduleElement.setAttribute("class", className);
-                modulesElement.appendChild(moduleElement);
+        // traverse modules
+        for (NDModule module : getAllModules()) {
 
-                Element paramElement = configuration.createElement("parameters");
-                moduleElement.appendChild(paramElement);
-                NDCore.getDesktop().saveParameterPathToXML(paramElement);
+            String className = module.getClass().getName();
 
+            Element moduleElement = configuration.createElement("module");
+            moduleElement.setAttribute("class", className);
+            modulesElement.appendChild(moduleElement);
 
+            Element paramElement = configuration.createElement("parameters");
+            moduleElement.appendChild(paramElement);
 
-                TransformerFactory transfac = TransformerFactory.newInstance();
-                Transformer transformer = transfac.newTransformer();
-                transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                transformer.setOutputProperty(
-                        "{http://xml.apache.org/xslt}indent-amount", "4");
-
-                StreamResult result = new StreamResult(new FileOutputStream(file));
-                DOMSource source = new DOMSource(configuration);
-                transformer.transform(source, result);
-
-                logger.log(Level.INFO, "Saved configuration to file {0}", file);
+            ParameterSet moduleParameters = module.getParameterSet();
+            if (moduleParameters != null) {
+                moduleParameters.saveValuesToXML(paramElement);
+            }
 
         }
 
-        public static void loadConfiguration(File file)
-                throws ParserConfigurationException, SAXException, IOException,
-                XPathExpressionException {
+        // Save Parameters path
+        String className = "ParameterPath";
+        Element moduleElement = configuration.createElement("module");
+        moduleElement.setAttribute("class", className);
+        modulesElement.appendChild(moduleElement);
 
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document configuration = dBuilder.parse(file);
+        Element paramElement = configuration.createElement("parameters");
+        moduleElement.appendChild(paramElement);
+        NDCore.getDesktop().saveParameterPathToXML(paramElement);
 
-                XPathFactory factory = XPathFactory.newInstance();
-                XPath xpath = factory.newXPath();
+        TransformerFactory transfac = TransformerFactory.newInstance();
+        Transformer transformer = transfac.newTransformer();
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty(
+            "{http://xml.apache.org/xslt}indent-amount", "4");
 
-                logger.finest("Loading desktop configuration");
+        StreamResult result = new StreamResult(new FileOutputStream(file));
+        DOMSource source = new DOMSource(configuration);
+        transformer.transform(source, result);
 
-                XPathExpression expr = xpath.compile("//configuration/Standards");
-                NodeList nodes = (NodeList) expr.evaluate(configuration,
-                        XPathConstants.NODESET);               
+        logger.log(Level.INFO, "Saved configuration to file {0}", file);
 
-                logger.finest("Loading modules configuration");
+    }
 
-                for (NDModule module : getAllModules()) {
+    public static void loadConfiguration(File file)
+        throws ParserConfigurationException, SAXException, IOException,
+        XPathExpressionException {
 
-                        String className = module.getClass().getName();
-                        expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
-                        nodes = (NodeList) expr.evaluate(configuration,
-                                XPathConstants.NODESET);
-                        if (nodes.getLength() != 1) {
-                                continue;
-                        }
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document configuration = dBuilder.parse(file);
 
-                        Element moduleElement = (Element) nodes.item(0);
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
 
-                        ParameterSet moduleParameters = module.getParameterSet();
-                        if (moduleParameters != null) {
-                                moduleParameters.loadValuesFromXML(moduleElement);
-                        }
-                }
+        logger.finest("Loading desktop configuration");
 
-                String className = "ParameterPath";
-                expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
-                if (nodes.getLength() == 1) {
-                        nodes = (NodeList) expr.evaluate(configuration,
-                                XPathConstants.NODESET);
+        XPathExpression expr = xpath.compile("//configuration/Standards");
+        NodeList nodes = (NodeList) expr.evaluate(configuration,
+            XPathConstants.NODESET);
 
-                        Element moduleElement = (Element) nodes.item(0);
-                        NDCore.getDesktop().loadParameterPathFromXML(moduleElement);
-                }
+        logger.finest("Loading modules configuration");
 
-                logger.log(Level.INFO, "Loaded configuration from file {0}", file);
+        for (NDModule module : getAllModules()) {
+
+            String className = module.getClass().getName();
+            expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
+            nodes = (NodeList) expr.evaluate(configuration,
+                XPathConstants.NODESET);
+            if (nodes.getLength() != 1) {
+                continue;
+            }
+
+            Element moduleElement = (Element) nodes.item(0);
+
+            ParameterSet moduleParameters = module.getParameterSet();
+            if (moduleParameters != null) {
+                moduleParameters.loadValuesFromXML(moduleElement);
+            }
         }
-        
-        public static String getNDVersion() {
-                return NDVersion.ND;
+
+        String className = "ParameterPath";
+        expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
+        if (nodes.getLength() == 1) {
+            nodes = (NodeList) expr.evaluate(configuration,
+                XPathConstants.NODESET);
+
+            Element moduleElement = (Element) nodes.item(0);
+            NDCore.getDesktop().loadParameterPathFromXML(moduleElement);
         }
 
-        public static GeneralconfigurationParameters getPreferences() {
-                return preferences;
-        }
+        logger.log(Level.INFO, "Loaded configuration from file {0}", file);
+    }
 
-        public static void setPreferences(GeneralconfigurationParameters preferences2) {
-                preferences = preferences2;
-        }        
+    public static String getNDVersion() {
+        return NDVersion.ND;
+    }
+
+    public static GeneralconfigurationParameters getPreferences() {
+        return preferences;
+    }
+
+    public static DBConfParameters getDBParameters() {
+        return DBparameters;
+    }
+
+    public static void setPreferences(GeneralconfigurationParameters preferences2) {
+        preferences = preferences2;
+    }
 }

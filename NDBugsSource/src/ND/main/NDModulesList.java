@@ -18,6 +18,7 @@
  */
 package ND.main;
 
+import ND.modules.DB.Visualize.QueryDBModule;
 import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
 import ND.modules.analysis.CompareModels.CompareModule;
@@ -66,7 +67,7 @@ public class NDModulesList {
         OpenProjectModule.class,
         SaveProjectModule.class,
         DBConfModule.class,
-       // SourcesConfModule.class,
+        // SourcesConfModule.class,
         //CofactorConfModule.class,
         // AntModule.class,
         AntBetweenModule.class,
@@ -90,7 +91,7 @@ public class NDModulesList {
         //  AntFluxMaxModule.class,
         //  AntFluxMinModule.class,
         LPModule.class,
-       // LPNCModule.class,
+        // LPNCModule.class,
         FluxAnalysisModule.class,
         FluxCalcModule.class,
         DynamicModule.class,
@@ -106,5 +107,6 @@ public class NDModulesList {
         StartSimulationModule.class,
         StartTestingGAModule.class,
         StartReducingGAModule.class,
-        StartSimulationDirectionsModule.class};
+        StartSimulationDirectionsModule.class,
+        QueryDBModule.class,};
 }

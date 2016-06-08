@@ -15,11 +15,9 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.ClusteringBetweenness;
+package ND.modules.DB.Visualize;
 
 
-import ND.modules.analysis.ClusteringBetweenness.*;
-import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.main.NDCore;
 import ND.modules.NDModuleCategory;
 import ND.modules.NDProcessingModule;
@@ -31,10 +29,10 @@ import ND.taskcontrol.Task;
  *
  * @author scsandra
  */
-public class ClusteringBetweennessModule implements NDProcessingModule {
+public class QueryDBModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Cluster Graph (Betweenness)";
-        private final ClusteringBetweennessParameters parameters = new ClusteringBetweennessParameters();
+        public static final String MODULE_NAME = "Cypher queries";
+        private final QueryDBParameters parameters = new QueryDBParameters();
 
         @Override
         public ParameterSet getParameterSet() {
@@ -50,13 +48,9 @@ public class ClusteringBetweennessModule implements NDProcessingModule {
         public Task[] runModule(ParameterSet parameters) {
 
                 // prepare a new group of tasks
-                Task tasks[] = new ClusteringBetweennessTask[1];
-                SimpleBasicDataset dataset = null;
-                try {
-                        dataset = (SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0];
-                } catch (Exception e) {
-                }
-                tasks[0] = new ClusteringBetweennessTask(dataset, (SimpleParameterSet) parameters);
+                Task tasks[] = new QueryDBTask[1];
+              
+                tasks[0] = new QueryDBTask((SimpleParameterSet) parameters);
 
                 NDCore.getTaskController().addTasks(tasks);
 
@@ -65,12 +59,12 @@ public class ClusteringBetweennessModule implements NDProcessingModule {
 
         @Override
         public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.ANALYSIS;
+                return NDModuleCategory.DB;
         }
 
         @Override
         public String getIcon() {
-                return "icons/clustering.png";
+                return "icons/neo4j.png";
         }
 
         @Override

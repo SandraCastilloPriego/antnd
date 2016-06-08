@@ -15,22 +15,21 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.analysis.ClusteringBetweenness;
+package ND.modules.DB.Visualize;
 
 
-import ND.modules.analysis.ClusteringBetweenness.*;
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
-import ND.parameters.parametersType.IntegerParameter;
+import ND.parameters.parametersType.StringParameter;
 
-public class ClusteringBetweennessParameters extends SimpleParameterSet {     
+public class QueryDBParameters extends SimpleParameterSet {     
    
 
-        public static final IntegerParameter numberOfEdges = new IntegerParameter(
-                "Number of edges to remove", "Number of edges to remove", 2);
+        public static final StringParameter cypher = new StringParameter(
+                "Cypher query", "Write here the cypher query", "Match(n:BioledgeBag) return n limit 15");
        
 
-        public ClusteringBetweennessParameters() {
-                super(new Parameter[]{numberOfEdges});
+        public QueryDBParameters() {
+                super(new Parameter[]{cypher});
         }
 }
