@@ -15,21 +15,23 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.DB.Visualize;
+package ND.modules.DB.ShortPathway;
 
 
 import ND.parameters.Parameter;
 import ND.parameters.SimpleParameterSet;
 import ND.parameters.parametersType.StringParameter;
 
-public class QueryDBParameters extends SimpleParameterSet {     
+public class ShortestPathDBParameters extends SimpleParameterSet {     
    
 
-        public static final StringParameter cypher = new StringParameter(
-                "Cypher query", "Write here the cypher query", "match(n:BioledgeBag)-[:DBLINK*]->(m:KEGG)<-[:DBLINK*]-(met:MetaNetX),(n:BioledgeBag)-[:DBLINK*]->(j:ChEBI)<-[:DBLINK*]-(met2:MetaNetX) WITH count(met) as c, n as n, met as met, m as m, j as j, met2 as met2 where c=1  return n,met,m,j,met2");
+        public static final StringParameter From = new StringParameter(
+                "Compound Id From", "Compound Id");
+        public static final StringParameter To = new StringParameter(
+                "Compound Id To", "Compound Id");
        
 
-        public QueryDBParameters() {
-                super(new Parameter[]{cypher});
+        public ShortestPathDBParameters() {
+                super(new Parameter[]{From, To});
         }
 }

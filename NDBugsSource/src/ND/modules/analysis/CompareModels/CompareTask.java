@@ -106,9 +106,12 @@ public class CompareTask extends AbstractTask {
                 }
             }
 
-            this.info.append("Common reactions with different fluxes in ").append(this.networkDS[1].getDatasetName()).append(":\n");
-            for (String re : commonReactions) {
-                showReactions2(model1.getReaction(re), model2.getReaction(re));
+            try {
+                this.info.append("Common reactions with different fluxes in ").append(this.networkDS[1].getDatasetName()).append(":\n");
+                for (String re : commonReactions) {
+                    showReactions2(model1.getReaction(re), model2.getReaction(re));
+                }
+            } catch (Exception e) {
             }
             // this.networkDS.setInfo(info.toString());
             this.tf.setText(info.toString());
@@ -159,20 +162,20 @@ public class CompareTask extends AbstractTask {
 
     private void showReactions2(Reaction reaction, Reaction reaction2) {
         DecimalFormat df = new DecimalFormat("#.####");
-       KineticLaw law = reaction.getKineticLaw();
+        KineticLaw law = reaction.getKineticLaw();
         if (law != null) {
-             LocalParameter flux = law.getLocalParameter("FLUX_VALUE");
+            LocalParameter flux = law.getLocalParameter("FLUX_VALUE");
             if (reaction2 == null) {
                 info.append(reaction.getId()).append(flux.getValue()).append("\n");
             } else {
                 KineticLaw law2 = reaction2.getKineticLaw();
                 if (law != null && law2 != null) {
                     LocalParameter flux2 = law2.getLocalParameter("FLUX_VALUE");
-                    if(!df.format(flux.getValue()).equals(df.format(flux2.getValue()))){
+                    if (!df.format(flux.getValue()).equals(df.format(flux2.getValue()))) {
                         info.append(reaction.getId()).append(":  ").append(df.format(flux.getValue())).append(" - ").append(df.format(flux2.getValue())).append(" --> ").append(reaction.getName()).append("\n");
                     }
                 }
             }
-        } 
+        }
     }
 }

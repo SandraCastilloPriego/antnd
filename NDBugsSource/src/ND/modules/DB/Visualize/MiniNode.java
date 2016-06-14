@@ -9,6 +9,6 @@ package ND.modules.DB.Visualize;
  *
  * @author scsandra
  */
-public class MiniEdge {
-    public String type, start, end, self;
+public class MiniNode {
+    public String labels, Id, self;
 }

@@ -18,6 +18,7 @@
  */
 package ND.main;
 
+import ND.modules.DB.ShortPathway.ShortestPathDBModule;
 import ND.modules.DB.Visualize.QueryDBModule;
 import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
@@ -67,6 +68,7 @@ public class NDModulesList {
         OpenProjectModule.class,
         SaveProjectModule.class,
         DBConfModule.class,
+        ShortestPathDBModule.class,
         // SourcesConfModule.class,
         //CofactorConfModule.class,
         // AntModule.class,

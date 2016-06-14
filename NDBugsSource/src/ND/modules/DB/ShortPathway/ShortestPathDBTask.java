@@ -15,8 +15,9 @@
  * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package ND.modules.DB.Visualize;
+package ND.modules.DB.ShortPathway;
 
+import ND.modules.DB.Visualize.*;
 import ND.data.network.Edge;
 import ND.data.network.Node;
 import ND.main.NDCore;
@@ -28,12 +29,14 @@ import ND.taskcontrol.TaskStatus;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JInternalFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.ws.rs.core.MediaType;
 import org.neo4j.shell.util.json.JSONArray;
@@ -44,17 +47,18 @@ import org.neo4j.shell.util.json.JSONObject;
  *
  * @author scsandra
  */
-public class QueryDBTask extends AbstractTask {
+public class ShortestPathDBTask extends AbstractTask {
 
-    private final String cypherQuery;
+    private final String From, To;
     private double finishedPercentage = 0.0f;
     private String URI;
     List<Node> nodes;
     List<Edge> edges;
     Map<String, Node> matches;
 
-    public QueryDBTask(SimpleParameterSet parameters) {
-        this.cypherQuery = parameters.getParameter(QueryDBParameters.cypher).getValue();
+    public ShortestPathDBTask(SimpleParameterSet parameters) {
+        this.From = parameters.getParameter(ShortestPathDBParameters.From).getValue();
+        this.To = parameters.getParameter(ShortestPathDBParameters.To).getValue();
         this.URI = NDCore.getDBParameters().getParameter(DBConfParameters.URI).getValue();
         if (!URI.contains("http")) {
             this.URI = "http://" + URI + ":7474/db/data/";
@@ -85,7 +89,8 @@ public class QueryDBTask extends AbstractTask {
     public void run() {
         try {
             setStatus(TaskStatus.PROCESSING);
-            this.getDBQuery(URI, cypherQuery);
+            String query = "MATCH(n:Compound {BioledgeBagId:'" + From + "'}),(j:Compound {BioledgeBagId:'" + To + "'}),p=allShortestPaths((n)-[*]-(j)) return p";
+            this.getDBQuery(URI, query);
 
             finishedPercentage = 1.0f;
             setStatus(TaskStatus.FINISHED);
@@ -96,6 +101,65 @@ public class QueryDBTask extends AbstractTask {
     }
 
     private void getDBQuery(String URI, String queryString) {
+
+        //match(n:BioledgeBag)-[:DBLINK*]->(m:KEGG)<-[:DBLINK*]-(met:MetaNetX),(n:BioledgeBag)-[:DBLINK*]->(j:ChEBI)<-[:DBLINK*]-(met2:MetaNetX) WITH count(met) as c, n as n, met as met, m as m, j as j, met2 as met2 where c=1  return n,met,m,j,met2 
+        final String nodeEntryPointUri = URI + "cypher";
+
+        String query = "{\"query\" : \"" + queryString + "\",\n \"params\":  {} \n}";
+        //System.out.println(query);
+        WebResource resource = Client.create()
+            .resource(nodeEntryPointUri);
+        ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(query)
+            .post(ClientResponse.class);
+
+        String responsestring = response.getEntity(String.class);
+        response.close();
+        System.out.println(responsestring);
+        JSONObject obj;
+        try {
+            obj = new JSONObject(responsestring);
+
+            JSONArray array = obj.getJSONArray("data");
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONArray a = array.getJSONArray(i);
+                for (int j = 0; j < a.length(); j++) {
+                    String path = a.getJSONObject(j).get("nodes").toString();
+                    if (!path.contains("/node/687197") && !path.contains("/node/693359") && !path.contains("/node/694004") && !path.contains("/node/687229")&& !path.contains("/node/691642")
+                        && !path.contains("/node/687219")) {
+                        String[] nodes = path.replace("[", "").replace("]", "").replace("\"", "").split(",");
+                        String newQuery1 = "MATCH";
+                        String newQuery2 = " WHERE ";
+                        String newQuery3 = " RETURN ";
+                        int n = 1;
+                        for (String node : nodes) {
+                            node = node.substring(node.lastIndexOf("/")+1);
+                            newQuery1 += "(node" + n + ")-[rel"+n+"]-";
+                            newQuery2 += "id(node" + n + ")=" + node + " and ";
+                            newQuery3 += "node" + n+",rel" + n + ",";
+                            n++;
+                        }
+                        n--;
+                        newQuery1 = newQuery1.substring(0, newQuery1.lastIndexOf("-[rel"+n+"]-"));
+                        newQuery2 = newQuery2.substring(0, newQuery2.lastIndexOf("and"));
+                        newQuery3 = newQuery3.substring(0, newQuery3.lastIndexOf(",rel"+n));
+                        String q = newQuery1 + newQuery2 + newQuery3;
+                         System.out.println(q);
+                       
+                        getDBQueryp(URI,q);
+                    }
+                }
+
+            }         
+        } catch (JSONException ex) {
+            System.out.println(ex.toString());
+        }
+
+    }
+    
+      private void getDBQueryp(String URI, String queryString) {
         
         //match(n:BioledgeBag)-[:DBLINK*]->(m:KEGG)<-[:DBLINK*]-(met:MetaNetX),(n:BioledgeBag)-[:DBLINK*]->(j:ChEBI)<-[:DBLINK*]-(met2:MetaNetX) WITH count(met) as c, n as n, met as met, m as m, j as j, met2 as met2 where c=1  return n,met,m,j,met2 
         final String nodeEntryPointUri = URI + "cypher";
@@ -170,17 +234,25 @@ public class QueryDBTask extends AbstractTask {
                 }
             }
 
-            GraphDataModel GDM = new GraphDataModel(graphs, col, values);
+            MiniGraph mg = graphs.get(0);
+            PrintGraph pg = new PrintGraph();
+            JInternalFrame frame = new JInternalFrame("Graph DB", true, true, true, true);
+            JPanel pn = new JPanel();
+            JScrollPane panel = new JScrollPane(pn);
 
-            PushableTableGraph table = new PushableTableGraph(GDM);
+            frame.setSize(new Dimension(500, 500));
+            frame.add(panel);
+            NDCore.getDesktop().addInternalFrame(frame);
+            try {
 
-            JInternalFrame frameTable = new JInternalFrame(queryString, true, true, true, true);
-            JScrollPane scrollPanel = new JScrollPane(table.getTable());
-            frameTable.setSize(new Dimension(700, 500));
-            frameTable.add(scrollPanel);
+                System.out.println("Visualize");
+                VisualizationViewer vv =pg.printPathwayInFrame(mg);
+                vv.setPreferredSize(new Dimension(1000, 1000));
+                pn.add(vv);
 
-            NDCore.getDesktop().addInternalFrame(frameTable);
-            frameTable.setVisible(true);
+            } catch (NullPointerException ex) {
+                System.out.println(ex.toString());
+            }
 
         } catch (JSONException ex) {
             System.out.println(ex.toString());
