@@ -54,7 +54,7 @@ public class DBConfModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/neo4j.png";
+                return "icons/neo4jConf.png";
         }
 
         @Override

@@ -18,7 +18,6 @@
 package ND.modules.DB.ShortPathway;
 
 
-import ND.modules.DB.Visualize.*;
 import ND.main.NDCore;
 import ND.modules.NDModuleCategory;
 import ND.modules.NDProcessingModule;
@@ -65,7 +64,7 @@ public class ShortestPathDBModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/neo4j.png";
+                return "icons/neo4jSP.png";
         }
 
         @Override

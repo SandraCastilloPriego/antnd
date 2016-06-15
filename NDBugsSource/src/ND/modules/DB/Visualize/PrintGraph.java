@@ -5,7 +5,6 @@
  */
 package ND.modules.DB.Visualize;
 
-import ND.desktop.impl.TransFrame;
 import ND.main.NDCore;
 import ND.modules.configuration.db.DBConfParameters;
 import ND.modules.simulation.antNoGraph.uniqueId;
@@ -17,7 +16,9 @@ import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.EditingPopupGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -37,17 +38,24 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.ws.rs.core.MediaType;
@@ -62,29 +70,28 @@ import org.neo4j.shell.util.json.JSONObject;
  *
  * @author scsandra
  */
-public class PrintGraph implements KeyListener, GraphMouseListener, ActionListener,
+public class PrintGraph implements KeyListener, GraphMouseListener,
     ChangeListener {
 
-    private TransFrame transFrame = null;
-    private final List<String> selectedNode;
+    private final List<String> selectedNode, selectedEdge;
     private edu.uci.ics.jung.graph.Graph<String, String> g;
-    private boolean showInfo = false;
     private MiniGraph graph, original;
     private VisualizationViewer<String, String> vv;
-
-    private JPopupMenu popupMenu;
-    JPanel topPanel;
-    JColorChooser tcc;
-    JButton banner;
-    Color selectedColor;
-    Map<String, Color> colors;
+    //EditingModalGraphMouse gm;
+    //private JPopupMenu popupMenu;
+    //JPanel topPanel;
+    // JColorChooser tcc;
+    //JButton banner;
+    //Color selectedColor;
+    //Map<String, Color> colors;
     String URI;
     JTextArea text;
     private Map<String, List<String>> connections;
 
     public PrintGraph() {
         this.selectedNode = new ArrayList<>();
-        this.popupMenu = new JPopupMenu();
+        this.selectedEdge = new ArrayList<>();
+        //this.popupMenu = new JPopupMenu();
         this.URI = NDCore.getDBParameters().getParameter(DBConfParameters.URI).getValue();
         if (!URI.contains("http")) {
             this.URI = "http://" + URI + ":7474/db/data/";
@@ -100,7 +107,7 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
         this.original = (MiniGraph) graph.clone();
         List<MiniNode> nodes = graph.getNodes();
         List<MiniEdge> edges = graph.getEdges();
-        colors = new HashMap<>();
+        // colors = new HashMap<>();
         SpringLayout layout = new SpringLayout(g);
         vv = new VisualizationViewer<>(layout);
 
@@ -171,9 +178,11 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
                             break;
                         }
                     }
-                    if (name.contains("Bioledge") || name.contains("MetaNetX")) {
-                        Ellipse2D circle = new Ellipse2D.Double(-15, -15, 40, 40);
-                        return circle;
+                    if (name.contains("Bioledge") || name.contains("MetaNetX") || name.contains("KEGG") || name.contains("MetaCyc")) {
+                        if (!name.contains("Reaction")) {
+                            Ellipse2D circle = new Ellipse2D.Double(-15, -15, 40, 40);
+                            return circle;
+                        }
                     } else if (name.contains("Name")) {
                         Ellipse2D circle = new Ellipse2D.Double(-10, -10, 15, 15);
                         return circle;
@@ -223,9 +232,9 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
                     String edge = (String) subject;
 
                     if (pickedEdgeState.isPicked(edge)) {
-                        selectedNode.add(edge);
+                        selectedEdge.add(edge);
                     } else {
-                        selectedNode.remove(edge);
+                        selectedEdge.remove(edge);
                     }
 
                 }
@@ -279,30 +288,101 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
 
         Factory<String> vertexFactory = new VertexFactory();
         Factory<String> edgeFactory = new EdgeFactory();
-        EditingModalGraphMouse gm
-            = new EditingModalGraphMouse(vv.getRenderContext(),
-                vertexFactory, edgeFactory);
+       // gm = new EditingModalGraphMouse(vv.getRenderContext(),
+        //    vertexFactory, edgeFactory);
 
-        // gm = new DefaultModalGraphMouse();
+         DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
         gm.setMode(ModalGraphMouse.Mode.PICKING);
-        vv.setGraphMouse(gm);
-
-        JPanel panel = new JPanel();
-        panel.add(gm.getModeComboBox());
-        panel.setPreferredSize(new Dimension(200, 50));
-        panel.setBackground(Color.white);
-
+        //gm.getPopupEditingPlugin()
+       vv.setGraphMouse(gm);
+       
+       /* JPanel panele = new JPanel();
+        panele.add(gm.getModeComboBox());
+        panele.setPreferredSize(new Dimension(200, 50));
+        panele.setBackground(Color.white);*/
         JPanel panelInfo = new JPanel();
         panelInfo.setPreferredSize(new Dimension(1500, 50));
         panelInfo.setBackground(Color.white);
+
+        JButton rmEdge = new JButton("Remove Edge");
+        rmEdge.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (!selectedEdge.isEmpty()) {
+                    System.out.println(selectedEdge.get(0));
+                    JInternalFrame frame = new JInternalFrame("Are you Sure?", true, true, true, true);
+                    JPanel panel = new JPanel();
+                    JButton sure = new JButton("I'm sure, I'm the boss");
+                    sure.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            System.out.println("Not Yet");
+                        }
+
+                    });
+
+                    JButton cancel = new JButton("Cancel, I'm scared");
+                    cancel.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            frame.dispose();
+                        }
+
+                    });
+                    JLabel field = new JLabel(getInfo(selectedEdge.get(0)));
+
+                    panel.add(field);
+                    panel.add(sure);
+                    panel.add(cancel);
+                    panel.setBackground(Color.white);
+                    frame.add(panel);
+                    panel.setPreferredSize(new Dimension(600, 100));
+                    frame.setSize(new Dimension(600, 100));
+                    frame.toFront();
+                    NDCore.getDesktop().addInternalFrame(frame);
+                    frame.setVisible(true);
+                }
+
+            }
+
+            private String getInfo(String get) {
+                MiniEdge selected = null;
+                for (MiniEdge e : graph.getEdges()) {
+                    if (e.self.equals(get)) {
+                        selected = e;
+                        break;
+                    }
+                }
+                MiniNode start = null, end = null;
+                for (MiniNode n : graph.getNodes()) {
+                    if (n.self.equals(selected.start)) {
+                        start = n;
+                    }
+                    if (n.self.equals(selected.end)) {
+                        end = n;
+                    }
+                }
+
+                String info = "";
+                if (start != null && end != null) {
+                    info += "Edge connecting " + start.Id + " and " + end.Id;
+                }
+                return info;
+            }
+        });
         text = new JTextArea();
+       // panelInfo.add(panele);
+        panelInfo.add(rmEdge);
         panelInfo.add(text);
         vv.add(panelInfo);
-        vv.add(panel);
+        //vv.add(panele);
         vv.addKeyListener(this);
         vv.addGraphMouseListener(this);
 
         vv.setBackground(Color.WHITE);
+
         return vv;
     }
 
@@ -332,25 +412,19 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
         }
     }
 
-    @Override
-    public void actionPerformed(ActionEvent ae) {
-        Runtime.getRuntime().freeMemory();
-        String command = ae.getActionCommand();
-        if (command.equals("Get Info")) {
-            if (!this.selectedNode.isEmpty()) {
-                System.out.println(this.selectedNode.get(0));
-                //getDBInfo(this.selectedNode.get(0).substring(this.selectedNode.get(0).lastIndexOf("/") + 1));
-            }
+    /* @Override
+     public void actionPerformed(ActionEvent ae) {
+     Runtime.getRuntime().freeMemory();
+     String command = ae.getActionCommand();
+     if (command.equals("Remove Edge")) {
 
-        }
-    }
+     }
 
+     }*/
     @Override
     public void graphClicked(Object v, MouseEvent me) {
-        System.out.println("Cuando ocurre esto?");
         String name = (String) v;
         getDBInfo(name.substring(name.lastIndexOf("/") + 1));
-
     }
 
     @Override
@@ -362,7 +436,7 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
                         String l = node.labels.replace("[", "").replace("]", "").replace("\"", "").replace(",", ":");
                         String[] id = node.Id.split(":");
                         String queryString = "match(n:" + l + " {" + id[0] + ":'" + id[1] + "'})-[r]-(m) return n,r,m";
-                        System.out.println(queryString);
+                        // System.out.println(queryString);
                         this.getDBQuery(queryString, (String) v);
                         break;
                     }
@@ -378,13 +452,23 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
                 this.connections.remove((String) v);
             }
         }
-        /*if (me.isPopupTrigger()) {
-         popupMenu = new JPopupMenu();
-         GUIUtils.addMenuItem(popupMenu, "Get Info", this, "Get Info");
-         popupMenu.show(me.getComponent(), me.getX(), me.getY());
+
+        /* if (me.isPopupTrigger()) {
+         //JPopupMenu popupMenu = new JPopupMenu();
+         // GUIUtils.addMenuItem(popupMenu, "Get Info", this, "Get Info");
+         //popupMenu.show(me.getComponent(), me.getX(), me.getY());*/
+           // gm.setMode(ModalGraphMouse.Mode.EDITING);
+            /*JPanel panel = new JPanel();
+         //panel.add(gm.);
+         JInternalFrame frame = new JInternalFrame("Add", true, true, true, true);
+         frame.add(panel);
+         panel.setPreferredSize(new Dimension(600, 100));
+         frame.setSize(new Dimension(600, 100));
+         frame.toFront();
+         NDCore.getDesktop().addInternalFrame(frame);
+         frame.setVisible(true);
 
          }*/
-
     }
 
     private void getDBInfo(String node) {
@@ -392,7 +476,7 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
         final String nodeEntryPointUri = URI + "cypher";
 
         String query = "{\"query\" : \"match (n) where id(n)=" + node + " return n\",\n \"params\":  {} \n}";
-        System.out.println(query);
+        //System.out.println(query);
         WebResource resource = Client.create()
             .resource(nodeEntryPointUri);
         ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
@@ -503,11 +587,56 @@ public class PrintGraph implements KeyListener, GraphMouseListener, ActionListen
 
     @Override
     public void stateChanged(ChangeEvent ce) {
-        Color newColor = tcc.getColor();
-        this.banner.setBackground(newColor);
-        this.selectedColor = newColor;
+        /*Color newColor = tcc.getColor();
+         this.banner.setBackground(newColor);
+         this.selectedColor = newColor;*/
     }
 
+//    public void writeJPEGImage(File file) {
+//        int width = 1000;
+//        int height = 1000;
+//        BufferedImage bi = new BufferedImage(width, height,
+//            BufferedImage.TYPE_INT_RGB);
+//        Graphics2D graphics = bi.createGraphics();
+//        vv.paint(graphics);
+//        graphics.dispose();
+//        try {
+//            ImageIO.write(bi, "jpeg", new File("/home/scsandra/Pictures/example.jpg"));
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//
+//        }
+//
+//    }
+//
+//    public int print(java.awt.Graphics graphics,
+//        java.awt.print.PageFormat pageFormat, int pageIndex)
+//        throws java.awt.print.PrinterException {
+//
+//        if (pageIndex > 0) {
+//
+//            return (Printable.NO_SUCH_PAGE);
+//
+//        } else {
+//
+//            java.awt.Graphics2D g2d = (java.awt.Graphics2D) graphics;
+//
+//            vv.setDoubleBuffered(false);
+//
+//            g2d.translate(pageFormat.getImageableX(), pageFormat
+//                .getImageableY());
+//
+//            vv.paint(g2d);
+//
+//            vv.setDoubleBuffered(true);
+//
+//            return (Printable.PAGE_EXISTS);
+//
+//        }
+//
+//    }
 }
 
 class VertexFactory implements Factory<String> {
@@ -524,6 +653,6 @@ class EdgeFactory implements Factory<String> {
     String i;
 
     public String create() {
-        return "adios" + uniqueId.nextId();
+        return "" + uniqueId.nextId();
     }
 }

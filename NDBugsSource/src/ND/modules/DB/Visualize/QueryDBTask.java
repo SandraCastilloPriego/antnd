@@ -111,7 +111,7 @@ public class QueryDBTask extends AbstractTask {
 
         String responsestring = response.getEntity(String.class);
         response.close();
-        // System.out.println(responsestring);
+        System.out.println(responsestring);
         JSONObject obj;
         try {
             obj = new JSONObject(responsestring);

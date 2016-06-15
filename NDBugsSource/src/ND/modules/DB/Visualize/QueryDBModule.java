@@ -64,11 +64,11 @@ public class QueryDBModule implements NDProcessingModule {
 
         @Override
         public String getIcon() {
-                return "icons/neo4j.png";
+                return "icons/neo4jQuery.png";
         }
 
         @Override
         public boolean setSeparator() {
-                return true;
+                return false;
         }
 }

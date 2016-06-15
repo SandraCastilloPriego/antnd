@@ -225,6 +225,10 @@ public final class Bug {
                 score = score -2000;
             }else if(score > 500){
                 score = score -1000;
+            }if(score < -1500){
+                score = score + 2000;
+            }else if(score < -500){
+                score = score +1000;
             }
             String solution = "";
             for (ReactionFA r : this.rowList.keySet()) {
@@ -274,7 +278,7 @@ public final class Bug {
 
     boolean isDead() {
         if (this.rowList.size() > 1) {
-            life = life - (1 - this.score);
+            life = life - (100 - this.score)/100;
         }
         if (this.rowList.isEmpty()) {
             life = 0;
