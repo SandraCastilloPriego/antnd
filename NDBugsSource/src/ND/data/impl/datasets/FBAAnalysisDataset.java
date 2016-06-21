@@ -1,19 +1,7 @@
 /*
- * Copyright 2007-2012 
- * This file is part of AntND.
- *
- * AntND is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * AntND is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * AntND; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
- * Fifth Floor, Boston, MA 02110-1301 USA
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package ND.data.impl.datasets;
 
@@ -34,11 +22,10 @@ import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.Species;
 
 /**
- * Basic data set implementation.
  *
- * @author SCSANDRA
+ * @author scsandra
  */
-public class SimpleBasicDataset implements Dataset {
+public class FBAAnalysisDataset implements Dataset {
 
     String datasetName, path;
     protected DatasetType type;
@@ -46,11 +33,8 @@ public class SimpleBasicDataset implements Dataset {
     private int ID;
     private SBMLDocument document;
     private final JTextArea textArea;
-    private List<Node> nodes;
-    private List<Edge> edges;
     private List<String> sources;
     private Graph graph;
-    private String biomassId;
     private boolean isCluster = false;
     private HashMap<String, ReactionFA> reactions;
     private HashMap<String, SpeciesFA> compounds;
@@ -63,42 +47,38 @@ public class SimpleBasicDataset implements Dataset {
      * @param datasetName Name of the data set
      * @param path
      */
-    public SimpleBasicDataset(String datasetName, String path) {
+    public FBAAnalysisDataset(String datasetName, String path) {
         this.datasetName = datasetName;
         this.infoDataset = new StringBuffer();
         this.path = path;
-        type = DatasetType.MODELS;
+        type = DatasetType.FBAAnalysis;
         this.textArea = new JTextArea();
-        this.nodes = new ArrayList<>();
-        this.edges = new ArrayList<>();
     }
 
-    public SimpleBasicDataset() {
-        type = DatasetType.MODELS;
+    public FBAAnalysisDataset() {
+        type = DatasetType.FBAAnalysis;
         this.infoDataset = new StringBuffer();
         this.textArea = new JTextArea();
-        this.nodes = new ArrayList<>();
-        this.edges = new ArrayList<>();
     }
 
     @Override
     public void setNodes(List<Node> nodes) {
-        this.nodes = nodes;
+        
     }
 
     @Override
     public void setEdges(List<Edge> edges) {
-        this.edges = edges;
+        
     }
 
     @Override
     public List<Node> getNodes() {
-        return this.nodes;
+        return null;
     }
 
     @Override
     public List<Edge> getEdges() {
-        return this.edges;
+       return null;
     }
 
     @Override
@@ -113,21 +93,14 @@ public class SimpleBasicDataset implements Dataset {
         }
         this.sources.add(source);
     }
-
-   
-    public void setBiomass(String biomassId) {
-        this.biomassId = biomassId;
-    }
+  
 
     @Override
     public List<String> getSources() {
         return this.sources;
     }
 
-  
-    public String getBiomassId() {
-        return this.biomassId;
-    }
+    
 
     @Override
     public void setGraph(Graph graph) {
@@ -191,8 +164,8 @@ public class SimpleBasicDataset implements Dataset {
     }
 
     @Override
-    public SimpleBasicDataset clone() {
-        SimpleBasicDataset newDataset = new SimpleBasicDataset(this.datasetName, this.path);
+    public FBAAnalysisDataset clone() {
+        FBAAnalysisDataset newDataset = new FBAAnalysisDataset(this.datasetName, this.path);
         newDataset.setType(this.type);
         newDataset.setDocument(this.getDocument());
         newDataset.setGraph(this.graph);
@@ -274,6 +247,7 @@ public class SimpleBasicDataset implements Dataset {
         return false;
     }
 
+    @Override
     public void setReactionSelectionMode(String reaction) {
         this.selectedReaction = reaction;
     }
@@ -286,6 +260,7 @@ public class SimpleBasicDataset implements Dataset {
         return false;
     }
 
+    @Override
     public void setMetaboliteSelectionMode(String metabolite) {
         this.selectedMetabolite = metabolite;
     }

@@ -149,7 +149,7 @@ public class OpenProjectTask extends AbstractTask {
                     Graph g = null;
                     while ((strLine = br.readLine()) != null) {
                         if (strLine.contains("Biomass= ")) {
-                            data.setBiomass(strLine.split("= ")[1]);
+                            //data.setBiomass(strLine.split("= ")[1]);
                         } else if (strLine.contains("Sources= ")) {
                             data.addSource(strLine.split("= ")[1]);
                         } else if (strLine.contains("Nodes= ")) {

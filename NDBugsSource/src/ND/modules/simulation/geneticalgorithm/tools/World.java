@@ -53,43 +53,41 @@ public final class World {
         this.bugsLimitNumber = bugsLimitNumber;
         this.objective = objective;
         this.createReactions();
-        
-       /* this.setBiomassObjective();
-        double referenceBiomass = this.getReference(true);
-        
-        this.setObjectiveObjective();
-        double referenceObjective = this.getReference(true);
-        this.reactions.remove("objective");*/
 
+        /* this.setBiomassObjective();
+         double referenceBiomass = this.getReference(true);
+        
+         this.setObjectiveObjective();
+         double referenceObjective = this.getReference(true);
+         this.reactions.remove("objective");*/
         if (training != null) {
             System.out.println("Adding bugs");
-            int i =0;
+            int i = 0;
             for (ReactionFA reaction : this.reactions.values()) {
-                if (isNotExchange(reaction)&& reactionIds.contains(reaction.getId())) {
-                    System.out.println("Bug " + i++ + ": " +reaction.getId());
+                if (isNotExchange(reaction) && reactionIds.contains(reaction.getId())) {
+                    System.out.println("Bug " + i++ + ": " + reaction.getId());
                     this.addBug(reaction, 0.5, 2.5);
                 }
             }
 
         }
     }
-    
-     public double getReference(boolean type) {
-        FBA fba = new FBA();      
+
+    public double getReference(boolean type) {
+        FBA fba = new FBA();
         fba.setSoverType(type);
         List<ReactionFA> nullList = new ArrayList<>();
         fba.setModel(this.reactions, this.trainingDataset.getDocument().getModel(), nullList);
         try {
             fba.run();
             return fba.getMaxObj();
-           
+
         } catch (Exception ex) {
             System.out.println(ex);
         }
         return 0.0;
     }
 
-    
     private void createReactions() {
         System.out.println("Creating reactions");
         SBMLDocument doc = this.trainingDataset.getDocument();
@@ -121,30 +119,26 @@ public final class World {
                 reaction.addProduct(sp.getId(), sp.getName(), s.getStoichiometry());
             }
             //reaction.setObjective(0.0);            
-            this.reactions.put(r.getId(), reaction);            
+            this.reactions.put(r.getId(), reaction);
         }
-        
-        
+
     }
-    
-    
-    
-    public void setBiomassObjective(){
+
+    public void setBiomassObjective() {
         ReactionFA objectiveReaction = new ReactionFA("objective");
         objectiveReaction.addReactant("s_0450", 1.0);
         objectiveReaction.setBounds(0, 1000);
         objectiveReaction.setObjective(1.0);
         this.reactions.put("objective", objectiveReaction);
     }
-    
-    public void setObjectiveObjective(){
+
+    public void setObjectiveObjective() {
         ReactionFA objectiveReaction = new ReactionFA("objective");
         objectiveReaction.addReactant(this.objective, 1.0);
         objectiveReaction.setBounds(0, 1000);
         objectiveReaction.setObjective(1.0);
         this.reactions.put("objective", objectiveReaction);
     }
-   
 
     public List<Bug> getBugs() {
         return this.population;
@@ -189,9 +183,17 @@ public final class World {
 
     private synchronized void death() {
         List<Bug> deadBugs = new ArrayList<Bug>();
+        double maxScore = 0;
+        for (Bug bug : population) {
+            if (bug.getScore() > maxScore) {
+                maxScore = bug.getScore();
+            }
+        }
+
         for (Bug bug : population) {
             try {
-                if (bug.isDead()) {
+                double remove = 1 - bug.getScore()/maxScore;
+                if (bug.isDead(remove)) {
                     deadBugs.add(bug);
                 }
             } catch (Exception e) {

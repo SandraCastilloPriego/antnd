@@ -132,12 +132,8 @@ public interface Dataset {
         public void setSources(List<String> sources);
         
         public void addSource(String source);
-
-        public void setBiomass(String biomassId);
-
+       
         public List<String> getSources();
-
-        public String getBiomassId();
         
         public void setGraph(Graph graph);
         

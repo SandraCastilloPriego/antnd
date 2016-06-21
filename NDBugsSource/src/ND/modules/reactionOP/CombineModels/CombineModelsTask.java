@@ -134,7 +134,7 @@ public class CombineModelsTask extends AbstractTask {
                 SimpleBasicDataset dataset = new SimpleBasicDataset();
 
                 dataset.setDocument(newDoc);
-                dataset.setDatasetName("Combined - " + this.networkDS[0].getBiomassId()+".sbml");
+                dataset.setDatasetName("Combined - " + this.networkDS[0].getDatasetName()+".sbml");
                 Path path = Paths.get(this.networkDS[0].getPath());
                 Path fileName = path.getFileName();
                 String name = fileName.toString();
@@ -149,7 +149,7 @@ public class CombineModelsTask extends AbstractTask {
                 }    
                 
                 dataset.setSources(this.networkDS[0].getSources());
-                dataset.setBiomass(this.networkDS[0].getBiomassId());
+               // dataset.setBiomass(this.networkDS[0].getBiomassId());
 
         }
 

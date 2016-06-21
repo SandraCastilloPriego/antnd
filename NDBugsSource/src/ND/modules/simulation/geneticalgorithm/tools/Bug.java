@@ -204,6 +204,15 @@ public final class Bug {
                 score = flux;
             }
 
+            if(score > 1500){
+                score = score -2000;
+            }else if(score > 500){
+                score = score -1000;
+            }if(score < -1500){
+                score = score + 2000;
+            }else if(score < -500){
+                score = score +1000;
+            }
             String solution = "";
             for (ReactionFA r : this.rowList) {
                 solution += r.getId() + " - ";
@@ -231,9 +240,9 @@ public final class Bug {
         return life;
     }
 
-    boolean isDead() {
+    boolean isDead(double rest) {
         if (this.rowList.size() > 1) {
-            life = life - (1 - this.score);
+            life = life - rest;
         }
         if (this.rowList.isEmpty()) {
             life = 0;

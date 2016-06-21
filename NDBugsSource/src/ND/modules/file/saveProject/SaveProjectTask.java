@@ -135,7 +135,7 @@ public class SaveProjectTask extends AbstractTask {
         Dataset[] selectedFiles = NDCore.getDesktop().getAllDataFiles();
         for (final Dataset datafile : selectedFiles) {
             String info = datafile.getInfo().getText();
-            String biomass = datafile.getBiomassId();
+            String biomass = "";//datafile.getBiomassId();
             List<String> sources = datafile.getSources();
             Graph graph = datafile.getGraph();
             zipStream.putNextEntry(new ZipEntry(datafile.getDatasetName() + ".info"));

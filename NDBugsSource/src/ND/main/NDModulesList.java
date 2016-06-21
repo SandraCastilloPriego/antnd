@@ -48,6 +48,8 @@ import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.Dynamic.DynamicModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
+import ND.modules.simulation.PseudoDynamic.PseudoDynamicModule;
+import ND.modules.simulation.PseudoDynamic.PseudoDynamicTask;
 import ND.modules.simulation.geneticalgorithm.StartSimulationModule;
 import ND.modules.simulation.geneticalgorithm.reducing.StartReducingGAModule;
 import ND.modules.simulation.geneticalgorithm.testing.StartTestingGAModule;
@@ -110,5 +112,6 @@ public class NDModulesList {
         StartTestingGAModule.class,
         StartReducingGAModule.class,
         StartSimulationDirectionsModule.class,
+        PseudoDynamicModule.class,
         QueryDBModule.class,};
 }

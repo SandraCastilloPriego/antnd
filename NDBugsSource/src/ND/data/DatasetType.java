@@ -28,7 +28,7 @@ public enum DatasetType {
          * Models
          */
         
-        MODELS;
+        MODELS, DB, FBAAnalysis;
 };
 
     

@@ -158,9 +158,16 @@ public final class World {
 
     private synchronized void death() {
         List<Bug> deadBugs = new ArrayList<Bug>();
+        double maxScore = 0;
+        for (Bug bug : population) {
+            if (bug.getScore() > maxScore) {
+                maxScore = bug.getScore();
+            }
+        }
         for (Bug bug : population) {
             try {
-                if (bug.isDead()) {
+                double remove = 1 - bug.getScore()/maxScore;
+                if (bug.isDead(remove)) {
                     deadBugs.add(bug);
                 }
             } catch (Exception e) {

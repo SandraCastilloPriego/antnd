@@ -276,9 +276,9 @@ public final class Bug {
         return life;
     }
 
-    boolean isDead() {
+    boolean isDead(double rest) {
         if (this.rowList.size() > 1) {
-            life = life - (100 - this.score)/100;
+            life = life - rest;
         }
         if (this.rowList.isEmpty()) {
             life = 0;
