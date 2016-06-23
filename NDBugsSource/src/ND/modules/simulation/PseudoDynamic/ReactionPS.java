@@ -131,9 +131,7 @@ public class ReactionPS {
 
     void update() {
         if (this.reactants.size() == 1) {
-            if ((this.name.contains("transport") || this.name.contains("uniport") || this.name.contains("diffusion"))
-                && !this.reactants.get(0).getCompartment().contains("extracellular") 
-                && !this.products.get(0).getCompartment().contains("extracellular")) {
+            if ((this.name.contains("transport") || this.name.contains("uniport") || this.name.contains("diffusion"))) {
                 updateTransporter();
                 return;
             }
@@ -199,9 +197,12 @@ public class ReactionPS {
     }
 
     private void updateTransporter() {
+        
+        
         boolean direction = this.getDirection();
         double amount = 0;
-        for (CompoundPS ps : this.reactants) {
+        for (CompoundPS ps : this.reactants) { 
+            if(ps.getCompartment().contains("extracellular"))  return;
             double pool = 0;
             if (ps.getPool() > 0) {
                 pool = ps.getPool();
@@ -209,6 +210,7 @@ public class ReactionPS {
             amount += pool;
         }
         for (CompoundPS ps : this.products) {
+            if(ps.getCompartment().contains("extracellular"))  return;
             double pool = 0;
             if (ps.getPool() > 0) {
                 pool = ps.getPool();
@@ -225,7 +227,7 @@ public class ReactionPS {
             for (CompoundPS ps : this.products) {
                 ps.setPool(ps.getPool() + amount);
             }
-            this.fluxForward += amount;
+            this.fluxForward ++;
 
         }
 
@@ -238,7 +240,7 @@ public class ReactionPS {
             for (CompoundPS ps : this.reactants) {
                 ps.setPool(ps.getPool() + amount);
             }
-            this.fluxBackwards += amount;
+            this.fluxBackwards ++;
 
         }
     }
