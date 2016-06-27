@@ -8,18 +8,19 @@ package ND.data.models;
 import ND.data.ColumnName;
 import ND.data.Dataset;
 import ND.data.DatasetType;
+import ND.data.MetColumnName;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.data.network.Graph;
 import ND.data.network.Node;
 import ND.util.Tables.DataTableModel;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.Species;
+import org.sbml.jsbml.xml.XMLNode;
 
 /**
  *
@@ -28,18 +29,14 @@ import org.sbml.jsbml.Species;
 public class MetaboliteDataModel extends AbstractTableModel implements DataTableModel {
 
     private Dataset dataset;
-    private int fixNumberColumns = 9;
-    private List<String> columns;
+    private List<MetColumnName> columns;
     private Color[] rowColor;
 
     public MetaboliteDataModel(Dataset dataset) {
         this.dataset = (SimpleBasicDataset) dataset;
         rowColor = new Color[dataset.getDocument().getModel().getNumReactions()];
         columns = new ArrayList<>();
-        columns.add("Number");
-        columns.add("Id");
-        columns.add("Metabolite Name");
-        columns.add("Reactions");
+        columns.addAll(Arrays.asList(MetColumnName.values()));
     }
 
     @Override
@@ -49,7 +46,7 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
 
     @Override
     public int getColumnCount() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -57,7 +54,7 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
         try {
             Species sp = this.dataset.getDocument().getModel().getSpecies(row);
 
-            String value = columns.get(column);
+            String value = columns.get(column).getColumnName();
             switch (value) {
                 case "Number":
                     return row + 1;
@@ -65,6 +62,9 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                     return sp.getId();
                 case "Metabolite Name":
                     return sp.getName();
+                case "Notes":
+                    String notes = sp.getNotesString();
+                    return notes;
                 case "Reactions":
                     return null;
             }
@@ -81,7 +81,7 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
         try {
             Species r = this.dataset.getDocument().getModel().getSpecies(row);
 
-            String value = columns.get(column);
+            String value = columns.get(column).getColumnName();
             switch (value) {
                 case "Number":
                     return;
@@ -100,6 +100,9 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                 case "Name":
                     r.setName(aValue.toString());
                     return;
+                case "Notes":
+                    r.setNotes(XMLNode.convertStringToXMLNode(aValue.toString()));
+                    return;
                 case "Reaction":
 
                     return;
@@ -113,8 +116,13 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
     }
 
     @Override
+    public boolean isCellEditable(int row, int column) {
+        return true;
+    }
+
+    @Override
     public String getColumnName(int columnIndex) {
-        return (String) this.columns.get(columnIndex);
+        return (String) this.columns.get(columnIndex).toString();
     }
 
     @Override
@@ -165,7 +173,16 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
 
     @Override
     public boolean isExchange(int row) {
-       return false;
+        return false;
+    }
+
+    @Override
+    public Class<?> getColumnClass(int c) {
+        if (getValueAt(0, c) != null) {
+            return getValueAt(0, c).getClass();
+        } else {
+            return Object.class;
+        }
     }
 
 }

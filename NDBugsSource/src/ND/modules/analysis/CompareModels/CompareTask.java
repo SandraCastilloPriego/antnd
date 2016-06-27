@@ -19,18 +19,28 @@ package ND.modules.analysis.CompareModels;
 
 import ND.data.Dataset;
 import ND.main.NDCore;
-import ND.modules.simulation.antNoGraph.ReactionFA;
+import static ND.modules.analysis.Report.ReportFBATask.createBarChart;
+import static ND.modules.analysis.Report.ReportFBATask.createBarDataset;
+import static ND.modules.analysis.Report.ReportFBATask.createBarExchangeDataset;
+import static ND.modules.analysis.Report.ReportFBATask.createPieChart;
+import static ND.modules.analysis.Report.ReportFBATask.createPieDataset;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import javax.swing.BoxLayout;
 import javax.swing.JInternalFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.general.PieDataset;
 import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
@@ -78,52 +88,63 @@ public class CompareTask extends AbstractTask {
     public void run() {
         try {
             setStatus(TaskStatus.PROCESSING);
-            if (this.networkDS == null) {
-                setStatus(TaskStatus.ERROR);
-                NDCore.getDesktop().displayErrorMessage("You need to select two metabolic models.");
-            }
-
-            Model model1 = this.networkDS[0].getDocument().getModel();
-            Model model2 = this.networkDS[1].getDocument().getModel();
-            this.info.append("Reactions present in only in ").append(this.networkDS[0].getDatasetName()).append(":\n");
-            for (Reaction r : model1.getListOfReactions()) {
-                if (model2.getReaction(r.getId()) == null) {
-                    showReactions(r, null);
-                }
-            }
-
-            this.info.append("Reactions present in only in ").append(this.networkDS[1].getDatasetName()).append(":\n");
-            for (Reaction r : model2.getListOfReactions()) {
-                if (model1.getReaction(r.getId()) == null) {
-                    showReactions(r, null);
-                }
-            }
-
-            List<String> commonReactions = new ArrayList<>();
-            for (Reaction r : model1.getListOfReactions()) {
-                if (model2.getReaction(r.getId()) != null) {
-                    commonReactions.add(r.getId());
-                }
-            }
-
             try {
-                this.info.append("Common reactions with different fluxes in ").append(this.networkDS[1].getDatasetName()).append(":\n");
-                for (String re : commonReactions) {
-                    showReactions2(model1.getReaction(re), model2.getReaction(re));
-                }
+                writeGraphicReport();
             } catch (Exception e) {
             }
-            // this.networkDS.setInfo(info.toString());
-            this.tf.setText(info.toString());
-            frame.setSize(new Dimension(700, 500));
-            frame.add(this.panel);
-            NDCore.getDesktop().addInternalFrame(frame);
+            try {
+                writeReport();
+            } catch (Exception a) {
+            }
             finishedPercentage = 1.0f;
             setStatus(TaskStatus.FINISHED);
         } catch (Exception e) {
             setStatus(TaskStatus.ERROR);
             errorMessage = e.toString();
         }
+    }
+
+    private void writeReport() {
+        if (this.networkDS == null) {
+            setStatus(TaskStatus.ERROR);
+            NDCore.getDesktop().displayErrorMessage("You need to select two metabolic models.");
+        }
+
+        Model model1 = this.networkDS[0].getDocument().getModel();
+        Model model2 = this.networkDS[1].getDocument().getModel();
+        this.info.append("Reactions present in only in ").append(this.networkDS[0].getDatasetName()).append(":\n");
+        for (Reaction r : model1.getListOfReactions()) {
+            if (model2.getReaction(r.getId()) == null) {
+                showReactions(r, null);
+            }
+        }
+
+        this.info.append("Reactions present in only in ").append(this.networkDS[1].getDatasetName()).append(":\n");
+        for (Reaction r : model2.getListOfReactions()) {
+            if (model1.getReaction(r.getId()) == null) {
+                showReactions(r, null);
+            }
+        }
+
+        List<String> commonReactions = new ArrayList<>();
+        for (Reaction r : model1.getListOfReactions()) {
+            if (model2.getReaction(r.getId()) != null) {
+                commonReactions.add(r.getId());
+            }
+        }
+
+        try {
+            this.info.append("Common reactions with different fluxes in ").append(this.networkDS[1].getDatasetName()).append(":\n");
+            for (String re : commonReactions) {
+                showReactions2(model1.getReaction(re), model2.getReaction(re));
+            }
+        } catch (Exception e) {
+        }
+        // this.networkDS.setInfo(info.toString());
+        this.tf.setText(info.toString());
+        frame.setSize(new Dimension(700, 500));
+        frame.add(this.panel);
+        NDCore.getDesktop().addInternalFrame(frame);
     }
 
     private void showReactions(Reaction reaction, Reaction reaction2) {
@@ -178,4 +199,85 @@ public class CompareTask extends AbstractTask {
             }
         }
     }
+
+    private void writeGraphicReport() {
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+        panel.setBackground(Color.white);
+
+        String info = "";
+        for (Dataset data : this.networkDS) {
+            Model m = data.getDocument().getModel();
+            info += "Model: " + data.getID() + ", " + data.getDatasetName() + "\n";
+            info += "Number of active reactions: " + m.getNumReactions() + "\n";
+            info += "Number of active reactions where the flux > abs(0.0001): " + getBigFluxes(m) + "\n";
+            info += "----------------------------- \n";
+        }
+        JTextArea area = new JTextArea(info);
+        area.setEditable(false);
+        panel.add(area);
+
+        for (Dataset data : this.networkDS) {
+            Model m = data.getDocument().getModel();
+            area = new JTextArea("Model: " + data.getID() + ", " + data.getDatasetName() + "\n");
+            area.setEditable(false);
+            panel.add(area);
+            List<PieDataset> datasets = createPieDataset(m);
+            JFreeChart exchangesPos = createPieChart(datasets.get(0), "Exchanges out");
+            JFreeChart exchangesNeg = createPieChart(datasets.get(1), "Exchanges in");
+            JPanel chartpanel = new JPanel();
+            chartpanel.add(new ChartPanel(exchangesNeg));
+            chartpanel.add(new ChartPanel(exchangesPos));
+            chartpanel.setBackground(Color.white);
+            panel.add(chartpanel);
+        }
+
+        for (Dataset data : this.networkDS) {
+            Model m = data.getDocument().getModel();
+            area = new JTextArea("Model: " + data.getID() + ", " + data.getDatasetName() + "\n");
+            area.setEditable(false);
+            panel.add(area);
+            CategoryDataset dataset = createBarExchangeDataset(m);
+            JFreeChart fluxesChart = createBarChart(dataset, "Exchange reactions in " + m.getId());
+            JPanel fPanel = new JPanel();
+            fPanel.add(new ChartPanel(fluxesChart));
+            fPanel.setPreferredSize(new Dimension(500, 500));
+            fPanel.setBackground(Color.white);
+            panel.add(fPanel);
+
+        }
+
+        for (Dataset data : this.networkDS) {
+            Model m = data.getDocument().getModel();
+            area = new JTextArea("Model: " + data.getID() + ", " + data.getDatasetName() + "\n");
+            area.setEditable(false);
+            panel.add(area);
+            CategoryDataset dataset = createBarDataset(m);
+            JFreeChart fluxesChart = createBarChart(dataset, "Important fluxes");
+            panel.add(new ChartPanel(fluxesChart));
+        }
+
+        JInternalFrame frameTable = new JInternalFrame("Report", true, true, true, true);
+        JScrollPane scrollPanel = new JScrollPane(panel);
+        frameTable.setSize(new Dimension(700, 500));
+        frameTable.add(scrollPanel);
+
+        NDCore.getDesktop().addInternalFrame(frameTable);
+        frameTable.setVisible(true);
+
+    }
+
+    private String getBigFluxes(Model m) {
+        int i = 0;
+        for (Reaction r : m.getListOfReactions()) {
+            KineticLaw law = r.getKineticLaw();
+            double flux = law.getLocalParameter("FLUX_VALUE").getValue();
+            if (Math.abs(flux) >= 0.0001) {
+                i++;
+            }
+        }
+        return String.valueOf(i);
+    }
+
 }

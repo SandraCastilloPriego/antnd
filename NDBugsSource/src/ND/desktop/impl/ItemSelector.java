@@ -20,6 +20,7 @@ package ND.desktop.impl;
 import ND.data.Dataset;
 import ND.desktop.Desktop;
 import ND.main.NDCore;
+import ND.modules.analysis.Report.ReportFBATask;
 import ND.modules.reactionOP.CombineModels.CombineModelsModule;
 import ND.util.GUIUtils;
 import ND.util.components.DragOrderedJList;
@@ -95,8 +96,9 @@ public class ItemSelector extends JPanel implements ActionListener,
         dataFilePopupMenu = new JPopupMenu();
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Show Report", this, "REPORT");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
- //       GUIUtils.addMenuItem(dataFilePopupMenu, "Save graph", this, "SAVEGRAPH");
+        //       GUIUtils.addMenuItem(dataFilePopupMenu, "Save graph", this, "SAVEGRAPH");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Remove", this, "REMOVE_FILE");
@@ -118,6 +120,9 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         if (command.equals("SHOW_DATASET")) {
             showData();
+        }
+        if (command.equals("REPORT")) {
+            showReport();
         }
 //        if (command.equals("SAVEGRAPH")) {
 //            saveGraph();
@@ -397,6 +402,17 @@ public class ItemSelector extends JPanel implements ActionListener,
                     frame.doDefaultCloseAction();
                 }
             });
+        }
+
+    }
+
+    private void showReport() {
+        Dataset[] selectedFiles = getSelectedDatasets();
+        for (Dataset file : selectedFiles) {
+            if (file != null) {
+                ReportFBATask task = new ReportFBATask(file);
+                task.run();
+            }
         }
 
     }

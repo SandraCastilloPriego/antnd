@@ -108,12 +108,7 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     return r.getKineticLaw().getLocalParameter("UPPER_BOUND").getValue();
                 case "Notes":
                     String notes = r.getNotesString();
-                    String returnNotes = "";
-                    notes = notes.substring(notes.indexOf("<p>"), notes.lastIndexOf("</p>"));
-                    for (String n : notes.split("<p>")) {
-                        returnNotes += n.replace("</p>", "") + "\n";
-                    }
-                    return returnNotes;
+                    return notes;
                 case "Objective":
                     return r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT").getValue();
                 case "Fluxes":
@@ -178,6 +173,7 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(Double.valueOf(aValue.toString()));
                     return;
                 case "Notes":
+                    r.setNotes(value);
                     return;
                 case "Objective":
                     LocalParameter parameter = r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT");
