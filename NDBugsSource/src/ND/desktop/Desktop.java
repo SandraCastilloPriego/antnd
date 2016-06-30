@@ -20,6 +20,7 @@ package ND.desktop;
 import ND.data.Dataset;
 import ND.modules.NDModule;
 import java.awt.Color;
+import java.io.File;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -27,111 +28,120 @@ import org.w3c.dom.Element;
 
 /**
  * This interface represents the application GUI
- * 
- * @author Taken from MZmine2
- * http://mzmine.sourceforge.net/
+ *
+ * @author Taken from MZmine2 http://mzmine.sourceforge.net/
  */
 public interface Desktop extends NDModule {
 
-        /**
-         * Returns a reference to main application window
-         *
-         * @return Main window frame
-         */
-        public JFrame getMainFrame();
+    /**
+     * Returns a reference to main application window
+     *
+     * @return Main window frame
+     */
+    public JFrame getMainFrame();
 
-        /**
-         * Adds a new internal frame (JInternalFrame) to the desktop pane
-         *
-         * @param frame Internal frame to add
-         */
-        public void addInternalFrame(JInternalFrame frame);
+    /**
+     * Adds a new internal frame (JInternalFrame) to the desktop pane
+     *
+     * @param frame Internal frame to add
+     */
+    public void addInternalFrame(JInternalFrame frame);
 
-        /**
-         * Returns all internal frames in the desktop pane
-         *
-         * @return Array of all internal frames
-         */
-        public JInternalFrame[] getInternalFrames();
+    /**
+     * Returns all internal frames in the desktop pane
+     *
+     * @return Array of all internal frames
+     */
+    public JInternalFrame[] getInternalFrames();
 
-        /**
-         * Returns the currently selected frame or null if no frame is selected
-         *
-         * @return Selected frame
-         */
-        public JInternalFrame getSelectedFrame();
+    /**
+     * Returns the currently selected frame or null if no frame is selected
+     *
+     * @return Selected frame
+     */
+    public JInternalFrame getSelectedFrame();
 
-        /**
-         * Displays a given text on the application status bar in black color
-         *
-         * @param text Text to show
-         */
-        public void setStatusBarText(String text);
+    /**
+     * Displays a given text on the application status bar in black color
+     *
+     * @param text Text to show
+     */
+    public void setStatusBarText(String text);
 
-        /**
-         * Displays a given text on the application status bar in a given color
-         *
-         * @param text Text to show
-         * @param textColor Text color
-         */
-        public void setStatusBarText(String text, Color textColor);
+    /**
+     * Displays a given text on the application status bar in a given color
+     *
+     * @param text Text to show
+     * @param textColor Text color
+     */
+    public void setStatusBarText(String text, Color textColor);
 
-        /**
-         * Displays a message box with a given text
-         *
-         * @param msg Text to show
-         */
-        public void displayMessage(String msg);
+    /**
+     * Displays a message box with a given text
+     *
+     * @param msg Text to show
+     */
+    public void displayMessage(String msg);
 
-        /**
-         * Displays a message box with a given text
-         *
-         * @param title Message box title
-         * @param msg Text to show
-         */
-        public void displayMessage(String title, String msg);
+    /**
+     * Displays a message box with a given text
+     *
+     * @param title Message box title
+     * @param msg Text to show
+     */
+    public void displayMessage(String title, String msg);
 
-        /**
-         * Displays an error message box with a given text
-         *
-         * @param msg Text to show
-         */
-        public void displayErrorMessage(String msg);
+    /**
+     * Displays an error message box with a given text
+     *
+     * @param msg Text to show
+     */
+    public void displayErrorMessage(String msg);
 
-        /**
-         * Displays an error message box with a given text
-         *
-         * @param title Message box title
-         * @param msg Text to show
-         */
-        public void displayErrorMessage(String title, String msg);
+    /**
+     * Displays an error message box with a given text
+     *
+     * @param title Message box title
+     * @param msg Text to show
+     */
+    public void displayErrorMessage(String title, String msg);
 
-        /**
-         * Displays an error message
-         *
-         */
-        public void displayException(Exception e);
+    /**
+     * Displays an error message
+     *
+     */
+    public void displayException(Exception e);
 
-        /**
-         * Returns array of currently selected raw data files in GUI
-         *
-         * @return Array of selected raw data files
-         */
-        public Dataset[] getSelectedDataFiles();
-        
-        public Dataset[] getAllDataFiles();
+    /**
+     * Returns array of currently selected raw data files in GUI
+     *
+     * @return Array of selected raw data files
+     */
+    public Dataset[] getSelectedDataFiles();
 
-        public void AddNewFile(Dataset dataset);
+    public Dataset[] getAllDataFiles();
 
-        public void removeData(Dataset file);
+    public void AddNewFile(Dataset dataset);
 
-        public JDesktopPane getDesktopPane();
+    public void removeData(Dataset file);
 
-        public void loadParameterPathFromXML(Element xmlElement);
+    public JDesktopPane getDesktopPane();
 
-        public void saveParameterPathToXML(Element xmlElement);
+    public void loadParameterPathFromXML(Element xmlElement);
 
-        public void setParameteresPath(String path);
+    public void saveParameterPathToXML(Element xmlElement);
 
-        public String getParameteresPath();
+    public void setParameteresPath(String path);
+
+    public String getParameteresPath();
+
+    public void saveParameterReportToXML(Element paramElement);
+
+    public void loadParameterReportFromXML(Element moduleElement);
+
+    public void setParameteresReport(File path);
+
+    public File getParameteresReport();
+
+    public Dataset getParentDataset(String parent);
 }

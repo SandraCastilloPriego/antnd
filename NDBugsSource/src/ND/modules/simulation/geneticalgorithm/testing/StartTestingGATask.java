@@ -88,7 +88,7 @@ public class StartTestingGATask extends AbstractTask {
         try {
             setStatus(TaskStatus.PROCESSING);
             modifyModel();
-            this.tools.createDataFile(null, this.training, null, this.training.getSources(), false);
+            this.tools.createDataFile(null, this.training, null, this.training.getSources(), false, true);
             
             setStatus(TaskStatus.FINISHED);
         } catch (Exception e) {

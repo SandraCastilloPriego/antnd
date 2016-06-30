@@ -159,7 +159,7 @@ public class ClusteringBetweennessTask extends AbstractTask {
                 n.setColor(c);
             }
         }
-        SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, "Betweenness Clustering", this.networkDS.getSources(), true);
+        SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, "Betweenness Clustering", this.networkDS.getSources(), true, false);
         dataset.addInfo(this.info.toString());
     }
 

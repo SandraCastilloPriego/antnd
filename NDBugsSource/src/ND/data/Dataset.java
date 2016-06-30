@@ -170,4 +170,12 @@ public interface Dataset {
         public void setReactionSelectionMode(String reaction);
         
         public void setMetaboliteSelectionMode(String species);
+        
+        public String getParent();
+        
+        public void setParent(String dataset);
+        
+        public boolean isParent();  
+        
+        public void setIsParent(boolean isParent);
 }

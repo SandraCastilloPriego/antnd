@@ -158,7 +158,7 @@ public class SuperAntAdvancedModuleTask extends AbstractTask {
             }
 
             if (getStatus() == TaskStatus.PROCESSING) {
-                this.tools.createDataFile(graph, networkDS, biomassID, sourcesList, false);
+                this.tools.createDataFile(graph, networkDS, biomassID, sourcesList, false, false);
                 PrintPaths print = new PrintPaths( this.tools.getModel());
                 try {
                     this.pn.add(print.printPathwayInFrame(this.graph));

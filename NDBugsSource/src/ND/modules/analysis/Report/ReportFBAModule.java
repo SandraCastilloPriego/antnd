@@ -30,43 +30,44 @@ import ND.taskcontrol.Task;
  */
 public class ReportFBAModule implements NDProcessingModule {
 
-        public static final String MODULE_NAME = "Write Report";
-      
-        @Override
-        public ParameterSet getParameterSet() {
-                return null;
-        }
+    public static final String MODULE_NAME = "Write Report";
+    private final ReportFBAParameters parameters = new ReportFBAParameters();
 
-        @Override
-        public String toString() {
-                return MODULE_NAME;
-        }
+    @Override
+    public ParameterSet getParameterSet() {
+        return parameters;
+    }
 
-        @Override
-        public Task[] runModule(ParameterSet parameters) {
-               SimpleBasicDataset selectedFiles = (SimpleBasicDataset)NDCore.getDesktop().getSelectedDataFiles()[0];
+    @Override
+    public String toString() {
+        return MODULE_NAME;
+    }
 
-                // prepare a new group of tasks
-                Task tasks[] = new ReportFBATask[1];
-                tasks[0] = new ReportFBATask(selectedFiles);
+    @Override
+    public Task[] runModule(ParameterSet parameters) {
+        SimpleBasicDataset selectedFiles = (SimpleBasicDataset) NDCore.getDesktop().getSelectedDataFiles()[0];
 
-                NDCore.getTaskController().addTasks(tasks);
+        // prepare a new group of tasks
+        Task tasks[] = new ReportFBATask[1];
+        tasks[0] = new ReportFBATask(selectedFiles, parameters);
 
-                return tasks;
-        }
+        NDCore.getTaskController().addTasks(tasks);
 
-        @Override
-        public NDModuleCategory getModuleCategory() {
-                return NDModuleCategory.ANALYSIS;
-        }
+        return tasks;
+    }
 
-        @Override
-        public String getIcon() {
-                return "icons/loadProject.png";
-        }
+    @Override
+    public NDModuleCategory getModuleCategory() {
+        return NDModuleCategory.ANALYSIS;
+    }
 
-        @Override
-        public boolean setSeparator() {
-                return false;
-        }
+    @Override
+    public String getIcon() {
+        return "icons/loadProject.png";
+    }
+
+    @Override
+    public boolean setSeparator() {
+        return false;
+    }
 }

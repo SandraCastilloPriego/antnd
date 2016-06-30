@@ -112,7 +112,7 @@ public class ShowPatwaysTask extends AbstractTask {
                     NDCore.getDesktop().displayMessage("This model doesn't have any kegg reacction belonging to this pathway");
                 } else {
                     Graph graph = createGraph(possibleReactions);
-                    this.tools.createDataFile(graph, networkDS, this.pathwayName, null, false);
+                    this.tools.createDataFile(graph, networkDS, this.pathwayName, null, false, false);
                     PrintPaths print = new PrintPaths(this.tools.getModel());
                     try {
                         this.pn.add(print.printPathwayInFrame(graph));

@@ -159,7 +159,7 @@ public class ClusteringTask extends AbstractTask {
                 n.setColor(c);
             }
         }
-        SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, "K-means clustering", this.networkDS.getSources(), true);
+        SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, "K-means clustering", this.networkDS.getSources(), true, false);
         dataset.addInfo(this.info.toString());
     }
    

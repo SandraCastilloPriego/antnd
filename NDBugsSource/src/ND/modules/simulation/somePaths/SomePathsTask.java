@@ -135,7 +135,7 @@ public class SomePathsTask extends AbstractTask {
             if (getStatus() == TaskStatus.PROCESSING) {
                 ND.modules.simulation.FBA.Ant ant = this.compounds.get(this.biomassID).getAnt();
                 Graph g = this.createGraph(ant.getPath());
-                this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false);
+                this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false, false);
                 PrintPaths print = new PrintPaths(this.tools.getModel());
                 try {
                     this.pn.add(print.printPathwayInFrame(g));

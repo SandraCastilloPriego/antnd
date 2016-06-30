@@ -23,6 +23,7 @@ import ND.modules.DB.Visualize.QueryDBModule;
 import ND.modules.analysis.ClusteringBetweenness.ClusteringBetweennessModule;
 import ND.modules.analysis.ClusteringKmeans.ClusteringModule;
 import ND.modules.analysis.CompareModels.CompareModule;
+import ND.modules.analysis.Report.ReportFBAModule;
 import ND.modules.analysis.kNeighborhood.KNeighborhoodModule;
 import ND.modules.configuration.db.DBConfModule;
 import ND.modules.configuration.sources.SourcesConfModule;
@@ -91,6 +92,7 @@ public class NDModulesList {
         //AddInfoModule.class, 
         SomePathsModule.class,
         ShowPathwaysModule.class,
+        //ReportFBAModule.class,
         // LoopAnalyzerModule.class,
         //  AntFluxMaxModule.class,
         //  AntFluxMinModule.class,

@@ -144,7 +144,7 @@ public class ClusteringBicomponentTask extends AbstractTask {
                         n.setId(n.getId() + " - " + cluster);
                 }
 
-                SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), true);
+                SimpleBasicDataset dataset = new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), true, false);
                 dataset.addInfo(this.info.toString());
         }
 

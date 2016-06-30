@@ -82,12 +82,12 @@ public class AddInfoTask extends AbstractTask {
             SBMLDocument doc = this.networkDS.getDocument();
             Model m = doc.getModel();
 
-                        //CsvReader lines;
+            //CsvReader lines;
             //  lines = new CsvReader(new FileReader(this.fileName.getAbsolutePath()), ';');
             //  lines.readRecord();
             // String[] headers = lines.getValues();
             float count = 0;
-                        //  while (lines.readRecord()) {
+            //  while (lines.readRecord()) {
             //  String[] line = lines.getValues();
             //  this.ReadPathways(line);
             // processLine(line, m, headers);
@@ -324,42 +324,44 @@ public class AddInfoTask extends AbstractTask {
 
     }
 
- /*   private static enum RelTypes implements RelationshipType {
+    /*   private static enum RelTypes implements RelationshipType {
 
-        ISREACTAN, ISPRODUCT, BELONGTOPATHWAY, HASREACTION, ISINCOMPARTMENT, HASCOMPARTMENT
-    }*/
-
+     ISREACTAN, ISPRODUCT, BELONGTOPATHWAY, HASREACTION, ISINCOMPARTMENT, HASCOMPARTMENT
+     }*/
     private void processLine(String[] line, Model m, String[] header) {
-        String id = line[0];
-        System.out.println(id);
-        Reaction r = m.getReaction(id);
-        if (r == null) {
-            Species s = m.getSpecies(id);
-            if (s != null) {
+        try {
+            String id = line[0];
+            System.out.println(id);
+            Reaction r = m.getReaction(id);
+            if (r == null) {
+                Species s = m.getSpecies(id);
+                if (s != null) {
+                    for (int i = 1; i < line.length; i++) {
+                        if (line[i] != null && !line[i].equals("NA")) {
+                            s.appendNotes(header[i] + ":" + line[i]);
+                        }
+                    }
+                }
+            } else {
                 for (int i = 1; i < line.length; i++) {
+                    System.out.println(header[i]);
                     if (line[i] != null && !line[i].equals("NA")) {
-                        s.appendNotes(header[i] + ":" + line[i]);
+                        if (r.getNotes() != null) {
+                            r.appendNotes("<p>" + header[i] + ":" + line[i] + "</p>");
+                            System.out.println(r.getNotesString());
+                            XMLNode node = r.getNotes();
+                            XMLNode child = node.getChildAt(2);
+                            System.out.println(child.toXMLString());
+                            node.addChild(child);
+                        } else {
+                            r.setNotes(header[i] + ":" + line[i]);
+                        }
                     }
-                }
-            }
-        } else {
-            for (int i = 1; i < line.length; i++) {
-                System.out.println(header[i]);
-                if (line[i] != null && !line[i].equals("NA")) {
-                    if (r.getNotes() != null) {
-                        r.appendNotes("<p>" + header[i] + ":" + line[i] + "</p>");
-                        System.out.println(r.getNotesString());
-                        XMLNode node = r.getNotes();
-                        XMLNode child = node.getChildAt(2);
-                        System.out.println(child.toXMLString());
-                        node.addChild(child);
-                    } else {
-                        r.setNotes(header[i] + ":" + line[i]);
-                    }
+
                 }
 
             }
-
+        } catch (Exception e) {
         }
 
     }

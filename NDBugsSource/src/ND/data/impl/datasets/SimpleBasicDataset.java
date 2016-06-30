@@ -57,6 +57,8 @@ public class SimpleBasicDataset implements Dataset {
     private List<String> cofactors;
     private Map<String, Double[]> sourcesMap;
     private String selectedReaction, selectedMetabolite;
+    private String parent;
+    private boolean isParent;
 
     /**
      *
@@ -288,5 +290,25 @@ public class SimpleBasicDataset implements Dataset {
 
     public void setMetaboliteSelectionMode(String metabolite) {
         this.selectedMetabolite = metabolite;
+    }
+
+    @Override
+    public String getParent() {
+        return this.parent;
+    }
+
+    @Override
+    public void setParent(String dataset) {
+        this.parent = dataset;
+    }
+
+    @Override
+    public boolean isParent() {
+        return this.isParent;
+    }
+
+    @Override
+    public void setIsParent(boolean isParent) {
+        this.isParent = isParent;
     }
 }

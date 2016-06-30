@@ -23,6 +23,7 @@ import ND.desktop.impl.MainWindow;
 import ND.desktop.impl.helpsystem.HelpImpl;
 import ND.modules.NDModule;
 import ND.modules.NDProcessingModule;
+import ND.modules.analysis.Report.ReportFBAModule;
 import ND.modules.configuration.db.DBConfParameters;
 import ND.modules.configuration.general.GeneralconfigurationParameters;
 import ND.parameters.ParameterSet;
@@ -33,7 +34,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -154,7 +156,7 @@ public class NDCore implements Runnable {
         preferences = new GeneralconfigurationParameters();
         DBparameters = new DBConfParameters();
 
-                // create instances of core modules
+        // create instances of core modules
         // load configuration from XML
         taskController = new TaskControllerImpl();
         desktop = new MainWindow();
@@ -162,7 +164,7 @@ public class NDCore implements Runnable {
 
         logger.fine("Initializing core classes..");
 
-                // Second, initialize desktop, because task controller needs to add
+        // Second, initialize desktop, because task controller needs to add
         // TaskProgressWindow to the desktop
         desktop.initModule();
 
@@ -171,7 +173,7 @@ public class NDCore implements Runnable {
 
         logger.fine("Loading modules");
 
-        Vector<NDModule> moduleSet = new Vector<>();
+        List<NDModule> moduleSet = new ArrayList<>();
 
         for (Class<?> moduleClass : NDModulesList.MODULES) {
 
@@ -267,6 +269,16 @@ public class NDCore implements Runnable {
         moduleElement.appendChild(paramElement);
         NDCore.getDesktop().saveParameterPathToXML(paramElement);
 
+        // Save Parameters report path
+        className = "ReportFBA";
+        moduleElement = configuration.createElement("module");
+        moduleElement.setAttribute("class", className);
+        modulesElement.appendChild(moduleElement);
+
+        paramElement = configuration.createElement("parameters");
+        moduleElement.appendChild(paramElement);      
+        NDCore.getDesktop().saveParameterReportToXML(paramElement);
+
         TransformerFactory transfac = TransformerFactory.newInstance();
         Transformer transformer = transfac.newTransformer();
         transformer.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -296,17 +308,16 @@ public class NDCore implements Runnable {
 
         logger.finest("Loading desktop configuration");
 
-        XPathExpression expr = xpath.compile("//configuration/Standards");
-        NodeList nodes = (NodeList) expr.evaluate(configuration,
-            XPathConstants.NODESET);
-
+        /* XPathExpression expr = xpath.compile("//configuration/Standards");
+         NodeList nodes = (NodeList) expr.evaluate(configuration,
+         XPathConstants.NODESET);*/
         logger.finest("Loading modules configuration");
 
         for (NDModule module : getAllModules()) {
 
             String className = module.getClass().getName();
-            expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
-            nodes = (NodeList) expr.evaluate(configuration,
+            XPathExpression expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
+            NodeList nodes = (NodeList) expr.evaluate(configuration,
                 XPathConstants.NODESET);
             if (nodes.getLength() != 1) {
                 continue;
@@ -321,14 +332,20 @@ public class NDCore implements Runnable {
         }
 
         String className = "ParameterPath";
-        expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
-        if (nodes.getLength() == 1) {
-            nodes = (NodeList) expr.evaluate(configuration,
-                XPathConstants.NODESET);
+        XPathExpression expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
 
-            Element moduleElement = (Element) nodes.item(0);
-            NDCore.getDesktop().loadParameterPathFromXML(moduleElement);
-        }
+        NodeList nodes = (NodeList) expr.evaluate(configuration,
+            XPathConstants.NODESET);
+
+        Element moduleElement = (Element) nodes.item(0);
+        NDCore.getDesktop().loadParameterPathFromXML(moduleElement);
+        className = "ReportFBA";
+        expr = xpath.compile("//configuration/modules/module[@class='" + className + "']/parameters");
+        nodes = (NodeList) expr.evaluate(configuration,
+            XPathConstants.NODESET);
+        
+        moduleElement = (Element) nodes.item(0);
+        NDCore.getDesktop().loadParameterReportFromXML(moduleElement);
 
         logger.log(Level.INFO, "Loaded configuration from file {0}", file);
     }

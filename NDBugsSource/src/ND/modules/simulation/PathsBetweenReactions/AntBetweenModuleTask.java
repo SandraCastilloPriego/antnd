@@ -142,7 +142,7 @@ public class AntBetweenModuleTask extends AbstractTask {
             if (getStatus() == TaskStatus.PROCESSING) {
                 this.ant = this.compounds.get(this.biomassID).getAnt();
                 Graph g = this.createGraph(ant.getPath());
-                this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false);
+                this.tools.createDataFile(g, networkDS, biomassID, sourcesList, false, false);
                 PrintPaths print = new PrintPaths(this.tools.getModel());
                 try {
                     this.pn.add(print.printPathwayInFrame(g));

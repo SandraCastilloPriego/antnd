@@ -30,7 +30,7 @@ import ND.util.Tables.DataTableModel;
 public class FileUtils {
     
 
-    public static Dataset getDataset(Dataset dataset, String Name) {
+    public static Dataset getDataset(Dataset dataset, String Name, boolean isParent) {
         Dataset newDataset = null;
         switch (dataset.getType()) {            
             case MODELS:

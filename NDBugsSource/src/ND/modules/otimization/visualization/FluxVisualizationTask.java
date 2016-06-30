@@ -114,7 +114,7 @@ public class FluxVisualizationTask extends AbstractTask {
             Graph g = createGraph(path);   
             
 
-            this.tools.createDataFile(g, networkDS, this.objective, this.networkDS.getSources(), false);
+            this.tools.createDataFile(g, networkDS, this.objective, this.networkDS.getSources(), false, false);
 
             frame.setSize(new Dimension(700, 500));
             frame.add(this.panel);

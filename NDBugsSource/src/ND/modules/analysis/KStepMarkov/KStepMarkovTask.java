@@ -131,7 +131,7 @@ public class KStepMarkovTask extends AbstractTask {
                         edges.add(e);
                 }
                 Graph graph = new Graph(nodes, edges);
-                new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), false);
+                new GetInfoAndTools().createDataFile(graph, this.networkDS, this.networkDS.getBiomassId(), this.networkDS.getSources(), false, false);
 
         }
 

@@ -133,7 +133,9 @@ public class SaveProjectTask extends AbstractTask {
 
     private void saveHistory(ZipOutputStream zipStream) throws IOException {
         Dataset[] selectedFiles = NDCore.getDesktop().getAllDataFiles();
-        for (final Dataset datafile : selectedFiles) {
+        for (final Dataset datafile : selectedFiles) {  
+            boolean isParent = datafile.isParent();           
+            String parent = datafile.getParent();
             String info = datafile.getInfo().getText();
             String biomass = "";//datafile.getBiomassId();
             List<String> sources = datafile.getSources();
@@ -144,9 +146,13 @@ public class SaveProjectTask extends AbstractTask {
             BufferedWriter writer = null;
             try {
                 writer = new BufferedWriter(new FileWriter(tempFile.getAbsoluteFile()));
+                if(isParent)
+                    writer.write("Is Parent");
+                else
+                    writer.write("Not Parent: "+ parent);
                 writer.write(info);
                 if (biomass != null) {
-                    writer.write("Biomass= " + biomass);
+                    writer.write("\nBiomass= " + biomass);
                 }
                 if (sources != null) {
                     for (String source : sources) {

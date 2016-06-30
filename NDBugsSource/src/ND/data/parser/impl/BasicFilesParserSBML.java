@@ -50,9 +50,11 @@ public class BasicFilesParserSBML implements Parser {
         public void createDataset(String name) {
                 try {
                         this.document = SBMLReader.read(new File(this.datasetPath));
+                        
                         dataset.setDocument(document);
                         dataset.setDatasetName(name);
                         dataset.setPath(this.datasetPath);
+                        dataset.setIsParent(true);
                 } catch (XMLStreamException | IOException ex) {
                         NDCore.getDesktop().displayErrorMessage("The file should be SBML.");
                 }

@@ -146,7 +146,7 @@ public class KNeighborhoodTask extends AbstractTask {
             edges.add(e);
         }
         Graph graph = new Graph(nodes, edges);
-        new GetInfoAndTools().createDataFile(graph, this.networkDS, "KNeighbourhood", this.networkDS.getSources(), false);
+        new GetInfoAndTools().createDataFile(graph, this.networkDS, "KNeighbourhood", this.networkDS.getSources(), false, false);
 
     }
 

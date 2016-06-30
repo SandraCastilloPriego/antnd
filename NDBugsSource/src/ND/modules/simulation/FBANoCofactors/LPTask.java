@@ -17,7 +17,6 @@
  */
 package ND.modules.simulation.FBANoCofactors;
 
-import ND.modules.simulation.FBAreal.*;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.modules.configuration.general.GetInfoAndTools;
 import ND.data.network.Edge;
@@ -87,7 +86,7 @@ public class LPTask extends AbstractTask {
         finishedPercentage = 0.1f;
         Graph g = optimize();
         if (g != null) {
-            this.tools.createDataFile(g, networkDS, this.objectiveSpecie, this.networkDS.getSources(), false);
+            this.tools.createDataFile(g, networkDS, this.objectiveSpecie, this.networkDS.getSources(), false, false);
             String info = "Objective value of " + this.objectiveSpecie + ": " + this.objective;
             this.networkDS.addInfo(info);
         }
@@ -113,7 +112,7 @@ public class LPTask extends AbstractTask {
         Graph previousG = this.networkDS.getGraph();
         for (String r : reactions.keySet()) {
             ReactionFA reaction = reactions.get(r);
-            if (reaction != null && Math.abs(reaction.getFlux()) > 0.0000001) {
+            if (reaction != null && Math.abs(reaction.getFlux()) > 0.00001) {
                 Node reactionNode = new Node(reaction.getId(), String.format("%.3g%n", reaction.getFlux()));
                 if (previousG != null && previousG.getNode(reaction.getId()) !=null ) {
                     reactionNode.setPosition(previousG.getNode(reaction.getId()).getPosition());

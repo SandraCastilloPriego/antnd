@@ -264,4 +264,24 @@ public class FBAAnalysisDataset implements Dataset {
     public void setMetaboliteSelectionMode(String metabolite) {
         this.selectedMetabolite = metabolite;
     }
+
+    @Override
+    public String getParent() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setParent(String dataset) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isParent() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setIsParent(boolean isParent) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

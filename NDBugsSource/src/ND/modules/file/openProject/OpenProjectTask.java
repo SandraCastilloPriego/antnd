@@ -148,7 +148,12 @@ public class OpenProjectTask extends AbstractTask {
                     String strLine;
                     Graph g = null;
                     while ((strLine = br.readLine()) != null) {
-                        if (strLine.contains("Biomass= ")) {
+                        if (strLine.contains("Is Parent")) {
+                            data.setIsParent(true);
+                        } else if (strLine.contains("Not Parent")) {
+                            data.setIsParent(false);
+                            data.setParent(strLine.substring(strLine.indexOf("Not Parent: ")+12));
+                        } else if (strLine.contains("Biomass= ")) {
                             //data.setBiomass(strLine.split("= ")[1]);
                         } else if (strLine.contains("Sources= ")) {
                             data.addSource(strLine.split("= ")[1]);
@@ -163,7 +168,7 @@ public class OpenProjectTask extends AbstractTask {
                                 String[] properties = nodeName.split(" // ");
                                 position = properties[1];
                                 nodeName = properties[0];
-                                if (properties.length>2 && !properties[2].contains("null")) {
+                                if (properties.length > 2 && !properties[2].contains("null")) {
                                     color = Integer.valueOf(properties[2]);
                                 }
                             }
@@ -178,8 +183,8 @@ public class OpenProjectTask extends AbstractTask {
                                 String[] point = position.split(" , ");
                                 n.setPosition(Double.valueOf(point[0]), Double.valueOf(point[1]));
                             }
-                            
-                            if (color!= -1) {                               
+
+                            if (color != -1) {
                                 n.setColor(new Color(color));
                             }
                             g.addNode(n);

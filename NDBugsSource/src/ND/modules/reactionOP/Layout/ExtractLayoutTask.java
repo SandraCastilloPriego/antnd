@@ -72,7 +72,7 @@ public class ExtractLayoutTask extends AbstractTask {
             Graph g = this.networkDS.getGraph();
             Graph newG = extractNetwork(g);
             if (newG != null) {
-                this.tools.createDataFile(newG, networkDS, " ", this.networkDS.getSources(), false);
+                this.tools.createDataFile(newG, networkDS, " ", this.networkDS.getSources(), false,false);
             }
 
             setStatus(TaskStatus.FINISHED);

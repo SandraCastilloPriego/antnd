@@ -20,11 +20,12 @@ package ND.desktop.impl;
 import ND.data.Dataset;
 import ND.desktop.Desktop;
 import ND.main.NDCore;
+import ND.modules.analysis.Report.ReportFBAParameters;
 import ND.modules.analysis.Report.ReportFBATask;
 import ND.modules.reactionOP.CombineModels.CombineModelsModule;
 import ND.util.GUIUtils;
 import ND.util.components.DragOrderedJList;
-import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
+import ND.util.dialogs.ExitCode;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,7 +48,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.xml.stream.XMLStreamException;
 import org.freehep.graphics2d.VectorGraphics;
 import org.freehep.graphicsio.pdf.PDFGraphics2D;
-import org.freehep.graphicsio.svg.SVGGraphics2D;
 import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBMLWriter;
 
@@ -409,11 +409,19 @@ public class ItemSelector extends JPanel implements ActionListener,
     private void showReport() {
         Dataset[] selectedFiles = getSelectedDatasets();
         for (Dataset file : selectedFiles) {
-            if (file != null) {
-                ReportFBATask task = new ReportFBATask(file);
-                task.run();
+            if (file != null && !file.isParent()) {
+               /* ReportFBAParameters parameters = new ReportFBAParameters();
+                if (NDCore.getDesktop().getParameteresReport() != null) {
+                    parameters.getParameter(ReportFBAParameters.fileName).setValue(NDCore.getDesktop().getParameteresReport());
+                }
+                ExitCode exit = parameters.showSetupDialog();*/
+               // if (exit == ExitCode.OK) {
+                    ReportFBATask task = new ReportFBATask(file, null);
+                    task.run();
+                 //   NDCore.getDesktop().setParameteresReport(parameters.getParameter(ReportFBAParameters.fileName).getValue());
+                //}
             }
         }
-
     }
+
 }

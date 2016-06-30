@@ -18,24 +18,32 @@
 package ND.modules.analysis.Report;
 
 import ND.data.Dataset;
-import ND.main.NDCore;
+import ND.parameters.ParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.io.File;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BoxLayout;
-import javax.swing.JInternalFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import net.sf.dynamicreports.jasper.builder.JasperReportBuilder;
+import net.sf.dynamicreports.jasper.builder.export.Exporters;
+import static net.sf.dynamicreports.report.builder.DynamicReports.cht;
+import static net.sf.dynamicreports.report.builder.DynamicReports.cmp;
+import static net.sf.dynamicreports.report.builder.DynamicReports.col;
+import static net.sf.dynamicreports.report.builder.DynamicReports.concatenatedReport;
+import static net.sf.dynamicreports.report.builder.DynamicReports.report;
+import static net.sf.dynamicreports.report.builder.DynamicReports.stl;
+import static net.sf.dynamicreports.report.builder.DynamicReports.type;
+import net.sf.dynamicreports.report.builder.chart.BarChartBuilder;
+import net.sf.dynamicreports.report.builder.column.TextColumnBuilder;
+import net.sf.dynamicreports.report.builder.style.FontBuilder;
+import net.sf.dynamicreports.report.constant.SplitType;
+import net.sf.dynamicreports.report.exception.DRException;
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
@@ -62,9 +70,11 @@ import org.sbml.jsbml.SpeciesReference;
 public class ReportFBATask extends AbstractTask {
 
     private Dataset data;
+    private File fileName;
     private double finishedPercentage = 0.0f;
 
-    public ReportFBATask(Dataset data) {
+    public ReportFBATask(Dataset data, ParameterSet parameters) {
+        // this.fileName = parameters.getParameter(ReportFBAParameters.fileName).getValue();
         this.data = data;
     }
 
@@ -86,49 +96,7 @@ public class ReportFBATask extends AbstractTask {
     @Override
     public void run() {
         setStatus(TaskStatus.PROCESSING);
-        Model m = data.getDocument().getModel();
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        panel.setBackground(Color.white);
-
-        String info = "";
-        info += "Number of active reactions: " + m.getNumReactions() + "\n";
-        info += "Number of active reactions where the flux > abs(0.0001): " + getBigFluxes(m) + "\n";
-        JTextArea area = new JTextArea(info);
-        area.setEditable(false);
-        panel.add(area);
-        
-
-        List<PieDataset> datasets = createPieDataset(m);
-        JFreeChart exchangesPos = createPieChart(datasets.get(0), "Exchanges out");
-        JFreeChart exchangesNeg = createPieChart(datasets.get(1), "Exchanges in");
-        JPanel chartpanel = new JPanel();
-        chartpanel.add(new ChartPanel(exchangesNeg));
-        chartpanel.add(new ChartPanel(exchangesPos));
-        chartpanel.setBackground(Color.white);
-        panel.add(chartpanel);
-        
-        
-        
-        CategoryDataset dataset = createBarExchangeDataset(m);
-        JFreeChart fluxesChart = createBarChart(dataset, "Exchange reactions");
-        JPanel fPanel = new JPanel();
-        fPanel.add(new ChartPanel(fluxesChart));
-        fPanel.setPreferredSize(new Dimension(500, 500));
-        fPanel.setBackground(Color.white);
-        panel.add(fPanel);
-
-        dataset = createBarDataset(m);
-        fluxesChart = createBarChart(dataset, "Important fluxes");
-        panel.add(new ChartPanel(fluxesChart));
-
-        JInternalFrame frameTable = new JInternalFrame("Report", true, true, true, true);
-        JScrollPane scrollPanel = new JScrollPane(panel);
-        frameTable.setSize(new Dimension(700, 500));
-        frameTable.add(scrollPanel);
-
-        NDCore.getDesktop().addInternalFrame(frameTable);
-        frameTable.setVisible(true);
+        this.build();
         setStatus(TaskStatus.FINISHED);
     }
 
@@ -145,9 +113,9 @@ public class ReportFBATask extends AbstractTask {
 
                 for (SpeciesReference c : r.getListOfProducts()) {
                     Species sp = c.getSpeciesInstance();
-                    String notes = sp.getNotesString();
-                    try {
 
+                    try {
+                        String notes = sp.getNotesString();
                         // System.out.println(notes);
                         String carbonsString = notes.substring(notes.indexOf("CARBONS:") + 8, notes.lastIndexOf("</p>"));
                         carbons.put(r.getName(), Double.valueOf(carbonsString));
@@ -278,16 +246,46 @@ public class ReportFBATask extends AbstractTask {
         return barChart;
     }
 
-    private String getBigFluxes(Model m) {
-        int i = 0;
-        for (Reaction r : m.getListOfReactions()) {
-            KineticLaw law = r.getKineticLaw();
-            double flux = law.getLocalParameter("FLUX_VALUE").getValue();
-            if (Math.abs(flux) >= 0.0001) {
-                i++;
-            }
+    private void build() {
+        try {
+
+            JasperReportBuilder report = report();
+
+            report
+                .setTemplate(Templates.reportTemplate)
+                .title(Templates.createTitleComponent(this.data.getDatasetName()))
+                .setSummarySplitType(SplitType.IMMEDIATE)
+                .summary(
+                    cmp.subreport(ExchangesReportBar()),
+                    cmp.pageBreak(),
+                    cmp.subreport(ExchangesReportPie()),
+                    cmp.pageBreak(),
+                    cmp.subreport(ImportantFluxesReport()),
+                    cmp.pageBreak(),
+                    cmp.subreport(OxygenReport())
+                )
+                .pageFooter(cmp.line(),
+                    cmp.pageNumber().setStyle(Templates.boldCenteredStyle))
+                .show(false);
+
+        } catch (DRException ex) {
+            System.out.println(ex.toString());
         }
-        return String.valueOf(i);
     }
 
+    private JasperReportBuilder ExchangesReportPie() throws DRException {
+        return new ExchangesReportPie(this.data).build();
+    }
+
+    private JasperReportBuilder ExchangesReportBar() throws DRException {
+        return new ExchangesReportBar(this.data).build();
+    }
+
+    private JasperReportBuilder ImportantFluxesReport() throws DRException {
+        return new ImportantFluxesReport(this.data).build();
+    }
+
+    private JasperReportBuilder OxygenReport() throws DRException {
+        return new OxygenReport(this.data).build();
+    }
 }
