@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.sf.dynamicreports.jasper.builder.JasperReportBuilder;
 import static net.sf.dynamicreports.report.builder.DynamicReports.cht;
 import static net.sf.dynamicreports.report.builder.DynamicReports.cmp;
@@ -130,7 +131,7 @@ public class OxygenReport {
             .setTemplate(Templates.reportTemplate)
             .setSummarySplitType(SplitType.IMMEDIATE)
             .title(Templates.createTitleComponentSmall("Changes in the fluxes due to the Oxygen levels"))
-            .columns(columns.toArray(new TextColumnBuilder[columns.size()]))
+            //.columns(columns.toArray(new TextColumnBuilder[columns.size()]))
             .summary(
                 cmp.verticalList(charts.toArray(new XyLineChartBuilder[charts.size()])),
                 cmp.verticalList(chartsRelative.toArray(new XyLineChartBuilder[chartsRelative.size()])),
@@ -157,6 +158,7 @@ public class OxygenReport {
                         String carbonsString = notes.substring(notes.indexOf("CARBONS:") + 8, notes.lastIndexOf("</p>"));
 
                         if (Double.valueOf(carbonsString) > 0) {
+                           // System.out.println(r.getName() + "-Relative");
                             Fdata.put(r.getName() + "-Relative", flux);
                         }
                     } catch (Exception e) {
@@ -174,7 +176,9 @@ public class OxygenReport {
             DRDataSource dataSource = new DRDataSource((String[]) Fdata.keySet().toArray(new String[Fdata.keySet().size()]));
 
             Model model = parentDataset.getDocument().getModel();
+            
             this.createReactions(model);
+            
             if (oxygen != null) {
                 this.setFluxes(model, reactionIds, dataSource, 0.0);
                 this.setFluxes(model, reactionIds, dataSource, -0.05);
@@ -213,9 +217,9 @@ public class OxygenReport {
                             String carbonsString = notes.substring(notes.indexOf("CARBONS:") + 8, notes.lastIndexOf("</p>"));
 
                             if (Double.valueOf(carbonsString) > 0) {
-                                carbons.put(reaction.getName(), Double.valueOf(carbonsString));
-
-                                if (soln.get(reactionIds.get(r)) < -0.00001) {
+                                carbons.put(r + "-Relative", Double.valueOf(carbonsString));
+                               // System.out.println("carbons " + r + "-Relative");
+                                if (soln.get(reactionIds.get(r)) <= 0) {
                                     totalInCarbon += Double.valueOf(carbonsString);
                                 }
                             }
@@ -225,23 +229,38 @@ public class OxygenReport {
                 }
             }
 
-            System.out.println(totalInCarbon);
+           // System.out.println(totalInCarbon);
             for (String r : Fdata.keySet()) {
                 if (r.equals(this.oxygen.getName())) {
                     Fdata.put(r, Math.abs(soln.get(reactionIds.get(r))));
                 } else {
-                    Fdata.put(r, soln.get(reactionIds.get(r)));
+                    Double flux = soln.get(reactionIds.get(r.replace("-Relative", "")));
+                    if (flux != null) {
+                        Fdata.put(r, flux);
+                    }
                     if (carbons.containsKey(r)) {
-                        Fdata.put(r + "-Relative", (carbons.get(r) / totalInCarbon) * Math.abs(soln.get(reactionIds.get(r))));
+                        if (flux <= 0) {
+                            Fdata.put(r, (carbons.get(r) / totalInCarbon) * Math.abs(soln.get(reactionIds.get(r.replace("-Relative", "")))) * -1);
+
+                           // System.out.println(r + " :" + (carbons.get(r) / totalInCarbon) * Math.abs(soln.get(reactionIds.get(r.replace("-Relative", "")))) * -1);
+                        } else {
+                            Fdata.put(r, (carbons.get(r) / totalInCarbon) * Math.abs(soln.get(reactionIds.get(r.replace("-Relative", "")))));
+                        }
+
                     }
 
                 }
 
             }
 
+            for (String r : Fdata.keySet()) {
+                if (Fdata.get(r) == null) {
+                    Fdata.put(r, 0.0);
+                }
+            }
             if (fba.getMaxObj() > 0) {
                 dataSource.add(Fdata.values().toArray());
-                // System.out.println(Arrays.toString(Fdata.values().toArray()));
+               // System.out.println(Arrays.toString(Fdata.values().toArray()));
             }
         } catch (Exception ex) {
             System.out.println(ex);

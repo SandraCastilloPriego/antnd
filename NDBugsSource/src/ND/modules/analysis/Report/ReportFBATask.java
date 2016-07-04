@@ -256,6 +256,8 @@ public class ReportFBATask extends AbstractTask {
                 .title(Templates.createTitleComponent(this.data.getDatasetName()))
                 .setSummarySplitType(SplitType.IMMEDIATE)
                 .summary(
+                    cmp.subreport(ChangesReport()),
+                    cmp.pageBreak(),
                     cmp.subreport(ExchangesReportBar()),
                     cmp.pageBreak(),
                     cmp.subreport(ExchangesReportPie()),
@@ -272,6 +274,11 @@ public class ReportFBATask extends AbstractTask {
             System.out.println(ex.toString());
         }
     }
+    
+    private JasperReportBuilder ChangesReport() throws DRException {
+        return new ChangesReport(this.data).build();
+    }
+
 
     private JasperReportBuilder ExchangesReportPie() throws DRException {
         return new ExchangesReportPie(this.data).build();
