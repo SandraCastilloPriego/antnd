@@ -23,24 +23,14 @@ import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
 import java.awt.Color;
 import java.io.File;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.sf.dynamicreports.jasper.builder.JasperReportBuilder;
-import net.sf.dynamicreports.jasper.builder.export.Exporters;
-import static net.sf.dynamicreports.report.builder.DynamicReports.cht;
 import static net.sf.dynamicreports.report.builder.DynamicReports.cmp;
-import static net.sf.dynamicreports.report.builder.DynamicReports.col;
-import static net.sf.dynamicreports.report.builder.DynamicReports.concatenatedReport;
 import static net.sf.dynamicreports.report.builder.DynamicReports.report;
-import static net.sf.dynamicreports.report.builder.DynamicReports.stl;
-import static net.sf.dynamicreports.report.builder.DynamicReports.type;
-import net.sf.dynamicreports.report.builder.chart.BarChartBuilder;
-import net.sf.dynamicreports.report.builder.column.TextColumnBuilder;
-import net.sf.dynamicreports.report.builder.style.FontBuilder;
 import net.sf.dynamicreports.report.constant.SplitType;
 import net.sf.dynamicreports.report.exception.DRException;
 import org.jfree.chart.ChartFactory;
@@ -264,7 +254,9 @@ public class ReportFBATask extends AbstractTask {
                     cmp.pageBreak(),
                     cmp.subreport(ImportantFluxesReport()),
                     cmp.pageBreak(),
-                    cmp.subreport(OxygenReport())
+                    cmp.subreport(OxygenReport()),
+                    cmp.pageBreak(),
+                    cmp.subreport(CofactorReport())                    
                 )
                 .pageFooter(cmp.line(),
                     cmp.pageNumber().setStyle(Templates.boldCenteredStyle))
@@ -294,5 +286,9 @@ public class ReportFBATask extends AbstractTask {
 
     private JasperReportBuilder OxygenReport() throws DRException {
         return new OxygenReport(this.data).build();
+    }
+    
+    private JasperReportBuilder CofactorReport() throws DRException {
+        return new CofactorReport(this.data).build();
     }
 }

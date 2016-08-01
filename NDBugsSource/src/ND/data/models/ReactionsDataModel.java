@@ -279,4 +279,13 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
         }
         return false;
     }
+
+    @Override
+    public boolean isTransport(int row) {
+        Reaction r = this.dataset.getDocument().getModel().getReaction(row);
+        if (r.getName().contains("port")) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -56,4 +56,6 @@ public interface DataTableModel extends TableModel {
     public Color getCellColor(int row, int column);
 
     public boolean isExchange(int row);
+
+    public boolean isTransport(int row);
 }

@@ -185,4 +185,9 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
         }
     }
 
+    @Override
+    public boolean isTransport(int row) {
+        return false;
+    }
+
 }

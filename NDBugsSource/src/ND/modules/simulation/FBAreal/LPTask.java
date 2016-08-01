@@ -17,6 +17,7 @@
  */
 package ND.modules.simulation.FBAreal;
 
+import ND.data.Dataset;
 import ND.data.impl.datasets.SimpleBasicDataset;
 import ND.modules.configuration.general.GetInfoAndTools;
 import ND.data.network.Edge;
@@ -80,10 +81,11 @@ public class LPTask extends AbstractTask {
         finishedPercentage = 0.1f;
         Graph g = optimize();
         if (g != null) {
-            this.tools.createDataFile(g, networkDS, " ", this.networkDS.getSources(), false, false);
+            Dataset newDataset = this.tools.createDataFile(g, networkDS, " ", this.networkDS.getSources(), false, false);
             String info = "Objective value of the objective : " + this.objective;
             this.networkDS.addInfo(info);
-            this.networkDS.setReactionsFA(reactions);
+            this.networkDS.setReactionsFA(reactions);            
+            newDataset.addInfo(this.networkDS.getInfo().getText());
         }
         finishedPercentage = 1f;
         setStatus(TaskStatus.FINISHED);

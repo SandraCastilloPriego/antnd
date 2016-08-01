@@ -28,7 +28,6 @@ import net.sf.jasperreports.engine.JRDataSource;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.renderer.category.BarRenderer;
 import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;

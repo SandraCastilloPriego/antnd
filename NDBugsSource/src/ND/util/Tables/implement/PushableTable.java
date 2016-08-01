@@ -105,6 +105,9 @@ public class PushableTable implements DataTable, ActionListener {
                     if(isExchange(Index_row)){
                         comp.setBackground(Color.YELLOW);
                     }
+                    if(isTransport(Index_row)){
+                        comp.setBackground(Color.ORANGE);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -130,6 +133,10 @@ public class PushableTable implements DataTable, ActionListener {
             
             private boolean isExchange(int row){
                 return tableModel.isExchange(row);
+            }
+            
+             private boolean isTransport(int row){
+                return tableModel.isTransport(row);
             }
         };
 
