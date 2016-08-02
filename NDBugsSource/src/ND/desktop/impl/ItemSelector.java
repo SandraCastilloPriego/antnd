@@ -22,6 +22,7 @@ import ND.desktop.Desktop;
 import ND.main.NDCore;
 import ND.modules.analysis.Report.ReportFBAParameters;
 import ND.modules.analysis.Report.ReportFBATask;
+import ND.modules.analysis.VisualizeCofactors.VisualizeCofactorsTask;
 import ND.modules.reactionOP.CombineModels.CombineModelsModule;
 import ND.util.GUIUtils;
 import ND.util.components.DragOrderedJList;
@@ -97,6 +98,7 @@ public class ItemSelector extends JPanel implements ActionListener,
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Report", this, "REPORT");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize Transport", this, "VISUALIZETRANSPORT");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
         //       GUIUtils.addMenuItem(dataFilePopupMenu, "Save graph", this, "SAVEGRAPH");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
@@ -136,6 +138,9 @@ public class ItemSelector extends JPanel implements ActionListener,
         }
         if (command.equals("VISUALIZE")) {
             visualize();
+        }
+         if (command.equals("VISUALIZETRANSPORT")) {
+            visualizeTransport();
         }
         if (command.equals("COMBINE")) {
             combine();
@@ -325,6 +330,9 @@ public class ItemSelector extends JPanel implements ActionListener,
             }
         }
     }
+    
+    
+
 
     private void saveGraph() {
         Dataset[] selectedFiles = getSelectedDatasets();
@@ -421,6 +429,14 @@ public class ItemSelector extends JPanel implements ActionListener,
                  //   NDCore.getDesktop().setParameteresReport(parameters.getParameter(ReportFBAParameters.fileName).getValue());
                 //}
             }
+        }
+    }
+     private void visualizeTransport() {
+        Dataset[] selectedFiles = getSelectedDatasets();
+
+        for (Dataset file : selectedFiles) {         
+           VisualizeCofactorsTask VC = new VisualizeCofactorsTask(file, null);
+           VC.run();
         }
     }
 
