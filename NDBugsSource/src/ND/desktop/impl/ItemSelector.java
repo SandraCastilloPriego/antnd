@@ -31,10 +31,16 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -96,9 +102,11 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         dataFilePopupMenu = new JPopupMenu();
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
-        GUIUtils.addMenuItem(dataFilePopupMenu, "Show Changes", this, "SHOW_INFO");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Show model information", this, "SHOW_INFO");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Change Name", this, "CHANGE_NAME");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Change Parent", this, "CHANGE_PARENT");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Report", this, "REPORT");
-        GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize Transport", this, "VISUALIZETRANSPORT");
+        // GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize Transport", this, "VISUALIZETRANSPORT");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
         //       GUIUtils.addMenuItem(dataFilePopupMenu, "Save graph", this, "SAVEGRAPH");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
@@ -126,6 +134,10 @@ public class ItemSelector extends JPanel implements ActionListener,
         if (command.equals("REPORT")) {
             showReport();
         }
+
+        if (command.equals("CHANGE_NAME")) {
+            changeName();
+        }
 //        if (command.equals("SAVEGRAPH")) {
 //            saveGraph();
 //        }
@@ -139,7 +151,7 @@ public class ItemSelector extends JPanel implements ActionListener,
         if (command.equals("VISUALIZE")) {
             visualize();
         }
-         if (command.equals("VISUALIZETRANSPORT")) {
+        if (command.equals("VISUALIZETRANSPORT")) {
             visualizeTransport();
         }
         if (command.equals("COMBINE")) {
@@ -330,9 +342,6 @@ public class ItemSelector extends JPanel implements ActionListener,
             }
         }
     }
-    
-    
-
 
     private void saveGraph() {
         Dataset[] selectedFiles = getSelectedDatasets();
@@ -418,26 +427,39 @@ public class ItemSelector extends JPanel implements ActionListener,
         Dataset[] selectedFiles = getSelectedDatasets();
         for (Dataset file : selectedFiles) {
             if (file != null && !file.isParent()) {
-               /* ReportFBAParameters parameters = new ReportFBAParameters();
-                if (NDCore.getDesktop().getParameteresReport() != null) {
-                    parameters.getParameter(ReportFBAParameters.fileName).setValue(NDCore.getDesktop().getParameteresReport());
-                }
-                ExitCode exit = parameters.showSetupDialog();*/
-               // if (exit == ExitCode.OK) {
-                    ReportFBATask task = new ReportFBATask(file, null);
-                    task.run();
-                 //   NDCore.getDesktop().setParameteresReport(parameters.getParameter(ReportFBAParameters.fileName).getValue());
+                /* ReportFBAParameters parameters = new ReportFBAParameters();
+                 if (NDCore.getDesktop().getParameteresReport() != null) {
+                 parameters.getParameter(ReportFBAParameters.fileName).setValue(NDCore.getDesktop().getParameteresReport());
+                 }
+                 ExitCode exit = parameters.showSetupDialog();*/
+                // if (exit == ExitCode.OK) {
+                ReportFBATask task = new ReportFBATask(file, null);
+                task.run();
+                //   NDCore.getDesktop().setParameteresReport(parameters.getParameter(ReportFBAParameters.fileName).getValue());
                 //}
             }
         }
     }
-     private void visualizeTransport() {
+
+    private void visualizeTransport() {
         Dataset[] selectedFiles = getSelectedDatasets();
 
-        for (Dataset file : selectedFiles) {         
-           VisualizeCofactorsTask VC = new VisualizeCofactorsTask(file, null);
-           VC.run();
+        for (Dataset file : selectedFiles) {
+            VisualizeCofactorsTask VC = new VisualizeCofactorsTask(file, null);
+            VC.run();
         }
+    }
+
+    private void changeName() {
+        JInternalFrame frame = new JInternalFrame("Change Name of the Model");
+        frame.setSize(new Dimension(500, 200));
+        JPanel p = new JPanel();
+        p.setPreferredSize(new Dimension(500,200));
+        Dialog d = new Dialog("Write the new model name:", "Change Name of the Model");
+
+        p.add(d);
+        frame.add(p);
+        NDCore.getDesktop().addInternalFrame(frame);
     }
 
 }

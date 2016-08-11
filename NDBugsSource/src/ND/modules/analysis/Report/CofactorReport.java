@@ -97,9 +97,9 @@ public class CofactorReport {
             
             if (flux > 0) {
                 getCofactorAmounts(r.getListOfProducts(), cofactors, Math.abs(flux), "Produced", m);
-               // getCofactorAmounts(r.getListOfReactants(), cofactors, Math.abs(flux), "Consumed", m);
+                getCofactorAmounts(r.getListOfReactants(), cofactors, Math.abs(flux), "Consumed", m);
             } else {
-                //getCofactorAmounts(r.getListOfProducts(), cofactors, Math.abs(flux), "Consumed", m);
+                getCofactorAmounts(r.getListOfProducts(), cofactors, Math.abs(flux), "Consumed", m);
                 getCofactorAmounts(r.getListOfReactants(), cofactors, Math.abs(flux), "Produced", m);
             }
         }
@@ -132,6 +132,7 @@ public class CofactorReport {
     }
 
     private boolean isCofactor(String name) {
+        if(name.contains("port")) return false;
         if (name.startsWith("NADH") || name.startsWith("ATP") || name.startsWith("NADPH")) {
             return true;
         } else {

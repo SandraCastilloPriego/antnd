@@ -141,7 +141,16 @@ public class AddReactionsTask extends AbstractTask {
                 r.setKineticLaw(law);
 
                 m.addReaction(r);
-                String info = "Adding reaction: " + reaction.getId() + " bounds:" + reaction.getlb() + " - " + reaction.getub() + "\nCompounds: " + reaction.toString()+"\n--------------------------";
+                String compounds = this.compounds.keySet().toString().trim().replace("[","").replace("]", "");
+                String stoi = "";
+                for(String c : reaction.getReactants()){
+                    stoi += reaction.getStoichiometry(c)+" ";
+                }
+                for(String c : reaction.getProducts()){
+                    stoi += reaction.getStoichiometry(c)+" ";
+                }
+                
+                String info = "Adding reaction: " + reaction.getId() + " bounds:" + reaction.getlb() + " - " + reaction.getub() + "\nCompounds: " + compounds+"\nStoichiometry: "+stoi+"\n--------------------------";
                 this.networkDS.addInfo(info);
 
             }

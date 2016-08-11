@@ -17,7 +17,6 @@ import static net.sf.dynamicreports.report.builder.DynamicReports.col;
 import static net.sf.dynamicreports.report.builder.DynamicReports.report;
 import static net.sf.dynamicreports.report.builder.DynamicReports.stl;
 import static net.sf.dynamicreports.report.builder.DynamicReports.type;
-import net.sf.dynamicreports.report.builder.chart.BarChartBuilder;
 import net.sf.dynamicreports.report.builder.chart.Pie3DChartBuilder;
 import net.sf.dynamicreports.report.builder.column.TextColumnBuilder;
 import net.sf.dynamicreports.report.builder.style.FontBuilder;
@@ -27,8 +26,6 @@ import net.sf.dynamicreports.report.definition.chart.DRIChartCustomizer;
 import net.sf.dynamicreports.report.exception.DRException;
 import net.sf.jasperreports.engine.JRDataSource;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.plot.PiePlot3D;
 import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.Model;
@@ -81,7 +78,7 @@ public class ExchangesReportPie {
             .title(Templates.createTitleComponentSmall("Exchange Fluxes Pie plot relative to carbon"))
             .columns(reactionColumn, fluxInColumn, fluxOutColumn)
             .summary(                
-                cmp.horizontalList(itemChart2, itemChart).setHeight(300)
+                cmp.horizontalList(itemChart2, itemChart)
             )
            // .pageFooter(cmp.line(),
              //   cmp.pageNumber().setStyle(Templates.boldCenteredStyle))

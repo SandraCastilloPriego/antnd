@@ -80,6 +80,7 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
     public void setValueAt(Object aValue, int row, int column) {
         try {
             Species r = this.dataset.getDocument().getModel().getSpecies(row);
+            String info = "";
 
             String value = columns.get(column).getColumnName();
             switch (value) {
@@ -87,6 +88,8 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                     return;
                 case "Id":
                     if (aValue == null || aValue.toString().isEmpty() || aValue.equals("NA")) {
+                        info = info + "\n- The compound " + r.getId() + " - " + r.getName() + " has been removed";
+                        dataset.addInfo(info);
                         this.dataset.getDocument().getModel().removeSpecies(r);
                         Graph g = this.dataset.getGraph();
                         Node n = g.getNode(r.getId());
@@ -94,13 +97,19 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                             g.removeNode(n.getId());
                         }
                     } else {
+                        info = info + "\n- Id of the compound " + r.getId() + " - " + r.getName() + " has changed to " + aValue.toString();
+                        dataset.addInfo(info);
                         r.setId(aValue.toString());
                     }
                     return;
                 case "Name":
+                    info = info + "\n- Name of the compound " + r.getId() + " - " + r.getName() + " has changed to " + aValue.toString();
+                    dataset.addInfo(info);
                     r.setName(aValue.toString());
                     return;
                 case "Notes":
+                    info = info + "\n- Notes of the compound " + r.getId() + " - " + r.getName() + " has changed to " + aValue.toString();
+                    dataset.addInfo(info);
                     r.setNotes(XMLNode.convertStringToXMLNode(aValue.toString()));
                     return;
                 case "Reaction":

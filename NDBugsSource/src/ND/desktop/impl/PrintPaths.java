@@ -194,17 +194,17 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                     if (Math.abs(flux) < 0.001) {
                         return new Color(102, 194, 164);
                     } else if (Math.abs(flux) < 0.001) {
-                        return PrintPaths.darken(new Color(190, 226, 133), 0.01);
+                        return PrintPaths.lighter(new Color(190, 226, 133), 0.65);
                     } else if (Math.abs(flux) < 0.01) {
-                        return PrintPaths.darken(new Color(90, 226, 133), 0.1);
+                        return PrintPaths.lighter(new Color(90, 226, 133), 0.35);
                     } else if (Math.abs(flux) < 0.1) {
-                        return PrintPaths.darken(new Color(90, 226, 133), 0.2);
+                        return PrintPaths.lighter(new Color(90, 226, 133), 0.1);
                     } else if (Math.abs(flux) < 1) {
-                        return PrintPaths.darken(new Color(90, 226, 133), 0.35);
+                        return PrintPaths.darken(new Color(90, 226, 133), 0.15);
                     } else if (Math.abs(flux) < 2) {
-                        return PrintPaths.darken(new Color(90, 226, 133), 0.50);
+                        return PrintPaths.darken(new Color(90, 226, 133), 0.30);
                     } else if (Math.abs(flux) > 2) {
-                        return PrintPaths.darken(new Color(90, 226, 133), 0.65);
+                        return PrintPaths.darken(new Color(90, 226, 133), 0.45);
                     }
                 } catch (Exception e) {
                 }
@@ -800,6 +800,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
             }
         } else {
             if (!this.selectedNode.isEmpty()) {
+                String reaction = command.split(" - ")[0];
                 showReactions(this.selectedNode.get(0), command);
             }
         }
@@ -838,7 +839,8 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
             int i = 0;
             for (Reaction r : mInit.getListOfReactions()) {
                 if (r.hasReactant(sp) || r.hasProduct(sp)) {
-                    GUIUtils.addMenuItem(popupMenu, r.getId(), this, r.getId());
+                    String reaction = r.getId() + " - " +r.getName();
+                    GUIUtils.addMenuItem(popupMenu, reaction, this, reaction);
                     i++;
                 }
                 if (i > 35) {
@@ -869,6 +871,18 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
         int red = (int) Math.round(Math.max(0, color.getRed() - 255 * fraction));
         int green = (int) Math.round(Math.max(0, color.getGreen() - 255 * fraction));
         int blue = (int) Math.round(Math.max(0, color.getBlue() - 255 * fraction));
+
+        int alpha = color.getAlpha();
+
+        return new Color(red, green, blue, alpha);
+
+    }
+    
+    public static Color lighter(Color color, double fraction) {
+
+        int red = (int) Math.round(Math.max(0, color.getRed() + 255 * fraction));
+        int green = (int) Math.round(Math.max(0, color.getGreen() + 255 * fraction));
+        int blue = (int) Math.round(Math.max(0, color.getBlue() + 255 * fraction));
 
         int alpha = color.getAlpha();
 

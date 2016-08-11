@@ -99,9 +99,9 @@ public class NDModulesList {
         LPModule.class,
         // LPNCModule.class,
         FluxAnalysisModule.class,
-        FluxCalcModule.class,
-        DynamicModule.class,
-        RemoveLipidsModule.class,
+        //FluxCalcModule.class,
+        //DynamicModule.class,
+        //RemoveLipidsModule.class,
         ExtractLayoutModule.class,
         ClusteringModule.class,
         ClusteringBetweennessModule.class,
@@ -114,6 +114,6 @@ public class NDModulesList {
         StartTestingGAModule.class,
         StartReducingGAModule.class,
         StartSimulationDirectionsModule.class,
-        PseudoDynamicModule.class,
+       // PseudoDynamicModule.class,
         QueryDBModule.class,};
 }

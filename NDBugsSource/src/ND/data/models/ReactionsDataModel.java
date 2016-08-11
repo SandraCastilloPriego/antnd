@@ -139,6 +139,7 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
     @SuppressWarnings("fallthrough")
     public void setValueAt(Object aValue, int row, int column) {
         try {
+            String info = "";
             Reaction r = this.dataset.getDocument().getModel().getReaction(row);
 
             String value = columns.get(column).getColumnName();
@@ -147,47 +148,78 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     return;
                 case "Id":
                     if (aValue == null || aValue.toString().isEmpty() || aValue.equals("NA")) {
+                        info = info + "\n- The reaction " + r.getId() + " - " + r.getName() + " has been removed : \n" + getReaction(r) + "\n" + getReactionExt(r) + "\n------------------";
+                        dataset.addInfo(info);
+
                         this.dataset.getDocument().getModel().removeReaction(r);
                         Graph g = this.dataset.getGraph();
                         Node n = g.getNode(r.getId());
                         if (n != null) {
                             g.removeNode(n.getId());
                         }
+
                     } else {
+                        info = info + "\n- Id of the reaction " + r.getId() + " - " + r.getName() + " has changed to " + aValue.toString();
+                        dataset.addInfo(info);
                         r.setId(aValue.toString());
                     }
                     return;
                 case "Name":
                     r.setName(aValue.toString());
+                    info = info + "\n- Name of the reaction " + r.getId() + " - " + r.getName() + "has changed to " + aValue.toString();
+                    dataset.addInfo(info);
                     return;
                 case "Reaction":
                     changeReaction(r, aValue.toString());
                     return;
                 case "Reaction extended":
                     changeReaction(r, aValue.toString());
+                    dataset.addInfo(info);
                     return;
                 case "Lower bound":
-                    r.getKineticLaw().getLocalParameter("LOWER_BOUND").setValue(Double.valueOf(aValue.toString()));
+                    LocalParameter parameter = r.getKineticLaw().getLocalParameter("LOWER_BOUND");
+
+                    info = info + "\n- Lower bound of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    dataset.addInfo(info);
+
+                    parameter.setValue(Double.valueOf(aValue.toString()));
                     return;
                 case "Upper bound":
-                    r.getKineticLaw().getLocalParameter("UPPER_BOUND").setValue(Double.valueOf(aValue.toString()));
+                    parameter = r.getKineticLaw().getLocalParameter("UPPER_BOUND");
+
+                    info = info + "\n- Upper bound of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    dataset.addInfo(info);
+
+                    parameter.setValue(Double.valueOf(aValue.toString()));
                     return;
                 case "Notes":
+                    info = info + "\n- Notes of the reaction " + r.getId() + " - " + r.getName() + "have changed from " + r.getNotes().toXMLString() + " to " + aValue.toString();
+                    dataset.addInfo(info);
                     r.setNotes(value);
                     return;
                 case "Objective":
-                    LocalParameter parameter = r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT");
+                    parameter = r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT");
                     if (parameter == null) {
                         parameter = r.getKineticLaw().createLocalParameter("OBJECTIVE_COEFFICIENT");
                     }
+
+                    info = info + "\n- Objective coefficient of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    dataset.addInfo(info);
+
                     parameter.setValue(Double.valueOf(aValue.toString()));
+
                     return;
                 case "Fluxes":
                     parameter = r.getKineticLaw().getLocalParameter("FLUX_VALUE");
                     if (parameter == null) {
                         parameter = r.getKineticLaw().createLocalParameter("FLUX_VALUE");
                     }
+
+                    info = info + "\n- Flux of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    dataset.addInfo(info);
+
                     parameter.setValue(Double.valueOf(aValue.toString()));
+
                     return;
             }
 
