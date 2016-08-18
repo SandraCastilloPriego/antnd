@@ -150,7 +150,7 @@ public class SaveProjectTask extends AbstractTask {
                     writer.write("Is Parent");
                 else
                     writer.write("Not Parent: "+ parent);
-                writer.write(info);
+                writer.write("\n" + info);
                 if (biomass != null) {
                     writer.write("\nBiomass= " + biomass);
                 }

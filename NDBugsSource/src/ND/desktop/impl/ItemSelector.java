@@ -20,27 +20,19 @@ package ND.desktop.impl;
 import ND.data.Dataset;
 import ND.desktop.Desktop;
 import ND.main.NDCore;
-import ND.modules.analysis.Report.ReportFBAParameters;
 import ND.modules.analysis.Report.ReportFBATask;
 import ND.modules.analysis.VisualizeCofactors.VisualizeCofactorsTask;
 import ND.modules.reactionOP.CombineModels.CombineModelsModule;
 import ND.util.GUIUtils;
 import ND.util.components.DragOrderedJList;
-import ND.util.dialogs.ExitCode;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -101,13 +93,16 @@ public class ItemSelector extends JPanel implements ActionListener,
         add(rawDataPanel, BorderLayout.CENTER);
 
         dataFilePopupMenu = new JPopupMenu();
-        GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions", this, "SHOW_DATASET");
-        GUIUtils.addMenuItem(dataFilePopupMenu, "Show model information", this, "SHOW_INFO");
+
         GUIUtils.addMenuItem(dataFilePopupMenu, "Change Name", this, "CHANGE_NAME");
-        GUIUtils.addMenuItem(dataFilePopupMenu, "Change Parent", this, "CHANGE_PARENT");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Set Parent", this, "CHANGE_PARENT");
+        GUIUtils.addSeparator(dataFilePopupMenu);
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Show Reactions/Metabolites tables", this, "SHOW_DATASET");
+        GUIUtils.addMenuItem(dataFilePopupMenu, "Show model information", this, "SHOW_INFO");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Show Report", this, "REPORT");
         // GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize Transport", this, "VISUALIZETRANSPORT");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Visualize", this, "VISUALIZE");
+        GUIUtils.addSeparator(dataFilePopupMenu);
         //       GUIUtils.addMenuItem(dataFilePopupMenu, "Save graph", this, "SAVEGRAPH");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Combine Models", this, "COMBINE");
         GUIUtils.addMenuItem(dataFilePopupMenu, "Save Model in a File", this, "SAVE_DATASET");
@@ -137,6 +132,10 @@ public class ItemSelector extends JPanel implements ActionListener,
 
         if (command.equals("CHANGE_NAME")) {
             changeName();
+        }
+
+        if (command.equals("CHANGE_PARENT")) {
+            setParent();
         }
 //        if (command.equals("SAVEGRAPH")) {
 //            saveGraph();
@@ -193,13 +192,13 @@ public class ItemSelector extends JPanel implements ActionListener,
      */
     public Dataset[] getSelectedDatasets() {
 
-        Object o[] = DatasetFiles.getSelectedValues();
+        List o = DatasetFiles.getSelectedValuesList();
 
-        Dataset res[] = new Dataset[o.length];
+        Dataset res[] = new Dataset[o.size()];
 
-        for (int i = 0; i < o.length; i++) {
+        for (int i = 0; i < o.size(); i++) {
             for (Dataset dataset : DatasetFilesModel) {
-                if (dataset.getDatasetName().compareTo((String) o[i]) == 0) {
+                if (dataset.getDatasetName().compareTo((String) o.get(i)) == 0) {
                     res[i] = dataset;
                 }
             }
@@ -397,7 +396,8 @@ public class ItemSelector extends JPanel implements ActionListener,
             buttonPanel.setPreferredSize(new Dimension(700, 50));
 
             JScrollPane panel = new JScrollPane(area);
-            panel.setPreferredSize(new Dimension(650, 400));
+            panel.setPreferredSize(new Dimension(700, 400));
+
             pn.add(panel, BorderLayout.NORTH);
             pn.add(buttonPanel, BorderLayout.SOUTH);
             pn.setBackground(Color.white);
@@ -405,6 +405,23 @@ public class ItemSelector extends JPanel implements ActionListener,
             frame.add(pn);
             NDCore.getDesktop().addInternalFrame(frame);
 
+            /*  frame.addComponentListener(new ComponentAdapter() {               
+             @Override
+             public void componentResized(ComponentEvent ce) {
+             String size = ce.paramString();
+             size = size.substring(size.indexOf("("), size.indexOf(")"));
+             size = size.split(" ")[1];
+             String[] values = size.split("x");
+                  
+             frame.setPreferredSize(new Dimension(Integer.valueOf(values[0]), Integer.valueOf(values[1])));
+             panel.setPreferredSize(new Dimension(Integer.valueOf(values[0]), Integer.valueOf(values[1])-100));
+             System.out.println(ce.paramString() + " - "+ Integer.valueOf(values[0]) + " - " + Integer.valueOf(values[1]));
+             frame.pack();
+             }
+               
+             });
+            
+             */
             accept.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -451,15 +468,125 @@ public class ItemSelector extends JPanel implements ActionListener,
     }
 
     private void changeName() {
+        final Dataset selectedFile = getSelectedDatasets()[0];
         JInternalFrame frame = new JInternalFrame("Change Name of the Model");
-        frame.setSize(new Dimension(500, 200));
-        JPanel p = new JPanel();
-        p.setPreferredSize(new Dimension(500,200));
-        Dialog d = new Dialog("Write the new model name:", "Change Name of the Model");
+        frame.setSize(new Dimension(500, 150));
+        JPanel pn = new JPanel();
+        final JLabel label = new JLabel("Introduce the new name:");
 
-        p.add(d);
-        frame.add(p);
+        final JTextField area = new JTextField();
+        area.setText(selectedFile.getDatasetName());
+        area.setPreferredSize(new Dimension(400, 30));
+        JButton accept = new JButton("Accept");
+        JButton cancel = new JButton("Cancel");
+        JPanel buttonPanel = new JPanel();
+
+        buttonPanel.add(accept);
+        buttonPanel.add(cancel);
+        buttonPanel.setBackground(Color.white);
+        buttonPanel.setPreferredSize(new Dimension(700, 50));
+
+        pn.add(label);
+        pn.add(area);
+        pn.add(buttonPanel);
+        pn.setBackground(Color.white);
+        frame.add(pn);
         NDCore.getDesktop().addInternalFrame(frame);
+
+        accept.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String oldName = selectedFile.getDatasetName();
+                String newName = area.getText();
+
+                boolean correct = true;
+                for (Dataset data : DatasetFilesModel) {
+                    if (data != selectedFile && data.getDatasetName().equals(newName)) {
+                        correct = false;
+                    }
+                }
+
+                if (correct) {
+                    for(Dataset data : DatasetFilesModel){
+                        if(data.getParent()!= null && data.getParent().equals(oldName)){
+                            data.setParent(newName);
+                        }
+                    }
+                   // int index = DatasetNamesModel.indexOf(newName);
+                   // DatasetNamesModel.setElementAt(newName, index);
+                    DatasetNamesModel.addElement(newName);
+                    selectedFile.setDatasetName(newName);
+                    DatasetFiles.updateUI();
+                    DatasetNamesModel.removeElement(oldName);
+                    selectedFile.addInfo("The name of the file has been changed from: " + oldName + " to: " + newName);
+                     frame.doDefaultCloseAction();
+                } else {
+                   label.setText("This name is already used. Choose another one:");
+                }
+
+                //
+               
+            }
+        });
+
+        cancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.doDefaultCloseAction();
+            }
+        });
+    }
+
+    private void setParent() {
+        final Dataset selectedFile = getSelectedDatasets()[0];
+        JInternalFrame frame = new JInternalFrame("Choose the new Parent");
+        frame.setSize(new Dimension(500, 150));
+        JPanel pn = new JPanel();
+        final JLabel label = new JLabel("Choose the new Parent:");
+
+        final JComboBox area = new JComboBox();
+        for (Dataset data : DatasetFilesModel) {
+            if (data.getParent() == null) {
+                area.addItem(data.getDatasetName());
+            } else {
+                System.out.println(data.getDatasetName() + " - " + data.getParent());
+            }
+
+        }
+
+        area.setPreferredSize(new Dimension(400, 30));
+        JButton accept = new JButton("Accept");
+        JButton cancel = new JButton("Cancel");
+        JPanel buttonPanel = new JPanel();
+
+        buttonPanel.add(accept);
+        buttonPanel.add(cancel);
+        buttonPanel.setBackground(Color.white);
+        buttonPanel.setPreferredSize(new Dimension(700, 50));
+
+        pn.add(label);
+        pn.add(area);
+        pn.add(buttonPanel);
+        pn.setBackground(Color.white);
+        frame.add(pn);
+        NDCore.getDesktop().addInternalFrame(frame);
+
+        accept.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String parent = (String) area.getSelectedItem();
+                selectedFile.setParent(parent);
+
+                frame.doDefaultCloseAction();
+            }
+        });
+
+        cancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.doDefaultCloseAction();
+            }
+        });
     }
 
 }

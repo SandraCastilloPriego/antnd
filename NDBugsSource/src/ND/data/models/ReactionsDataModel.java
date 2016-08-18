@@ -103,14 +103,26 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                 case "Reaction extended":
                     return getReactionExt(r);
                 case "Lower bound":
-                    return r.getKineticLaw().getLocalParameter("LOWER_BOUND").getValue();
+                    LocalParameter lp = r.getKineticLaw().getLocalParameter("LOWER_BOUND");
+                    if (lp == null) {
+                        lp = r.getKineticLaw().getLocalParameter("LB_" + r.getId());
+                    }
+                    return lp.getValue();
                 case "Upper bound":
-                    return r.getKineticLaw().getLocalParameter("UPPER_BOUND").getValue();
+                    lp = r.getKineticLaw().getLocalParameter("UPPER_BOUND");
+                    if (lp == null) {
+                        lp = r.getKineticLaw().getLocalParameter("UB_" + r.getId());
+                    }
+                    return lp.getValue();
                 case "Notes":
                     String notes = r.getNotesString();
                     return notes;
                 case "Objective":
-                    return r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT").getValue();
+                    lp = r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT");
+                    if (lp == null) {
+                        lp = r.getKineticLaw().getLocalParameter("OBJ_" + r.getId());
+                    }
+                    return lp.getValue();
                 case "Fluxes":
                     return r.getKineticLaw().getLocalParameter("FLUX_VALUE").getValue();
             }
@@ -178,7 +190,9 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     return;
                 case "Lower bound":
                     LocalParameter parameter = r.getKineticLaw().getLocalParameter("LOWER_BOUND");
-
+                    if (parameter == null) {
+                        parameter = r.getKineticLaw().getLocalParameter("LB_" + r.getId());
+                    }
                     info = info + "\n- Lower bound of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
                     dataset.addInfo(info);
 
@@ -186,7 +200,9 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     return;
                 case "Upper bound":
                     parameter = r.getKineticLaw().getLocalParameter("UPPER_BOUND");
-
+                    if (parameter == null) {
+                        parameter = r.getKineticLaw().getLocalParameter("UB_" + r.getId());
+                    }
                     info = info + "\n- Upper bound of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
                     dataset.addInfo(info);
 
@@ -199,6 +215,9 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     return;
                 case "Objective":
                     parameter = r.getKineticLaw().getLocalParameter("OBJECTIVE_COEFFICIENT");
+                    if (parameter == null) {
+                        parameter = r.getKineticLaw().getLocalParameter("OBJ_" + r.getId());
+                    }
                     if (parameter == null) {
                         parameter = r.getKineticLaw().createLocalParameter("OBJECTIVE_COEFFICIENT");
                     }

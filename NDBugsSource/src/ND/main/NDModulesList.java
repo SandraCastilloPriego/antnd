@@ -48,6 +48,7 @@ import ND.modules.reactionOP.showCompound.ShowCompoundModule;
 import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.Dynamic.DynamicModule;
+import ND.modules.simulation.FBADistribution.AntFBADistributionModule;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
 import ND.modules.simulation.PseudoDynamic.PseudoDynamicModule;
 import ND.modules.simulation.PseudoDynamic.PseudoDynamicTask;
@@ -114,6 +115,7 @@ public class NDModulesList {
         StartTestingGAModule.class,
         StartReducingGAModule.class,
         StartSimulationDirectionsModule.class,
+        AntFBADistributionModule.class,
        // PseudoDynamicModule.class,
         QueryDBModule.class,};
 }

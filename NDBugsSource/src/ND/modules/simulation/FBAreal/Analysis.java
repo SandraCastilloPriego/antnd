@@ -75,7 +75,8 @@ public abstract class Analysis {
     }
 
     protected void setObjective() {
-        this.getSolver().setObjType(ObjType.Maximize);
+        //this.getSolver().setObjType(objType);
+        // this.getSolver().setObjType(ObjType.Maximize);
         Map< Integer, Double> map = new HashMap<>();
         for (int i = 0; i < objectiveList.size(); i++) {
             if (objectiveList.get(i) != 0.0) {
@@ -86,7 +87,13 @@ public abstract class Analysis {
     }
 
     public void setModel(HashMap<String, ReactionFA> reactions, Model model) {
-
+        this.getSolver().setObjType(ObjType.Maximize);
+        this.prepareReactions(reactions, model);
+    }
+    
+    public void setModel(HashMap<String, ReactionFA> reactions, Model model, ObjType objType) {
+         this.getSolver().setObjType(objType);
+        
         this.prepareReactions(reactions, model);
     }
 

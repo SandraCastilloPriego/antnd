@@ -19,6 +19,7 @@ public abstract class Analysis {
     List<ReactionFA> reactionsList;
     List<String> metabolitesList;
     ModelCompressor compressor;
+    ObjType objType = ObjType.Maximize;
 
     protected void setVars() {
         Map<String, Boolean> path = this.ant.getPath();
@@ -80,7 +81,7 @@ public abstract class Analysis {
     }
 
     protected void setObjective() {
-        this.getSolver().setObjType(ObjType.Maximize);
+        this.getSolver().setObjType(objType);
         Map< Integer, Double> map = new HashMap<>();
         for (int i = 0; i < objectiveList.size(); i++) {
             if (objectiveList.get(i) != 0.0) {
@@ -95,6 +96,7 @@ public abstract class Analysis {
         this.objective = Objective;
         this.prepareReactions(cofactors, reactions, sources, species, f);
     }
+    
 
     public void setSolverParameters() {
         this.setVars();
