@@ -25,8 +25,11 @@ public class AntFBADistributionParameters extends SimpleParameterSet {
        
         public static final FileNameParameter matrixFile = new FileNameParameter(
                 "File name:", "Saves the resulting flux matrix in a file", "");
+        
+        public static final FileNameParameter reactions = new FileNameParameter("Reactions file",
+        "File containing the reaction ids separated by comma",null);
       
         public AntFBADistributionParameters() {
-                super(new Parameter[]{matrixFile});
+                super(new Parameter[]{matrixFile, reactions});
         }
 }

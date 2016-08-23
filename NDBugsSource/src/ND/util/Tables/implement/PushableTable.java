@@ -104,9 +104,11 @@ public class PushableTable implements DataTable, ActionListener {
                     
                     if(isExchange(Index_row)){
                         comp.setBackground(Color.YELLOW);
+                        this.repaint();
                     }
                     if(isTransport(Index_row)){
                         comp.setBackground(Color.ORANGE);
+                        this.repaint();
                     }
 
                 } catch (Exception e) {
@@ -131,18 +133,52 @@ public class PushableTable implements DataTable, ActionListener {
                 return tableModel.getCellColor(row, column);
             }
             
-            private boolean isExchange(int row){
-                return tableModel.isExchange(row);
+            /*private boolean isExchange(int row){
+                
+                return isExchange(row);
             }
             
              private boolean isTransport(int row){
                 return tableModel.isTransport(row);
-            }
+            }*/
         };
 
         return colorTable;
     }
+    
+     
+        public boolean isExchange(int row) {
+                try {
+                        for (int i = 0; i < this.getTable().getColumnCount(); i++) {                           
+                                String columnName = this.getTable().getColumnName(i);
+                                if (columnName.matches("Name")) {
+                                    String name = (String)this.getTable().getValueAt(row, i);
+                                        if(name.contains("exchange")) return true;
+                                        else return false;
+                                }
+                        }
+                        return false;
+                } catch (Exception e) {
+                        return false;
+                }
+        }
 
+        
+        public boolean isTransport(int row) {
+                try {
+                        for (int i = 0; i < this.getTable().getColumnCount(); i++) {                           
+                                String columnName = this.getTable().getColumnName(i);
+                                if (columnName.matches("Name")) {
+                                    String name = (String)this.getTable().getValueAt(row, i);
+                                        if(name.contains("port")|| name.contains("diffusion")) return true;
+                                        else return false;
+                                }
+                        }
+                        return false;
+                } catch (Exception e) {
+                        return false;
+                }
+        }
     /**
      * Sets the properties of the table: selection mode, tooltips, actions with
      * keys..

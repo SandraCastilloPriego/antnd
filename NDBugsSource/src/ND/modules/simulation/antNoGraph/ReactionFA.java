@@ -41,6 +41,7 @@ public class ReactionFA {
     private double finalFlux;
     private boolean status = false;
     private double objective;
+    private boolean isBoundary = false;
 
     public ReactionFA(String id) {
         this.id = id;
@@ -332,5 +333,13 @@ public class ReactionFA {
     
     public String toString(){
         return this.id;
+    }
+    
+    public boolean isBoundary(){
+        return this.isBoundary;
+    }
+    
+    public void setIsBoundary(boolean boundary){
+        this.isBoundary = boundary;
     }
 }

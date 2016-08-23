@@ -84,7 +84,6 @@ public class AddReactionsTask extends AbstractTask {
                 setStatus(TaskStatus.ERROR);
                 NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
             }
-
             this.ReadFiles();
 
             SBMLDocument doc = this.networkDS.getDocument();
@@ -138,6 +137,9 @@ public class AddReactionsTask extends AbstractTask {
                 LocalParameter uboundP = new LocalParameter("UPPER_BOUND");
                 uboundP.setValue(reaction.getub());
                 law.addLocalParameter(uboundP);
+                LocalParameter objectiveP = new LocalParameter("OBJECTIVE_COEFFICIENT");
+                objectiveP.setValue(0);                
+                law.addLocalParameter(objectiveP);
                 r.setKineticLaw(law);
 
                 m.addReaction(r);
@@ -158,6 +160,7 @@ public class AddReactionsTask extends AbstractTask {
         } catch (Exception e) {
             setStatus(TaskStatus.ERROR);
             errorMessage = e.toString();
+            System.out.println(errorMessage);
         }
     }
 
@@ -165,11 +168,13 @@ public class AddReactionsTask extends AbstractTask {
         try {
             CsvReader lines;
             lines = new CsvReader(new FileReader(this.compoundFile));
+           // System.out.println(this.compoundFile);
             while (lines.readRecord()) {
                 String[] r = lines.getValues();
                 this.compounds.put(r[1], r[0]);
             }
             lines.close();
+            // System.out.println(this.reactionFile);
             lines = new CsvReader(new FileReader(this.reactionFile));
             while (lines.readRecord()) {
                 String[] r = lines.getValues();
@@ -184,13 +189,16 @@ public class AddReactionsTask extends AbstractTask {
                     }
                 }
                 reaction.setBounds(Double.valueOf(r[4]), Double.valueOf(r[5]));
+                 System.out.println(reaction.getId());
                 this.reactions.add(reaction);
             }
             lines.close();
 
         } catch (FileNotFoundException ex) {
+            System.out.println(ex.toString());
 
         } catch (IOException ex) {
+            System.out.println("IO: "+ ex.toString());
         }
     }
 }

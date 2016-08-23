@@ -24,10 +24,14 @@ import ND.modules.simulation.antNoGraph.ReactionFA;
 import ND.parameters.SimpleParameterSet;
 import ND.taskcontrol.AbstractTask;
 import ND.taskcontrol.TaskStatus;
+import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,11 +56,32 @@ public class AntFBADistributionTask extends AbstractTask {
     private HashMap<String, ReactionFA> reactions;
     private HashMap<String, List<Double>> fluxes;
     private File file;
+    private final File reactionFile;
 
     public AntFBADistributionTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         this.networkDS = dataset;
         this.fluxes = new HashMap<>();
         this.file = parameters.getParameter(AntFBADistributionParameters.matrixFile).getValue();
+        this.reactionFile = parameters.getParameter(AntFBADistributionParameters.reactions).getValue();
+
+    }
+
+    private List<String> ReadFile() {
+        try {
+            CsvReader lines;
+            List<String> reactionIds = new ArrayList<>();
+            lines = new CsvReader(new FileReader(this.reactionFile));
+            lines.getHeaders();
+            while (lines.readRecord()) {
+                String[] reaction = lines.getValues();
+                reactionIds.addAll(Arrays.asList(reaction));
+            }
+            return reactionIds;
+        } catch (FileNotFoundException ex) {
+
+        } catch (IOException ex) {
+        }
+        return null;
     }
 
     @Override
@@ -83,90 +108,99 @@ public class AntFBADistributionTask extends AbstractTask {
 
     @Override
     public void run() {
-        //   try {
-        setStatus(TaskStatus.PROCESSING);
-        
-        optimize();
-        
-        CsvWriter writer = new CsvWriter(this.file.getAbsolutePath());
-       
-        for(String r:this.fluxes.keySet()){
-           
-            try {
-                List<Double> flux = this.fluxes.get(r);
-                String[] record = new String[flux.size() +1];
-                record[0] = r;
-                int i = 1;
-                for(Double f : flux){
-                    record[i++] = String.valueOf(f);
-                }
-                writer.writeRecord(record);
-            } catch (IOException ex) {
-                Logger.getLogger(AntFBADistributionTask.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        System.out.println();
-        setStatus(TaskStatus.FINISHED);
+        try {
+            setStatus(TaskStatus.PROCESSING);
 
-        /*  } catch (Exception e) {
-         System.out.println(e.toString());
-         setStatus(TaskStatus.ERROR);
-         }*/
+            List<String> reactionIds = this.ReadFile();
+
+            optimize(reactionIds);
+            if (getStatus() == TaskStatus.PROCESSING) {
+                CsvWriter writer = new CsvWriter(this.file.getAbsolutePath());
+
+                for (String r : this.fluxes.keySet()) {
+
+                    try {
+                        List<Double> flux = this.fluxes.get(r);
+                        String[] record = new String[flux.size() + 1];
+                        record[0] = r;
+                        int i = 1;
+                        for (Double f : flux) {
+                            record[i++] = String.valueOf(f);
+                        }
+                        writer.writeRecord(record);
+                    } catch (IOException ex) {
+                        Logger.getLogger(AntFBADistributionTask.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+
+            setStatus(TaskStatus.FINISHED);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            setStatus(TaskStatus.ERROR);
+        }
     }
 
-    private void optimize() {
-        
+    private void optimize(List<String> reactionIds) {
+
         createReactions();
-        int i = 0;
-        
-        for(String r : this.reactions.keySet()){
-            i++;
-            if(i > 15) break;
-            this.reactions.get(r).setObjective(1.0);
-            this.getFlux();
-            this.reactions.get(r).setObjective(0.0);            
+
+        for (String r : reactionIds) {
+            if (this.reactions.containsKey(r)) {
+                this.reactions.get(r).setObjective(1.0);
+                this.getFlux();
+                this.reactions.get(r).setObjective(0.0);
+                if (getStatus() == TaskStatus.CANCELED) {
+                    break;
+                }
+            }
         }
     }
 
     public void getFlux() {
         FBA fba = new FBA();
-    
+
         fba.setModel(this.reactions, this.networkDS.getDocument().getModel(), ObjType.Maximize);
         try {
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {
                 if (this.fluxes.containsKey(r)) {
-                    List<Double>flux = this.fluxes.get(r);
-                    if(flux == null) flux = new ArrayList<>();
+                    List<Double> flux = this.fluxes.get(r);
+                    if (flux == null) {
+                        flux = new ArrayList<>();
+                    }
                     flux.add(soln.get(r));
                     this.fluxes.put(r, flux);
-                }else{
+                } else {
                     List<Double> flux = new ArrayList<>();
                     flux.add(soln.get(r));
                     this.fluxes.put(r, flux);
-                
+
                 }
             }
         } catch (Exception ex) {
             System.out.println(ex);
         }
-        
+
         fba = new FBA();
-        
+
         fba.setModel(this.reactions, this.networkDS.getDocument().getModel(), ObjType.Minimize);
         try {
             Map<String, Double> soln = fba.run();
             for (String r : soln.keySet()) {
                 if (this.fluxes.containsKey(r)) {
-                    List<Double>flux = this.fluxes.get(r);
-                    if(flux == null) flux = new ArrayList<>();
+                    List<Double> flux = this.fluxes.get(r);
+                    if (flux == null) {
+                        flux = new ArrayList<>();
+                    }
                     flux.add(soln.get(r));
                     this.fluxes.put(r, flux);
-                }else{
+                } else {
                     List<Double> flux = new ArrayList<>();
                     flux.add(soln.get(r));
                     this.fluxes.put(r, flux);
-                
+
                 }
             }
         } catch (Exception ex) {
