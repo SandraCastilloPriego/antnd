@@ -19,8 +19,8 @@ public enum MetColumnName {
     SELECTION("Number", "isSelected", "setSelectionMode", "Selection", ParameterType.BOOLEAN),
     ID("Id", "getID", "setID", "^ID.*|^Id|.*row ID.*", ParameterType.STRING),
     NAME("Metabolite Name", "getName", "setName", ".*|^Name.*|^name.*|^Name", ParameterType.STRING),    
-    NOTES("Notes", "getNotes", "setNotes", ".*Notes.*", ParameterType.STRING),
-    REACTION("Reaction", "getReaction", "setReaction", ".*Reaction.*", ParameterType.STRING);
+    NOTES("Notes", "getNotes", "setNotes", ".*Notes.*", ParameterType.STRING);
+   // REACTION("Reactions", "getReaction", "setReaction", ".*Reaction.*", ParameterType.STRING);
 
     private final String columnName;
     private final String getFunctionName, setFunctionName;

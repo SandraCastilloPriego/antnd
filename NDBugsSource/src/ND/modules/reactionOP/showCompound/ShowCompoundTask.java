@@ -86,18 +86,18 @@ public class ShowCompoundTask extends AbstractTask {
 
                         SBMLDocument doc = this.networkDS.getDocument();
                         Model m = doc.getModel();
-                        List<Species> possibleReactions = new ArrayList<>();
+                        List<Species> possibleCompound = new ArrayList<>();
                         for (Species sp : m.getListOfSpecies()) {
                                 if (sp.getId().contains(this.compoundName) || sp.getName().contains(this.compoundName)) {
-                                        possibleReactions.add(sp);
+                                        possibleCompound.add(sp);
                                 }
                         }
 
-                        if (possibleReactions.isEmpty()) {
+                        if (possibleCompound.isEmpty()) {
                                 // this.networkDS.setInfo("The compound" + compoundName + " doesn't exist in this model.");
                                 NDCore.getDesktop().displayMessage("The compound " + compoundName + " doesn't exist in this model.");
                         } else {
-                                this.showReactions(possibleReactions, m);
+                                this.showReactions(possibleCompound, m);
                                 frame.setSize(new Dimension(700, 500));
                                 frame.add(this.panel);
                                 NDCore.getDesktop().addInternalFrame(frame);

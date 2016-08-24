@@ -178,7 +178,7 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     return;
                 case "Name":
                     r.setName(aValue.toString());
-                    info = info + "\n- Name of the reaction " + r.getId() + " - " + r.getName() + "has changed to " + aValue.toString();
+                    info = info + "\n- Name of the reaction " + r.getId() + " - " + r.getName() + " has changed to " + aValue.toString();
                     dataset.addInfo(info);
                     return;
                 case "Reaction":
@@ -193,7 +193,7 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     if (parameter == null) {
                         parameter = r.getKineticLaw().getLocalParameter("LB_" + r.getId());
                     }
-                    info = info + "\n- Lower bound of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    info = info + "\n- Lower bound of the reaction " + r.getId() + " - " + r.getName() + " has changed from " + parameter.getValue() + " to " + aValue.toString();
                     dataset.addInfo(info);
 
                     parameter.setValue(Double.valueOf(aValue.toString()));
@@ -203,13 +203,13 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                     if (parameter == null) {
                         parameter = r.getKineticLaw().getLocalParameter("UB_" + r.getId());
                     }
-                    info = info + "\n- Upper bound of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    info = info + "\n- Upper bound of the reaction " + r.getId() + " - " + r.getName() + " has changed from " + parameter.getValue() + " to " + aValue.toString();
                     dataset.addInfo(info);
 
                     parameter.setValue(Double.valueOf(aValue.toString()));
                     return;
                 case "Notes":
-                    info = info + "\n- Notes of the reaction " + r.getId() + " - " + r.getName() + "have changed from " + r.getNotes().toXMLString() + " to " + aValue.toString();
+                    info = info + "\n- Notes of the reaction " + r.getId() + " - " + r.getName() + " have changed from " + r.getNotes().toXMLString() + " to " + aValue.toString();
                     dataset.addInfo(info);
                     r.setNotes(value);
                     return;
@@ -222,7 +222,7 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                         parameter = r.getKineticLaw().createLocalParameter("OBJECTIVE_COEFFICIENT");
                     }
 
-                    info = info + "\n- Objective coefficient of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    info = info + "\n- Objective coefficient of the reaction " + r.getId() + " - " + r.getName() + " has changed from " + parameter.getValue() + " to " + aValue.toString();
                     dataset.addInfo(info);
 
                     parameter.setValue(Double.valueOf(aValue.toString()));
@@ -234,7 +234,7 @@ public class ReactionsDataModel extends AbstractTableModel implements DataTableM
                         parameter = r.getKineticLaw().createLocalParameter("FLUX_VALUE");
                     }
 
-                    info = info + "\n- Flux of the reaction " + r.getId() + " - " + r.getName() + "has changed from " + parameter.getValue() + " to " + aValue.toString();
+                    info = info + "\n- Flux of the reaction " + r.getId() + " - " + r.getName() + " has changed from " + parameter.getValue() + " to " + aValue.toString();
                     dataset.addInfo(info);
 
                     parameter.setValue(Double.valueOf(aValue.toString()));

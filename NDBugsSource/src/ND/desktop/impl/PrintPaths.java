@@ -434,7 +434,7 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
                 tcc.setVisible(true);
             }
         });
-        JTextField field = new JTextField("");
+        final JTextField field = new JTextField("");
         field.setPreferredSize(new Dimension(350, 30));
         field.setBackground(Color.LIGHT_GRAY);
         field.addKeyListener(new KeyListener() {
@@ -900,11 +900,11 @@ public class PrintPaths implements KeyListener, GraphMouseListener, ActionListen
 // Configure the VisualizationImageServer the same way
 // you did your VisualizationViewer. In my case e.g.
         vis.setBackground(Color.WHITE);
-        vis.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<>());
+       /* vis.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<>());
         vis.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<>());
         vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<>());
         vis.getRenderer().getVertexLabelRenderer()
-            .setPosition(Renderer.VertexLabel.Position.CNTR);
+            .setPosition(Renderer.VertexLabel.Position.CNTR);*/
 
 // Create the buffered image
         BufferedImage image = (BufferedImage) vis.getImage(

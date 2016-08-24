@@ -469,7 +469,7 @@ public class ItemSelector extends JPanel implements ActionListener,
 
     private void changeName() {
         final Dataset selectedFile = getSelectedDatasets()[0];
-        JInternalFrame frame = new JInternalFrame("Change Name of the Model");
+        final JInternalFrame frame = new JInternalFrame("Change Name of the Model");
         frame.setSize(new Dimension(500, 150));
         JPanel pn = new JPanel();
         final JLabel label = new JLabel("Introduce the new name:");
@@ -539,7 +539,7 @@ public class ItemSelector extends JPanel implements ActionListener,
 
     private void setParent() {
         final Dataset selectedFile = getSelectedDatasets()[0];
-        JInternalFrame frame = new JInternalFrame("Choose the new Parent");
+        final JInternalFrame frame = new JInternalFrame("Choose the new Parent");
         frame.setSize(new Dimension(500, 150));
         JPanel pn = new JPanel();
         final JLabel label = new JLabel("Choose the new Parent:");

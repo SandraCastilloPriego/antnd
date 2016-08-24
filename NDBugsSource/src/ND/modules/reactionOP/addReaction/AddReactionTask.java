@@ -36,102 +36,105 @@ import org.sbml.jsbml.SpeciesReference;
  */
 public class AddReactionTask extends AbstractTask {
 
-        private final SimpleBasicDataset networkDS;
-        private final String reactionName;
-        private String compounds, stoichiometry;
-        private final double finishedPercentage = 0.0f;
-        private final double lb, ub;
+    private final SimpleBasicDataset networkDS;
+    private final String reactionName;
+    private String compounds, stoichiometry;
+    private final double finishedPercentage = 0.0f;
+    private final double lb, ub;
 
-        public AddReactionTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
-                networkDS = dataset;
-                this.reactionName = parameters.getParameter(AddReactionParameters.reactionName).getValue();
-                this.compounds = parameters.getParameter(AddReactionParameters.compounds).getValue();
-                this.stoichiometry = parameters.getParameter(AddReactionParameters.stoichiometry).getValue();
-                this.lb = parameters.getParameter(AddReactionParameters.lb).getValue();
-                this.ub = parameters.getParameter(AddReactionParameters.ub).getValue();
-        }
+    public AddReactionTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
+        networkDS = dataset;
+        this.reactionName = parameters.getParameter(AddReactionParameters.reactionName).getValue();
+        this.compounds = parameters.getParameter(AddReactionParameters.compounds).getValue();
+        this.stoichiometry = parameters.getParameter(AddReactionParameters.stoichiometry).getValue();
+        this.lb = parameters.getParameter(AddReactionParameters.lb).getValue();
+        this.ub = parameters.getParameter(AddReactionParameters.ub).getValue();
+    }
 
-        @Override
-        public String getTaskDescription() {
-                return "Adding reaction... ";
-        }
+    @Override
+    public String getTaskDescription() {
+        return "Adding reaction... ";
+    }
 
-        @Override
-        public double getFinishedPercentage() {
-                return finishedPercentage;
-        }
+    @Override
+    public double getFinishedPercentage() {
+        return finishedPercentage;
+    }
 
-        @Override
-        public void cancel() {
-                setStatus(TaskStatus.CANCELED);
-        }
+    @Override
+    public void cancel() {
+        setStatus(TaskStatus.CANCELED);
+    }
 
-        @Override
-        public void run() {
-                try {
-                        setStatus(TaskStatus.PROCESSING);
-                        if (this.networkDS == null) {
-                                setStatus(TaskStatus.ERROR);
-                                NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
-                        }
+    @Override
+    public void run() {
+        try {
+            setStatus(TaskStatus.PROCESSING);
+            if (this.networkDS == null) {
+                setStatus(TaskStatus.ERROR);
+                NDCore.getDesktop().displayErrorMessage("You need to select a metabolic model.");
+            }
 
-                        SBMLDocument doc = this.networkDS.getDocument();
-                        Model m = doc.getModel();
+            SBMLDocument doc = this.networkDS.getDocument();
+            Model m = doc.getModel();
 
-                        this.compounds = this.compounds.replaceAll(" ", "");
-                        String[] sps = this.compounds.split(",");
+            this.compounds = this.compounds.replaceAll(" ", "");
+            String[] sps = this.compounds.split(",");
 
-                        this.stoichiometry = this.stoichiometry.replaceAll(" ", "");
-                        String[] sto = this.stoichiometry.split(",");
+            this.stoichiometry = this.stoichiometry.replaceAll(" ", "");
+            String[] sto = this.stoichiometry.split(",");
 
-                        if (sps.length != sto.length) {
-                                setStatus(TaskStatus.ERROR);
-                                NDCore.getDesktop().displayErrorMessage("The stoichiometry defined doesn't correspond to number of compounds.");
-                        }
-                        Reaction r = new Reaction(this.reactionName);
+            if (sps.length != sto.length) {
+                setStatus(TaskStatus.ERROR);
+                NDCore.getDesktop().displayErrorMessage("The stoichiometry defined doesn't correspond to number of compounds.");
+            }
+            Reaction r = new Reaction(this.reactionName);
 
-                        for (int i = 0; i < sps.length; i++) {
-                                String sp = sps[i];
-                                String stoi = sto[i];
+            for (int i = 0; i < sps.length; i++) {
+                String sp = sps[i];
+                String stoi = sto[i];
 
-                                SpeciesReference spref = new SpeciesReference();
-                                spref.setStoichiometry(Math.abs(Double.valueOf(stoi)));
-                                if (m.containsSpecies(sp)) {
-                                        spref.setSpecies(m.getSpecies(sp));
-                                } else {
-                                        Species specie = new Species(sp);
-                                        m.addSpecies(specie);
-                                        spref.setSpecies(sp);
-                                }
-                                if (Double.valueOf(stoi) < 0) {
-                                        r.addReactant(spref);
-                                } else {
-                                        r.addProduct(spref);
-                                }
-                        }
-
-                        KineticLaw law = new KineticLaw();
-                        LocalParameter lboundP = new LocalParameter("LOWER_BOUND");
-                        lboundP.setValue(this.lb);
-                        law.addLocalParameter(lboundP);
-                        LocalParameter uboundP = new LocalParameter("UPPER_BOUND");
-                        uboundP.setValue(this.ub);
-                        law.addLocalParameter(uboundP);
-                        r.setKineticLaw(law);
-
-                        if (m.getReaction(this.reactionName) != null) {
-                                setStatus(TaskStatus.ERROR);
-                                NDCore.getDesktop().displayErrorMessage("The reaction " + this.reactionName + " already exists in the model.");
-                        } else {
-                                m.addReaction(r);
-                                String info = "Adding reaction: " + this.reactionName + " bounds:" + this.lb + " - " + this.ub + "\nCompounds: " + this.compounds + "\nStoichiometry: " + this.stoichiometry + "\n--------------------------";
-                                this.networkDS.addInfo(info);
-
-                        }
-                        setStatus(TaskStatus.FINISHED);
-                } catch (Exception e) {
-                        setStatus(TaskStatus.ERROR);
-                        errorMessage = e.toString();
+                SpeciesReference spref = new SpeciesReference();
+                spref.setStoichiometry(Math.abs(Double.valueOf(stoi)));
+                if (m.containsSpecies(sp)) {
+                    spref.setSpecies(m.getSpecies(sp));
+                } else {
+                    Species specie = new Species(sp);
+                    m.addSpecies(specie);
+                    spref.setSpecies(sp);
                 }
+                if (Double.valueOf(stoi) < 0) {
+                    r.addReactant(spref);
+                } else {
+                    r.addProduct(spref);
+                }
+            }
+
+            KineticLaw law = new KineticLaw();
+            LocalParameter lboundP = new LocalParameter("LOWER_BOUND");
+            lboundP.setValue(this.lb);
+            law.addLocalParameter(lboundP);
+            LocalParameter uboundP = new LocalParameter("UPPER_BOUND");
+            uboundP.setValue(this.ub);
+            law.addLocalParameter(uboundP);
+            LocalParameter objectiveP = new LocalParameter("OBJECTIVE_COEFFICIENT");
+            objectiveP.setValue(0);
+            law.addLocalParameter(objectiveP);
+            r.setKineticLaw(law);
+
+            if (m.getReaction(this.reactionName) != null) {
+                setStatus(TaskStatus.ERROR);
+                NDCore.getDesktop().displayErrorMessage("The reaction " + this.reactionName + " already exists in the model.");
+            } else {
+                m.addReaction(r);
+                String info = "Adding reaction: " + this.reactionName + " bounds:" + this.lb + " - " + this.ub + "\nCompounds: " + this.compounds + "\nStoichiometry: " + this.stoichiometry + "\n--------------------------";
+                this.networkDS.addInfo(info);
+
+            }
+            setStatus(TaskStatus.FINISHED);
+        } catch (Exception e) {
+            setStatus(TaskStatus.ERROR);
+            errorMessage = e.toString();
         }
+    }
 }

@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.xml.XMLNode;
 
@@ -46,13 +47,14 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
 
     @Override
     public int getColumnCount() {
-        return 5;
+        return 4;
     }
 
     @Override
     public Object getValueAt(final int row, final int column) {
         try {
-            Species sp = this.dataset.getDocument().getModel().getSpecies(row);
+            Model m = this.dataset.getDocument().getModel();
+            Species sp = m.getSpecies(row);
 
             String value = columns.get(column).getColumnName();
             switch (value) {
@@ -65,14 +67,29 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                 case "Notes":
                     String notes = sp.getNotesString();
                     return notes;
-                case "Reactions":
-                    return null;
+               /* case "Reactions":
+                    return this.getPossibleReactions(sp.getId(), m);*/
             }
             return value;
 
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public String getPossibleReactions(String compound, Model m) {
+        String reactions = null;
+        Species sp = m.getSpecies(compound);
+        for (Reaction r : m.getListOfReactions()) {
+            if (r.hasReactant(sp) || r.hasProduct(sp)) {
+                if (reactions != null) {
+                    reactions = reactions + ", " + r.getId();
+                } else {
+                    reactions = r.getId();
+                }
+            }
+        }
+        return reactions;
     }
 
     @Override
@@ -112,9 +129,9 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                     dataset.addInfo(info);
                     r.setNotes(XMLNode.convertStringToXMLNode(aValue.toString()));
                     return;
-                case "Reaction":
-
-                    return;
+              /*  case "Reactions":
+                     
+                    return;*/
             }
 
             fireTableCellUpdated(row, column);
