@@ -52,6 +52,7 @@ public class AddReactionsTask extends AbstractTask {
     private final File reactionFile, compoundFile;
     private List<ReactionFA> reactions;
     private Map<String, String> compounds;
+    private Map<String, String> compartments;
 
     public AddReactionsTask(SimpleBasicDataset dataset, SimpleParameterSet parameters) {
         networkDS = dataset;
@@ -59,6 +60,7 @@ public class AddReactionsTask extends AbstractTask {
         this.compoundFile = parameters.getParameter(AddReactionsParameters.compoundsFile).getValue();
         this.reactions = new ArrayList<>();
         this.compounds = new HashMap<>();
+        this.compartments = new HashMap<>();
     }
 
     @Override
@@ -91,7 +93,9 @@ public class AddReactionsTask extends AbstractTask {
             for (String id : this.compounds.keySet()) {
                 Species sp = new Species(id);
                 sp.setName(this.compounds.get(id));
+                if(compartments.containsKey(id)) sp.setCompartment(compartments.get(id));                
                 m.addSpecies(sp);
+                
             }
 
             for (ReactionFA reaction : this.reactions) {
@@ -172,6 +176,7 @@ public class AddReactionsTask extends AbstractTask {
             while (lines.readRecord()) {
                 String[] r = lines.getValues();
                 this.compounds.put(r[1], r[0]);
+                if(r.length == 3) this.compartments.put(r[1],r[2]);
             }
             lines.close();
             // System.out.println(this.reactionFile);
