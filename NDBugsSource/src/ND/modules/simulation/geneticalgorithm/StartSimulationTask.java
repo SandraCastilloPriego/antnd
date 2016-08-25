@@ -115,8 +115,8 @@ public class StartSimulationTask extends AbstractTask {
 
     private void startCicle() {
         List<String> reactionIds = ReadFile();
-        World world = new World(training, reactionIds, this.bugLife, textArea, this.maxBugs, this.objective);
-        thread = new sinkThread(world);
+        World world = new World(training, reactionIds, this.bugLife, textArea, this.maxBugs, this.objective, this);
+        thread = new sinkThread(world, this);
         thread.start();
     }
 
@@ -142,9 +142,11 @@ public class StartSimulationTask extends AbstractTask {
     public class sinkThread extends Thread {
 
         World world;
+        StartSimulationTask t;
 
-        public sinkThread(World world) {
+        public sinkThread(World world, StartSimulationTask t) {
             this.world = world;
+            this.t = t;
         }
 
         @Override
@@ -153,8 +155,11 @@ public class StartSimulationTask extends AbstractTask {
                 // for (int i = 0; i < 1; i++) {
                 world.cicle();
                 //}
-
+                
                 printResult(world.getBugs());
+                if(this.t.getStatus() == TaskStatus.CANCELED){
+                    break;
+                }
 
             }
         }

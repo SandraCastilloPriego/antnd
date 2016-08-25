@@ -18,6 +18,8 @@ package ND.modules.simulation.geneticalgorithm.tools;
 
 import ND.data.Dataset;
 import ND.modules.simulation.antNoGraph.ReactionFA;
+import ND.modules.simulation.geneticalgorithm.StartSimulationTask;
+import ND.taskcontrol.TaskStatus;
 import java.util.*;
 import javax.swing.JTextArea;
 import org.sbml.jsbml.KineticLaw;
@@ -42,9 +44,10 @@ public final class World {
     int bugsLimitNumber;
     String objective;
     private HashMap<String, ReactionFA> reactions;
+    StartSimulationTask t;
 
     public World(Dataset training, List<String> reactionIds, int bugLife, JTextArea text,
-        int bugsLimitNumber, String objective) {
+        int bugsLimitNumber, String objective, StartSimulationTask t) {
         this.trainingDataset = training;
         this.population = new ArrayList<>();
         this.rand = new Random();
@@ -53,6 +56,7 @@ public final class World {
         this.bugsLimitNumber = bugsLimitNumber;
         this.objective = objective;
         this.createReactions();
+        this.t = t;
 
         /* this.setBiomassObjective();
          double referenceBiomass = this.getReference(true);
@@ -68,6 +72,7 @@ public final class World {
                     System.out.println("Bug " + i++ + ": " + reaction.getId());
                     this.addBug(reaction, 0.5, 2.5);
                 }
+                if(t.getStatus() == TaskStatus.CANCELED) break;
             }
 
         }
@@ -208,6 +213,7 @@ public final class World {
         List<Reproduction> allThreads = new ArrayList<>();
         try {
             for (int j = 0; j < 50; j++) {
+                if(this.t.getStatus() == TaskStatus.CANCELED) break;
                 Reproduction thread = new Reproduction(bugsInside, this.population, rand, this.trainingDataset, this.bugLife);
                 allThreads.add(thread);
                 thread.run();
@@ -215,7 +221,9 @@ public final class World {
 
             while (!allThreads.isEmpty()) {
                 Iterator<Reproduction> ite = allThreads.iterator();
+                if(this.t.getStatus() == TaskStatus.CANCELED) break;
                 while (ite.hasNext()) {
+                    if(this.t.getStatus() == TaskStatus.CANCELED) break;
                     Reproduction thread = ite.next();
                     if (!thread.isAlive()) {
                         ite.remove();

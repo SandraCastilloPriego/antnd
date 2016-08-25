@@ -5,7 +5,6 @@
  */
 package ND.data.models;
 
-import ND.data.ColumnName;
 import ND.data.Dataset;
 import ND.data.DatasetType;
 import ND.data.MetColumnName;
@@ -47,7 +46,7 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
 
     @Override
     public int getColumnCount() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -67,6 +66,8 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                 case "Notes":
                     String notes = sp.getNotesString();
                     return notes;
+                case "Compartment":
+                    return sp.getCompartment();
                /* case "Reactions":
                     return this.getPossibleReactions(sp.getId(), m);*/
             }
@@ -129,6 +130,12 @@ public class MetaboliteDataModel extends AbstractTableModel implements DataTable
                     dataset.addInfo(info);
                     r.setNotes(XMLNode.convertStringToXMLNode(aValue.toString()));
                     return;
+                case "Compartment":
+                    info = info + "\n- Compartment of the compound " + r.getId() + " - " + r.getName() + " has changed to " + aValue.toString();
+                    dataset.addInfo(info);
+                    r.setCompartment(aValue.toString());
+                    return;    
+                    
               /*  case "Reactions":
                      
                     return;*/
