@@ -505,10 +505,12 @@ public class ItemSelector extends JPanel implements ActionListener,
                         correct = false;
                     }
                 }
+                System.out.println(newName);
                 
-                if(!newName.contains(".sbml") || !newName.contains(".xml")){
-                    correct = false;
-                     NDCore.getDesktop().displayErrorMessage("The name must end with \".sbml\" or \".xml\"");
+                if(!newName.contains(".sbml") && !newName.contains(".xml")){
+                    //correct = false;
+                     //NDCore.getDesktop().displayErrorMessage("The name must end with \".sbml\" or \".xml\"");                    
+                    newName = newName+".sbml";
                 }
 
                 if (correct) {

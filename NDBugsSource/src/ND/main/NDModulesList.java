@@ -49,6 +49,7 @@ import ND.modules.reactionOP.showPathways.ShowPathwaysModule;
 import ND.modules.reactionOP.showReaction.ShowReactionModule;
 import ND.modules.simulation.Dynamic.DynamicModule;
 import ND.modules.simulation.FBADistribution.AntFBADistributionModule;
+import ND.modules.simulation.FBAMinimize.LPModuleMinimize;
 import ND.modules.simulation.PathsBetweenReactions.AntBetweenModule;
 import ND.modules.simulation.PseudoDynamic.PseudoDynamicModule;
 import ND.modules.simulation.PseudoDynamic.PseudoDynamicTask;
@@ -72,8 +73,8 @@ public class NDModulesList {
         OpenProjectModule.class,
         SaveProjectModule.class,
         DBConfModule.class,
-        ShortestPathDBModule.class,
-        // SourcesConfModule.class,
+        ShortestPathDBModule.class,      
+        SourcesConfModule.class,
         //CofactorConfModule.class,
         // AntModule.class,
         AntBetweenModule.class,
@@ -98,8 +99,9 @@ public class NDModulesList {
         //  AntFluxMaxModule.class,
         //  AntFluxMinModule.class,
         LPModule.class,
+        LPModuleMinimize.class,
         // LPNCModule.class,
-        FluxAnalysisModule.class,
+        FluxAnalysisModule.class,        
         //FluxCalcModule.class,
         //DynamicModule.class,
         //RemoveLipidsModule.class,

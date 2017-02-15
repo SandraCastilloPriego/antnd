@@ -28,9 +28,9 @@ import java.util.Map;
  */
 public class ReactionFA {
 
-    private final String id;
+    private String id;
     private String name;
-    private final List<String> reactants, products;
+    private List<String> reactants, products;
     private List<String> path;
     private final Map<String, String> names;
     private final HashMap<String, Double> stoichiometry;
@@ -52,6 +52,7 @@ public class ReactionFA {
         this.flux = new HashMap<>();
         this.path = new ArrayList<>();
     }
+
     public ReactionFA(String id, String name) {
         this.id = id;
         this.name = name;
@@ -62,21 +63,31 @@ public class ReactionFA {
         this.flux = new HashMap<>();
         this.path = new ArrayList<>();
     }
-    
+
     @Override
-    public ReactionFA clone(){
+    public ReactionFA clone() {
         ReactionFA newReaction = new ReactionFA(this.id, this.name);
         newReaction.setBounds(this.lb, this.ub);
-        for(String reactant : this.getReactants()){
+        for (String reactant : this.getReactants()) {
             newReaction.addReactant(reactant, this.names.get(reactant), this.getStoichiometry(reactant));
         }
-        for(String product : this.getProducts()){
-            newReaction.addReactant(product, this.names.get(product), this.getStoichiometry(product));
+        for (String product : this.getProducts()) {
+            newReaction.addProduct(product, this.names.get(product), this.getStoichiometry(product));
         }
         return newReaction;
     }
-    
-    public String getName(){
+
+    public void reverseReaction() {
+        List<String> r = new ArrayList<>(this.products);
+        List<String> p = new ArrayList<>(this.reactants);
+        this.reactants.clear();
+        this.products.clear();
+        this.reactants = new ArrayList<>(r);
+        this.products =  new ArrayList<>(p);
+        id = id + "R";
+    }
+
+    public String getName() {
         return this.name;
     }
 
@@ -241,7 +252,7 @@ public class ReactionFA {
         // if ((this.flux.containsKey(specie) && this.flux.get(specie) < flux && this.flux.get(specie)>=0.0) || !this.flux.containsKey(specie)) {
         // if (!status) {
         this.flux.put(specie, flux);
-       // }
+        // }
         // }
     }
 
@@ -298,48 +309,49 @@ public class ReactionFA {
         }
         return false;
     }
-    
-    public void addPath(String id){
+
+    public void addPath(String id) {
         this.path.add(id);
     }
-    
-    public boolean isInPath(String id){
+
+    public boolean isInPath(String id) {
         return this.path.contains(id);
     }
-    
-    public List<String> getPath(){
+
+    public List<String> getPath() {
         return this.path;
     }
-    
-    public void addPath(List<String> path){
-        for(String p : path){
-            if(!this.path.contains(p))
-            this.path.add(p);
+
+    public void addPath(List<String> path) {
+        for (String p : path) {
+            if (!this.path.contains(p)) {
+                this.path.add(p);
+            }
         }
     }
-    
-    public void resetFlux(){
+
+    public void resetFlux() {
         this.flux.clear();
         this.finalFlux = -1;
     }
-    
-    public void setObjective(double objective){
+
+    public void setObjective(double objective) {
         this.objective = objective;
     }
-    
-    public double getObjective(){
+
+    public double getObjective() {
         return this.objective;
     }
-    
-    public String toString(){
+
+    public String toString() {
         return this.id;
     }
-    
-    public boolean isBoundary(){
+
+    public boolean isBoundary() {
         return this.isBoundary;
     }
-    
-    public void setIsBoundary(boolean boundary){
+
+    public void setIsBoundary(boolean boundary) {
         this.isBoundary = boundary;
     }
 }

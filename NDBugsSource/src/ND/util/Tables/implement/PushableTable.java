@@ -14,10 +14,13 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  * Creates a table for showing the data sets. It implements DataTable.
@@ -40,6 +43,7 @@ public class PushableTable implements DataTable, ActionListener {
 
     public PushableTable(DataTableModel model) {
         this.model = model;
+        ((AbstractTableModel)this.model).fireTableDataChanged();
         table = this.tableRowsColor(model);
         setTableProperties();
         registers = new ArrayList<register>();
@@ -193,8 +197,10 @@ public class PushableTable implements DataTable, ActionListener {
         this.createTooltips();
 
         // Sorting
-        table.setAutoCreateRowSorter(true);
-        table.setUpdateSelectionOnSort(true);
+        
+        RowSorter<DataTableModel> sorter = new TableRowSorter<DataTableModel>(model);
+        table.setRowSorter(sorter);
+        table.setUpdateSelectionOnSort(false);
 
         // Size
         table.setMinimumSize(new Dimension(300, 800));
@@ -210,6 +216,7 @@ public class PushableTable implements DataTable, ActionListener {
         registerKey(KeyEvent.VK_Y, ActionEvent.CTRL_MASK, "Forward");
 
         system = Toolkit.getDefaultToolkit().getSystemClipboard();
+        
 
     }
 

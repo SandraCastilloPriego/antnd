@@ -23,14 +23,14 @@ import ND.parameters.parametersType.FileNameParameter;
 
 public class SourcesConfParameters extends SimpleParameterSet {
 
-        public static final FileNameParameter exchange = new FileNameParameter(
+     /*   public static final FileNameParameter exchange = new FileNameParameter(
                 "Source", "Define the uptaken compounds including their bounds.", null);
         public static final FileNameParameter bounds = new FileNameParameter(
-                "Reaction bounds", "Define the bounds of the reactions", null);
+                "Reaction bounds", "Define the bounds of the reactions", null);*/
         public static final FileNameParameter pathways = new FileNameParameter(
                 "Pathway information file", "Define the path of the pathway information file.", null);
         
         public SourcesConfParameters() {
-                super(new Parameter[]{exchange, bounds, pathways});
+                super(new Parameter[]{/*exchange, bounds,*/ pathways});
         }
 }

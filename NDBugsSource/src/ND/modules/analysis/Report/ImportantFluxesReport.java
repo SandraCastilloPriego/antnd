@@ -95,7 +95,7 @@ public class ImportantFluxesReport {
             } else {
                 realFlux = flux;
             }
-            if (realFlux > 1 || realFlux < -1) {
+            if (Math.abs(realFlux)>1 &&Math.abs(realFlux) <100) {
                 Fdata.put(r.getName(), realFlux);
             }
 

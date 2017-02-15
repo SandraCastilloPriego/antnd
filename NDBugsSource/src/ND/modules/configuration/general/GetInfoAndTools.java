@@ -55,8 +55,8 @@ public class GetInfoAndTools {
 
     public GetInfoAndTools() {
         SourcesConfParameters sourcesParameters = new SourcesConfParameters();
-        this.sources = sourcesParameters.getParameter(SourcesConfParameters.exchange).getValue();
-        this.boundsFile = sourcesParameters.getParameter(SourcesConfParameters.bounds).getValue();
+       // this.sources = sourcesParameters.getParameter(SourcesConfParameters.exchange).getValue();
+        //this.boundsFile = sourcesParameters.getParameter(SourcesConfParameters.bounds).getValue();
         this.pathwayFile = sourcesParameters.getParameter(SourcesConfParameters.pathways).getValue();
     }
 
@@ -78,7 +78,16 @@ public class GetInfoAndTools {
                 while (pathwaycsvFile.readRecord()) {
                     try {
                         String[] pathwayRow = pathwaycsvFile.getValues();
-                        for (int i = 1; i < pathwayRow.length; i++) {
+                        if(pathwayRow != null && !pathwayRow[2].isEmpty()){
+                            if (pathwaysMap.containsKey(pathwayRow[2])) {
+                                pathwaysMap.get(pathwayRow[2]).add(pathwayRow[0]);
+                            } else {
+                                List<String> p = new ArrayList();
+                                p.add(pathwayRow[0]);
+                                pathwaysMap.put(pathwayRow[2], p);
+                            }
+                        }
+                        /*for (int i = 1; i < pathwayRow.length; i++) {
                             if (pathwaysMap.containsKey(pathwayRow[i])) {
                                 pathwaysMap.get(pathwayRow[i]).add(pathwayRow[0]);
                             } else {
@@ -86,7 +95,7 @@ public class GetInfoAndTools {
                                 p.add(pathwayRow[0]);
                                 pathwaysMap.put(pathwayRow[i], p);
                             }
-                        }
+                        }*/
                     } catch (IOException | NumberFormatException e) {
                         System.out.println(e.toString());
                     }

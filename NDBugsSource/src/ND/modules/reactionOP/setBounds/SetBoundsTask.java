@@ -52,26 +52,33 @@ public class SetBoundsTask extends AbstractTask {
     }
 
     public void readBounds(Dataset networkDS) {
-               try {
+        try {
             SBMLDocument doc = networkDS.getDocument();
             Model m = doc.getModel();
-            
+
             CsvReader reader = new CsvReader(new FileReader(this.boundsFile));
 
             while (reader.readRecord()) {
                 String[] data = reader.getValues();
                 String reactionName = data[0].replace("-", "");
-           
+                //System.out.println(reactionName);
                 Reaction r = m.getReaction(reactionName);
-                if (r != null && r.getKineticLaw() == null) {
-                    KineticLaw law = new KineticLaw();
-                    LocalParameter lbound = new LocalParameter("LOWER_BOUND");
-                    lbound.setValue(Double.valueOf(data[3]));
-                    law.addLocalParameter(lbound);
-                    LocalParameter ubound = new LocalParameter("UPPER_BOUND");
-                    ubound.setValue(Double.valueOf(data[4]));
-                    law.addLocalParameter(ubound);
-                    r.setKineticLaw(law);
+                if (r != null) {
+                    KineticLaw law = r.getKineticLaw();
+                    if (law == null) {
+                        law = new KineticLaw();
+                    }
+                    if (law.getLocalParameter("LOWER_BOUND") == null) {
+                        LocalParameter lbound = new LocalParameter("LOWER_BOUND");
+                        lbound.setValue(Double.valueOf(data[3]));
+                        law.addLocalParameter(lbound);
+                    }
+                    if (law.getLocalParameter("UPPER_BOUND") == null) {
+                        LocalParameter ubound = new LocalParameter("UPPER_BOUND");
+                        ubound.setValue(Double.valueOf(data[4]));
+                        law.addLocalParameter(ubound);
+                        r.setKineticLaw(law);
+                    }
                 }
             }
         } catch (FileNotFoundException ex) {
@@ -79,7 +86,7 @@ public class SetBoundsTask extends AbstractTask {
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(ND.modules.configuration.general.GetInfoAndTools.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-      
+
     }
 
     @Override
@@ -110,7 +117,7 @@ public class SetBoundsTask extends AbstractTask {
             Model m = doc.getModel();
 
             this.readBounds(networkDS);
-            for(Reaction r : m.getListOfReactions()){
+            for (Reaction r : m.getListOfReactions()) {
                 if (r != null && r.getKineticLaw() == null) {
                     KineticLaw law = new KineticLaw();
                     LocalParameter lbound = new LocalParameter("LOWER_BOUND");
@@ -121,7 +128,7 @@ public class SetBoundsTask extends AbstractTask {
                     law.addLocalParameter(ubound);
                     r.setKineticLaw(law);
                 }
-            
+
             }
 
             setStatus(TaskStatus.FINISHED);

@@ -29,12 +29,12 @@ public class TransFrame extends JInternalFrame {
         Model m = NDCore.getDesktop().getSelectedDataFiles()[0].getDocument().getModel();
         Reaction reaction = m.getReaction(name);
         this.info = new StringBuffer();
-        if (reaction != null) {
+        if (reaction != null) {            
             KineticLaw law = reaction.getKineticLaw();
             if (law != null) {
                 LocalParameter lbound = law.getLocalParameter("LOWER_BOUND");
                 LocalParameter ubound = law.getLocalParameter("UPPER_BOUND");
-                info.append(reaction.getId()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
+                info.append(reaction.getId()).append(" - ").append(reaction.getName()).append(" lb: ").append(lbound.getValue()).append(" up: ").append(ubound.getValue()).append(":\n");
             } else {
                 info.append(reaction.getId()).append(":\n");
             }

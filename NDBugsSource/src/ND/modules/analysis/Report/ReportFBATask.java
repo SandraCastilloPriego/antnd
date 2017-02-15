@@ -187,7 +187,9 @@ public class ReportFBATask extends AbstractTask {
                 realFlux = flux;
             }
             if (realFlux > 1 || realFlux < -1) {
-                data.put(r.getName(), realFlux);
+                if (realFlux <= 6) {
+                    data.put(r.getName(), realFlux);
+                }
             }
 
         }
@@ -256,7 +258,7 @@ public class ReportFBATask extends AbstractTask {
                     cmp.pageBreak(),
                     cmp.subreport(OxygenReport()),
                     cmp.pageBreak(),
-                    cmp.subreport(CofactorReport())                    
+                    cmp.subreport(CofactorReport())
                 )
                 .pageFooter(cmp.line(),
                     cmp.pageNumber().setStyle(Templates.boldCenteredStyle))
@@ -266,11 +268,10 @@ public class ReportFBATask extends AbstractTask {
             System.out.println(ex.toString());
         }
     }
-    
+
     private JasperReportBuilder ChangesReport() throws DRException {
         return new ChangesReport(this.data).build();
     }
-
 
     private JasperReportBuilder ExchangesReportPie() throws DRException {
         return new ExchangesReportPie(this.data).build();
@@ -287,7 +288,7 @@ public class ReportFBATask extends AbstractTask {
     private JasperReportBuilder OxygenReport() throws DRException {
         return new OxygenReport(this.data).build();
     }
-    
+
     private JasperReportBuilder CofactorReport() throws DRException {
         return new CofactorReport(this.data).build();
     }

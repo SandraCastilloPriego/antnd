@@ -99,7 +99,7 @@ public class StartReducingGATask extends AbstractTask {
 
             List<String> solution = new ArrayList<>();
             for (String var : this.variables) {
-                boolean score = this.evaluate(0.017, 1.760, var);
+                boolean score = this.evaluate(0.0049, 0.54, var);
                 if (!score) {
                     System.out.println("FALSE");
                     solution.add(var);

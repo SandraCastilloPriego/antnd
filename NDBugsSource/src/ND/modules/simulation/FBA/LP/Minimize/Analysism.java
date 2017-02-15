@@ -1,10 +1,5 @@
-package ND.modules.simulation.FBAreal;
+package ND.modules.simulation.FBA.LP.Minimize;
 
-import ND.modules.simulation.FBA.LP.ConType;
-import ND.modules.simulation.FBA.LP.ModelCompressor;
-import ND.modules.simulation.FBA.LP.ObjType;
-import ND.modules.simulation.FBA.LP.Solver;
-import ND.modules.simulation.FBA.LP.VarType;
 import ND.modules.simulation.antNoGraph.ReactionFA;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.sbml.jsbml.Model;
 
-public abstract class Analysis {
+public abstract class Analysism {
 
     protected double maxObj = Double.NaN;
     List< Double> objectiveList;
@@ -76,25 +71,18 @@ public abstract class Analysis {
 
     protected void setObjective() {
         //this.getSolver().setObjType(objType);
-        // this.getSolver().setObjType(ObjType.Maximize);
+        this.getSolver().setObjType(ObjType.Minimize);
         Map< Integer, Double> map = new HashMap<>();
         for (int i = 0; i < objectiveList.size(); i++) {
-            if (objectiveList.get(i) != 0.0) {
-                map.put(this.reactionPositionMap.get(this.reactionsList.get(i).getId()), 1.0);
-            }
+            map.put(this.reactionPositionMap.get(this.reactionsList.get(i).getId()), objectiveList.get(i));
         }
+
         this.getSolver().setObj(map);
     }
 
-    public void setModel(HashMap<String, ReactionFA> reactions, Model model) {
-        this.getSolver().setObjType(ObjType.Maximize);
-        this.prepareReactions(reactions, model);
-    }
-    
-    public void setModel(HashMap<String, ReactionFA> reactions, Model model, ObjType objType) {
-         this.getSolver().setObjType(objType);
-        
-        this.prepareReactions(reactions, model);
+    public void setModel(HashMap<String, ReactionFA> reactions, Model model, Double objective) {
+        this.getSolver().setObjType(ObjType.Minimize);
+        this.prepareReactions(reactions, model, objective);
     }
 
     public void setSolverParameters() {
@@ -111,7 +99,16 @@ public abstract class Analysis {
         for (ReactionFA reaction : this.reactionsList) {
             fluxesMap.put(reaction.getId(), fluxes.get(this.reactionPositionMap.get(reaction.getId())));
             reaction.setFlux(fluxes.get(this.reactionPositionMap.get(reaction.getId())));
+           // System.out.println(reaction.getId() + " - " + reaction.getFlux());
+
         }
+        for (ReactionFA reaction : this.reactionsList) {
+            if (reaction.getId().contains("R") && Math.abs(reaction.getFlux()) > 0.00000001) {
+                setFlux(reaction.getId(), reaction.getFlux(), fluxesMap);
+                //System.out.println(reaction.getId() + " - " + reaction.getFlux());
+            }
+        }
+
         //System.out.println("\n");
         return fluxesMap;
     }
@@ -122,7 +119,7 @@ public abstract class Analysis {
         return this.maxObj;
     }
 
-    private void prepareReactions(HashMap<String, ReactionFA> reactions, Model model) {
+    private void prepareReactions(HashMap<String, ReactionFA> reactions, Model model, double objective) {
         this.reactionsList = new ArrayList<>();
         this.metabolitesList = new ArrayList<>();
         this.reactionPositionMap = new HashMap<>();
@@ -133,7 +130,42 @@ public abstract class Analysis {
             // System.out.print(reaction + " - ");
 
             ReactionFA r = reactions.get(reaction);
-            //if(r.getlb()==0 && r.getub()==0) continue;
+            if (r.getlb() < 0 && r.getub() > 0) {
+                ReactionFA newR = r.clone();
+                newR.reverseReaction();
+                newR.setBounds(0, Math.abs(r.getlb()));
+                r.setBounds(0.0, r.getub());
+//                System.out.println(r.getId());
+//                System.out.println("Reactants:");
+//                for (String re : r.getReactants()) {
+//                    System.out.println(re);
+//
+//                }
+//                System.out.println("Products:");
+//                for (String re : r.getProducts()) {
+//                    System.out.println(re);
+//                }
+//                System.out.println(newR.getId());
+//                System.out.println("Reactants:");
+//                for (String re : newR.getReactants()) {
+//                    System.out.println(re);
+//
+//                }
+//                System.out.println("Products:");
+//                for (String re : newR.getProducts()) {
+//                    System.out.println(re);
+//                }
+
+                this.reactionsList.add(newR);
+                this.reactionPositionMap.put(newR.getId(), i++);
+                this.objectiveList.add(1.0);
+
+            }
+            /*else if(r.getlb()<0 && r.getub()==0){
+                System.out.println(r.getId());
+                r.reverseReaction();
+                r.setBounds(0, Math.abs(r.getlb()));
+            }*/
             this.reactionsList.add(r);
 
             for (String reactant : r.getReactants()) {
@@ -143,14 +175,36 @@ public abstract class Analysis {
             }
             for (String product : r.getProducts()) {
                 String sp = model.getSpecies(product).getName();
-                if (!metabolitesList.contains(product) && !sp.contains("boundary")&& !sp.contains("b_")) {
+                if (!metabolitesList.contains(product) && !sp.contains("boundary") && !sp.contains("b_")) {
                     this.metabolitesList.add(product);
                 }
             }
-            this.objectiveList.add(r.getObjective());
+
             this.reactionPositionMap.put(r.getId(), i++);
+            if (r.getObjective() == 1) {
+                r.setBounds(objective - 0.001, objective + 0.001);
+            }
+
+            /* if (r.getFlux() > 0) {
+                r.setObjective(-1.0);
+            } else {
+                r.setObjective(1.0);
+            }*/
+            this.objectiveList.add(1.0);
+
         }
 
+    }
+
+    private void setFlux(String id, double flux, Map<String, Double> fluxesMap) {
+        String realId = id.substring(0, id.length() - 1);
+        for (ReactionFA r : this.reactionsList) {
+            if (r.getId().equals(realId)) {
+                r.setFlux(flux * -1);
+                fluxesMap.put(r.getId(), flux * -1);
+                System.out.println(r.getId() + " - " + r.getFlux());
+            }
+        }
     }
 
 }
